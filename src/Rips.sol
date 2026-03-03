@@ -35,7 +35,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         Round storage round = _rounds[roundId];
         StakeConfig storage config = _stakeConfigs[stakeId];
 
-        if (round.state != RoundState.Active) revert RoundNotActive();
+        if (round.status != RoundStatus.Active) revert RoundNotActive();
         if (block.timestamp >= round.startTime + config.duration)
             revert RoundIsExpired();
         if (round.ticketsSold + ticketCount > config.ticketCap)
@@ -51,7 +51,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         emit TicketsPurchased(roundId, msg.sender, startTicket, ticketCount);
 
         if (round.ticketsSold == config.ticketCap) {
-            round.state = RoundState.AwaitingVRF;
+            round.status = RoundStatus.AwaitingVRF;
             if (!_stakeDeleted[stakeId]) {
                 _createRound(stakeId);
             }
@@ -64,7 +64,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 maxRanges
     ) external nonReentrant {
         Round storage round = _rounds[roundId];
-        if (round.state != RoundState.Finalized) revert RoundNotFinalized();
+        if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();
 
         TicketRange[] storage ranges = _userTickets[roundId][msg.sender];
         if (startIndex >= ranges.length) revert InvalidStartIndex();
@@ -115,14 +115,14 @@ contract Rips is RipsVrf, ReentrancyGuard {
         Round storage round = _rounds[roundId];
         StakeConfig storage config = _stakeConfigs[round.stakeId];
 
-        if (round.state == RoundState.Active) {
+        if (round.status == RoundStatus.Active) {
             if (block.timestamp >= round.startTime + config.duration) {
-                round.state = RoundState.Expired;
+                round.status = RoundStatus.Expired;
                 emit RoundExpired(roundId);
             }
         }
 
-        if (round.state != RoundState.Expired) revert RoundNotExpired();
+        if (round.status != RoundStatus.Expired) revert RoundNotExpired();
         if (_hasRefunded[roundId][msg.sender]) revert AlreadyRefunded();
 
         TicketRange[] storage ranges = _userTickets[roundId][msg.sender];
@@ -158,7 +158,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
     function isRoundActive(uint256 roundId) external view returns (bool) {
         Round storage round = _rounds[roundId];
 
-        if (round.state != RoundState.Active) return false;
+        if (round.status != RoundStatus.Active) return false;
 
         StakeConfig storage config = _stakeConfigs[round.stakeId];
 

@@ -33,7 +33,7 @@ abstract contract RipsVrf is RipsAdmin {
 
     function requestRandomness(uint256 roundId) external {
         Round storage round = _rounds[roundId];
-        if (round.state != RoundState.AwaitingVRF) revert NotAwaitingVRF();
+        if (round.status != RoundStatus.AwaitingVRF) revert NotAwaitingVRF();
         if (round.vrfRequestId != 0) revert VRFAlreadyRequested();
 
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
@@ -66,7 +66,7 @@ abstract contract RipsVrf is RipsAdmin {
         uint256 n = config.ticketCap;
         round.randomA = RipsMath.deriveCoprimeA(randomWords[0], n);
         round.randomB = randomWords[1] % n;
-        round.state = RoundState.Finalized;
+        round.status = RoundStatus.Finalized;
 
         emit RoundFinalized(roundId, round.randomA, round.randomB);
     }
