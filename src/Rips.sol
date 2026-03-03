@@ -15,12 +15,11 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 initialFeePercent
     ) RipsVrf(vrfCoordinator, subscriptionId, keyHash, callbackGasLimit) {
         if (initialOwner == address(0)) revert ZeroAddress();
-        if (initialFeePercent > 10000) revert FeeTooHigh();
-
-        feeRecipient = initialOwner;
-        protocolFeePercent = initialFeePercent;
 
         transferOwnership(initialOwner);
+
+        setFeeRecipient(initialOwner);
+        setProtocolFee(initialFeePercent);
     }
 
     function buyTickets(
