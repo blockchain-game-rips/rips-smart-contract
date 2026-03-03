@@ -33,9 +33,7 @@ abstract contract RipsVrf is RipsAdmin {
 
     function requestRandomness(uint256 roundId) external {
         Round storage round = _rounds[roundId];
-        if (round.status != RoundStatus.AwaitingVRF) revert NotAwaitingVRF();
-        if (round.vrfRequestId != 0) revert VRFAlreadyRequested();
-
+        if (round.status != RoundStatus.SoldOut) revert RoundNotSoldOut();
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: s_keyHash,
@@ -49,7 +47,7 @@ abstract contract RipsVrf is RipsAdmin {
             })
         );
 
-        round.vrfRequestId = requestId;
+        round.status = RoundStatus.VRFRequested;
         _vrfRequestToRound[requestId] = roundId;
 
         emit RandomnessRequested(roundId, requestId);

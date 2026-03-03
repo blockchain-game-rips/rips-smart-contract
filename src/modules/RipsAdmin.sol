@@ -49,7 +49,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
     }
 
     function deleteStake(uint256 stakeId) external onlyOwner {
-        if (_stakeDeleted[stakeId]) revert StakeAlreadyDeleted();
+        if (_stakeDeleted[stakeId]) revert StakeNotExist();
         _stakeDeleted[stakeId] = true;
         emit StakeDeleted(stakeId);
     }
@@ -61,7 +61,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
     }
 
     function updateFeeRecipient(address newRecipient) external onlyOwner {
-        if (newRecipient == address(0)) revert InvalidFeeRecipient();
+        if (newRecipient == address(0)) revert ZeroAddress();
         feeRecipient = newRecipient;
         emit FeeRecipientUpdated(newRecipient);
     }
@@ -70,15 +70,15 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         return _stakeConfigs[stakeId];
     }
 
-    function _createRound(uint256 stakeId) internal {
-        uint256 roundId = _nextRoundId++;
+    function _createRound(uint256 stakeId) internal returns (uint256 roundId) {
+        roundId = _nextRoundId++;
 
         Round storage round = _rounds[roundId];
         round.stakeId = stakeId;
         round.startTime = block.timestamp;
         round.status = RoundStatus.Active;
 
-        _stakeCurrentRound[stakeId] = roundId;
+        _stakeToActiveRound[stakeId] = roundId;
 
         emit RoundCreated(roundId, stakeId, block.timestamp);
     }

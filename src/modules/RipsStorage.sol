@@ -5,22 +5,6 @@ import "../interfaces/IRips.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 
 abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
-    enum RoundStatus {
-        Active,
-        AwaitingVRF,
-        Finalized
-    }
-
-    struct Round {
-        uint256 stakeId;
-        uint256 startTime;
-        uint256 ticketsSold;
-        RoundStatus status;
-        uint256 vrfRequestId;
-        uint256 randomA;
-        uint256 randomB;
-    }
-
     uint256 public constant MAX_TICKETS_PER_RANGE = 1000;
 
     address public feeRecipient;
@@ -32,7 +16,9 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     mapping(uint256 stakeId => StakeConfig config) internal _stakeConfigs;
     mapping(uint256 stakeId => bool deleted) internal _stakeDeleted;
     mapping(uint256 roundId => Round round) internal _rounds;
-    mapping(uint256 stakeId => uint256 roundId) internal _stakeCurrentRound;
-    mapping(uint256 roundId => mapping(address buyer => TicketRange[] ranges)) internal _userTickets;
-    mapping(uint256 roundId => mapping(address user => bool refunded)) internal _hasRefunded;
+    mapping(uint256 stakeId => uint256 roundId) internal _stakeToActiveRound;
+    mapping(uint256 roundId => mapping(address buyer => TicketRange[] ranges))
+        internal _userTickets;
+    mapping(uint256 roundId => mapping(address user => bool refunded))
+        internal _hasRefunded;
 }

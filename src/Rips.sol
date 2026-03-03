@@ -12,13 +12,12 @@ contract Rips is RipsVrf, ReentrancyGuard {
         bytes32 keyHash,
         uint32 callbackGasLimit,
         address initialOwner,
-        address initialFeeRecipient,
         uint256 initialFeePercent
     ) RipsVrf(vrfCoordinator, subscriptionId, keyHash, callbackGasLimit) {
-        if (initialFeeRecipient == address(0)) revert InvalidFeeRecipient();
+        if (initialOwner == address(0)) revert ZeroAddress();
         if (initialFeePercent > 10000) revert FeeTooHigh();
 
-        feeRecipient = initialFeeRecipient;
+        feeRecipient = initialOwner;
         protocolFeePercent = initialFeePercent;
 
         transferOwnership(initialOwner);
@@ -28,32 +27,49 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 stakeId,
         uint256 ticketCount
     ) external payable whenNotPaused nonReentrant {
-        if (_stakeDeleted[stakeId]) revert StakeIsDeleted();
-        if (ticketCount == 0) revert MustBuyAtLeastOne();
+        if (_stakeDeleted[stakeId]) revert StakeNotExist();
+        if (ticketCount == 0) revert ZeroTickets();
 
-        uint256 roundId = _stakeCurrentRound[stakeId];
-        Round storage round = _rounds[roundId];
         StakeConfig storage config = _stakeConfigs[stakeId];
 
-        if (round.status != RoundStatus.Active) revert RoundNotActive();
-        if (block.timestamp >= round.startTime + config.duration)
-            revert RoundIsExpired();
-        if (round.ticketsSold + ticketCount > config.ticketCap)
-            revert ExceedsCap();
         if (msg.value != ticketCount * config.ticketCost)
             revert IncorrectPayment();
 
-        uint256 startTicket = round.ticketsSold;
-        round.ticketsSold += ticketCount;
+        uint256 remaining = ticketCount;
+        uint256 roundId = _stakeToActiveRound[stakeId];
 
-        _storeTicketRanges(roundId, msg.sender, startTicket, ticketCount);
+        while (remaining > 0) {
+            Round storage round = _rounds[roundId];
 
-        emit TicketsPurchased(roundId, msg.sender, startTicket, ticketCount);
+            if (block.timestamp >= round.startTime + config.duration)
+                revert RoundIsExpired();
 
-        if (round.ticketsSold == config.ticketCap) {
-            round.status = RoundStatus.AwaitingVRF;
-            if (!_stakeDeleted[stakeId]) {
-                _createRound(stakeId);
+            uint256 available = config.ticketCap - round.ticketsSold;
+            uint256 toBuy = remaining > available ? available : remaining;
+
+            uint256 startTicket = round.ticketsSold;
+            round.ticketsSold += toBuy;
+
+            _storeTicketRanges(roundId, msg.sender, startTicket, toBuy);
+
+            emit TicketsPurchased(roundId, msg.sender, startTicket, toBuy);
+
+            remaining -= toBuy;
+
+            if (round.ticketsSold == config.ticketCap) {
+                round.status = RoundStatus.SoldOut;
+                if (_stakeDeleted[stakeId]) {
+                    if (remaining > 0) {
+                        _refund(
+                            roundId,
+                            msg.sender,
+                            remaining * config.ticketCost
+                        );
+                    }
+                    break;
+                }
+
+                roundId = _createRound(stakeId);
             }
         }
     }
@@ -116,7 +132,8 @@ contract Rips is RipsVrf, ReentrancyGuard {
         StakeConfig storage config = _stakeConfigs[round.stakeId];
 
         if (round.status != RoundStatus.Active) revert RoundNotExpired();
-        if (block.timestamp < round.startTime + config.duration) revert RoundNotExpired();
+        if (block.timestamp < round.startTime + config.duration)
+            revert RoundNotExpired();
         if (_hasRefunded[roundId][msg.sender]) revert AlreadyRefunded();
 
         TicketRange[] storage ranges = _userTickets[roundId][msg.sender];
@@ -127,13 +144,8 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
         if (totalTickets == 0) revert NoTicketsToRefund();
 
-        uint256 refundAmount = totalTickets * config.ticketCost;
         _hasRefunded[roundId][msg.sender] = true;
-
-        (bool success, ) = msg.sender.call{value: refundAmount}("");
-        if (!success) revert RefundFailed();
-
-        emit RefundIssued(roundId, msg.sender, refundAmount);
+        _refund(roundId, msg.sender, totalTickets * config.ticketCost);
     }
 
     function getUserTickets(
@@ -146,7 +158,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
     function getCurrentRound(
         uint256 stakeId
     ) external view returns (uint256 roundId) {
-        return _stakeCurrentRound[stakeId];
+        return _stakeToActiveRound[stakeId];
     }
 
     function isRoundActive(uint256 roundId) external view returns (bool) {
@@ -157,6 +169,12 @@ contract Rips is RipsVrf, ReentrancyGuard {
         StakeConfig storage config = _stakeConfigs[round.stakeId];
 
         return block.timestamp < round.startTime + config.duration;
+    }
+
+    function _refund(uint256 roundId, address to, uint256 amount) private {
+        (bool success, ) = to.call{value: amount}("");
+        if (!success) revert RefundFailed();
+        emit RefundIssued(roundId, to, amount);
     }
 
     function _storeTicketRanges(
