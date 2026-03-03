@@ -45,7 +45,6 @@ interface IRips {
     error PrizePoolMismatch();
     error StakeNotExist();
     error ZeroTickets();
-    error RoundIsExpired();
     error IncorrectPayment();
     error RoundNotSoldOut();
     error RoundNotFinalized();
@@ -120,10 +119,6 @@ interface IRips {
     function getStakeConfig(
         uint256 stakeId
     ) external view returns (StakeConfig memory);
-
-    function getCurrentRound(
-        uint256 stakeId
-    ) external view returns (uint256 roundId);
 
     function isRoundActive(uint256 roundId) external view returns (bool);
 }

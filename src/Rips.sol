@@ -27,50 +27,94 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 stakeId,
         uint256 ticketCount
     ) external payable whenNotPaused nonReentrant {
-        if (_stakeDeleted[stakeId]) revert StakeNotExist();
-        if (ticketCount == 0) revert ZeroTickets();
+        (
+            uint256 roundId,
+            Round storage round,
+            StakeConfig storage config
+        ) = _resolveActiveRoundAndStake(stakeId);
 
-        StakeConfig storage config = _stakeConfigs[stakeId];
+        _validateBuyTickets(ticketCount, config);
+
+        uint256 toBuy = _getTicketsToBuy(round, config, ticketCount);
+
+        _purchaseTickets(roundId, round, toBuy);
+
+        if (round.ticketsSold == config.ticketCap) {
+            _handleSoldOut(stakeId, round);
+        }
+
+        uint256 excess = ticketCount - toBuy;
+        if (excess > 0) {
+            _refund(roundId, msg.sender, excess * config.ticketCost);
+        }
+    }
+
+    function _validateBuyTickets(
+        uint ticketCount,
+        StakeConfig storage config
+    ) internal {
+        if (ticketCount == 0) revert ZeroTickets();
 
         if (msg.value != ticketCount * config.ticketCost)
             revert IncorrectPayment();
+    }
 
-        uint256 remaining = ticketCount;
-        uint256 roundId = _stakeToActiveRound[stakeId];
+    function _getTicketsToBuy(
+        Round storage round,
+        StakeConfig storage config,
+        uint ticketCount
+    ) internal view returns (uint) {
+        uint256 available = config.ticketCap - round.ticketsSold;
 
-        while (remaining > 0) {
-            Round storage round = _rounds[roundId];
+        return ticketCount > available ? available : ticketCount;
+    }
 
-            if (block.timestamp >= round.startTime + config.duration)
-                revert RoundIsExpired();
+    function _handleSoldOut(uint256 stakeId, Round storage round) private {
+        round.status = RoundStatus.SoldOut;
 
-            uint256 available = config.ticketCap - round.ticketsSold;
-            uint256 toBuy = remaining > available ? available : remaining;
+        if (_stakeDeleted[stakeId]) {
+            _stakeToActiveRound[stakeId] = 0;
+        } else {
+            _createRound(stakeId);
+        }
+    }
 
-            uint256 startTicket = round.ticketsSold;
-            round.ticketsSold += toBuy;
+    function _purchaseTickets(
+        uint roundId,
+        Round storage round,
+        uint ticketsToBuy
+    ) internal {
+        uint256 startTicket = round.ticketsSold;
 
-            _storeTicketRanges(roundId, msg.sender, startTicket, toBuy);
+        round.ticketsSold += ticketsToBuy;
 
-            emit TicketsPurchased(roundId, msg.sender, startTicket, toBuy);
+        _storeTicketRanges(roundId, msg.sender, startTicket, ticketsToBuy);
 
-            remaining -= toBuy;
+        emit TicketsPurchased(roundId, msg.sender, startTicket, ticketsToBuy);
+    }
 
-            if (round.ticketsSold == config.ticketCap) {
-                round.status = RoundStatus.SoldOut;
-                if (_stakeDeleted[stakeId]) {
-                    if (remaining > 0) {
-                        _refund(
-                            roundId,
-                            msg.sender,
-                            remaining * config.ticketCost
-                        );
-                    }
-                    break;
-                }
+    function _resolveActiveRoundAndStake(
+        uint256 stakeId
+    )
+        private
+        returns (
+            uint256 roundId,
+            Round storage round,
+            StakeConfig storage stakeConfig
+        )
+    {
+        roundId = _stakeToActiveRound[stakeId];
 
-                roundId = _createRound(stakeId);
-            }
+        if (roundId == 0) revert StakeNotExist();
+
+        round = _rounds[roundId];
+        // TODO: consider is it safe to not check stakeConfig
+        stakeConfig = _stakeConfigs[stakeId];
+
+        if (block.timestamp >= round.startTime + stakeConfig.duration) {
+            if (_stakeDeleted[stakeId]) revert StakeNotExist();
+
+            roundId = _createRound(stakeId);
         }
     }
 
@@ -155,12 +199,6 @@ contract Rips is RipsVrf, ReentrancyGuard {
         return _userTickets[roundId][user];
     }
 
-    function getCurrentRound(
-        uint256 stakeId
-    ) external view returns (uint256 roundId) {
-        return _stakeToActiveRound[stakeId];
-    }
-
     function isRoundActive(uint256 roundId) external view returns (bool) {
         Round storage round = _rounds[roundId];
 
@@ -173,7 +211,9 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
     function _refund(uint256 roundId, address to, uint256 amount) private {
         (bool success, ) = to.call{value: amount}("");
+
         if (!success) revert RefundFailed();
+
         emit RefundIssued(roundId, to, amount);
     }
 

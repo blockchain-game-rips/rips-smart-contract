@@ -11,7 +11,7 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     uint256 public protocolFeePercent;
 
     uint256 internal _nextStakeId;
-    uint256 internal _nextRoundId;
+    uint256 internal _nextRoundId = 1;
 
     mapping(uint256 stakeId => StakeConfig config) internal _stakeConfigs;
     mapping(uint256 stakeId => bool deleted) internal _stakeDeleted;
