@@ -5,7 +5,32 @@ import "./RipsAdmin.sol";
 import "./RipsMath.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
-abstract contract RipsVRF is RipsAdmin {
+abstract contract RipsVrf is RipsAdmin {
+    uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
+    uint32 public constant VRF_NUM_WORDS = 2;
+
+    uint256 public immutable s_subscriptionId;
+    bytes32 public immutable s_keyHash;
+    uint32 private s_callbackGasLimit;
+
+    mapping(uint256 => uint256) internal _vrfRequestToRound;
+
+    constructor(
+        address vrfCoordinator,
+        uint256 subscriptionId,
+        bytes32 keyHash,
+        uint32 callbackGasLimit
+    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
+        s_subscriptionId = subscriptionId;
+        s_keyHash = keyHash;
+        s_callbackGasLimit = callbackGasLimit;
+    }
+
+    function updateCallbackGasLimit(uint32 newLimit) external onlyOwner {
+        s_callbackGasLimit = newLimit;
+        emit CallbackGasLimitUpdated(newLimit);
+    }
+
     function requestRandomness(uint256 roundId) external {
         Round storage round = _rounds[roundId];
         if (round.state != RoundState.AwaitingVRF) revert NotAwaitingVRF();

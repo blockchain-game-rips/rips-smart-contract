@@ -23,12 +23,6 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     }
 
     uint256 public constant MAX_TICKETS_PER_RANGE = 1000;
-    uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
-    uint32 public constant VRF_NUM_WORDS = 2;
-
-    uint256 public immutable s_subscriptionId;
-    bytes32 public immutable s_keyHash;
-    uint32 public s_callbackGasLimit;
 
     address public feeRecipient;
     uint256 public protocolFeePercent;
@@ -41,17 +35,6 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     mapping(uint256 => Round) internal _rounds;
     mapping(uint256 => uint256) internal _stakeCurrentRound;
     mapping(uint256 => mapping(address => TicketRange[])) internal _userTickets;
-    mapping(uint256 => uint256) internal _vrfRequestToRound;
     mapping(uint256 => mapping(address => bool)) internal _hasRefunded;
 
-    constructor(
-        address vrfCoordinator,
-        uint256 subscriptionId,
-        bytes32 keyHash,
-        uint32 callbackGasLimit
-    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
-        s_subscriptionId = subscriptionId;
-        s_keyHash = keyHash;
-        s_callbackGasLimit = callbackGasLimit;
-    }
 }

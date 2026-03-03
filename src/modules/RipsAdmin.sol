@@ -66,11 +66,6 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         emit FeeRecipientUpdated(newRecipient);
     }
 
-    function updateCallbackGasLimit(uint32 newLimit) external onlyOwner {
-        s_callbackGasLimit = newLimit;
-        emit CallbackGasLimitUpdated(newLimit);
-    }
-
     function getStakeConfig(uint256 stakeId) external view returns (StakeConfig memory) {
         return _stakeConfigs[stakeId];
     }

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./modules/RipsVRF.sol";
+import "./modules/RipsVrf.sol";
 import "./modules/RipsMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract Rips is RipsVRF, ReentrancyGuard {
+contract Rips is RipsVrf, ReentrancyGuard {
     constructor(
         address vrfCoordinator,
         uint256 subscriptionId,
@@ -14,7 +14,7 @@ contract Rips is RipsVRF, ReentrancyGuard {
         address initialOwner,
         address initialFeeRecipient,
         uint256 initialFeePercent
-    ) RipsStorage(vrfCoordinator, subscriptionId, keyHash, callbackGasLimit) {
+    ) RipsVrf(vrfCoordinator, subscriptionId, keyHash, callbackGasLimit) {
         if (initialFeeRecipient == address(0)) revert InvalidFeeRecipient();
         if (initialFeePercent > 10000) revert FeeTooHigh();
 
