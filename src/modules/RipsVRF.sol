@@ -13,7 +13,7 @@ abstract contract RipsVrf is RipsAdmin {
     bytes32 public immutable s_keyHash;
     uint32 private s_callbackGasLimit;
 
-    mapping(uint256 => uint256) internal _vrfRequestToRound;
+    mapping(uint256 requestId => uint256 roundId) internal _vrfRequestToRound;
 
     constructor(
         address vrfCoordinator,

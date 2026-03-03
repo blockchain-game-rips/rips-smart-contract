@@ -115,14 +115,8 @@ contract Rips is RipsVrf, ReentrancyGuard {
         Round storage round = _rounds[roundId];
         StakeConfig storage config = _stakeConfigs[round.stakeId];
 
-        if (round.status == RoundStatus.Active) {
-            if (block.timestamp >= round.startTime + config.duration) {
-                round.status = RoundStatus.Expired;
-                emit RoundExpired(roundId);
-            }
-        }
-
-        if (round.status != RoundStatus.Expired) revert RoundNotExpired();
+        if (round.status != RoundStatus.Active) revert RoundNotExpired();
+        if (block.timestamp < round.startTime + config.duration) revert RoundNotExpired();
         if (_hasRefunded[roundId][msg.sender]) revert AlreadyRefunded();
 
         TicketRange[] storage ranges = _userTickets[roundId][msg.sender];

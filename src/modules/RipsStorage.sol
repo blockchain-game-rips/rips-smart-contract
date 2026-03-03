@@ -8,8 +8,7 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     enum RoundStatus {
         Active,
         AwaitingVRF,
-        Finalized,
-        Expired
+        Finalized
     }
 
     struct Round {
@@ -30,10 +29,10 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     uint256 internal _nextStakeId;
     uint256 internal _nextRoundId;
 
-    mapping(uint256 => StakeConfig) internal _stakeConfigs;
-    mapping(uint256 => bool) internal _stakeDeleted;
-    mapping(uint256 => Round) internal _rounds;
-    mapping(uint256 => uint256) internal _stakeCurrentRound;
-    mapping(uint256 => mapping(address => TicketRange[])) internal _userTickets;
-    mapping(uint256 => mapping(address => bool)) internal _hasRefunded;
+    mapping(uint256 stakeId => StakeConfig config) internal _stakeConfigs;
+    mapping(uint256 stakeId => bool deleted) internal _stakeDeleted;
+    mapping(uint256 roundId => Round round) internal _rounds;
+    mapping(uint256 stakeId => uint256 roundId) internal _stakeCurrentRound;
+    mapping(uint256 roundId => mapping(address buyer => TicketRange[] ranges)) internal _userTickets;
+    mapping(uint256 roundId => mapping(address user => bool refunded)) internal _hasRefunded;
 }

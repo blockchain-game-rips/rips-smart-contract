@@ -54,7 +54,6 @@ interface IRips {
     event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
     event PrizesClaimed(uint256 indexed roundId, address indexed claimer, uint256 amount);
     event RefundIssued(uint256 indexed roundId, address indexed user, uint256 amount);
-    event RoundExpired(uint256 indexed roundId);
     event ProtocolFeeUpdated(uint256 newFeePercent);
     event FeeRecipientUpdated(address newRecipient);
     event CallbackGasLimitUpdated(uint32 newLimit);
