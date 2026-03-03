@@ -24,6 +24,17 @@ library RipsMath {
         return (a * ticketNumber + b) % n + 1;
     }
 
+    function calculateTotalPrize(
+        uint256 ticketNumber,
+        uint256 a,
+        uint256 b,
+        uint256 n,
+        IRips.StakeConfig storage config
+    ) internal view returns (uint256) {
+        uint256 prizeNumber = calculatePrizeNumber(ticketNumber, a, b, n);
+        return calculatePrizeAmount(prizeNumber, config);
+    }
+
     function calculatePrizeAmount(
         uint256 prizeNumber,
         IRips.StakeConfig storage config

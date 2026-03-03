@@ -122,6 +122,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 startIndex,
         uint256 maxRanges
     ) external nonReentrant {
+        //TODO: validation to separate function
         Round storage round = _rounds[roundId];
         if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();
 
@@ -129,11 +130,47 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (startIndex >= ranges.length) revert InvalidStartIndex();
 
         StakeConfig storage config = _stakeConfigs[round.stakeId];
-        uint256 n = config.ticketCap;
+
+        uint256 totalPrize = _accumulateClaimedPrizes(
+            ranges,
+            startIndex,
+            maxRanges,
+            round,
+            config
+        );
+
+        if (totalPrize > 0) {
+            _distributePrize(roundId, totalPrize);
+        }
+    }
+
+    function _distributePrize(uint256 roundId, uint256 totalPrize) private {
+        uint256 protocolFee = (totalPrize * protocolFeePercent) / 10000;
+        uint256 userPrize = totalPrize - protocolFee;
+
+        if (protocolFee > 0) {
+            (bool feeSuccess, ) = feeRecipient.call{value: protocolFee}("");
+            if (!feeSuccess) revert FeeTransferFailed();
+        }
+
+        //TODO: ensure that protocol fee < 100%
+        (bool prizeSuccess, ) = msg.sender.call{value: userPrize}("");
+        if (!prizeSuccess) revert PrizeTransferFailed();
+
+        emit PrizesClaimed(roundId, msg.sender, userPrize);
+    }
+
+    function _accumulateClaimedPrizes(
+        TicketRange[] storage ranges,
+        uint256 startIndex,
+        uint256 maxRanges,
+        Round storage round,
+        StakeConfig storage config
+    ) private returns (uint256 totalPrize) {
         uint256 a = round.randomA;
         uint256 b = round.randomB;
+        uint256 n = config.ticketCap;
 
-        uint256 totalPrize = 0;
         uint256 endIndex = startIndex + maxRanges;
         if (endIndex > ranges.length) endIndex = ranges.length;
 
@@ -142,31 +179,16 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
             for (uint256 j = 0; j < ranges[i].count; j++) {
                 uint256 ticketNum = ranges[i].start + j;
-                uint256 prizeNum = RipsMath.calculatePrizeNumber(
+                totalPrize += RipsMath.calculateTotalPrize(
                     ticketNum,
                     a,
                     b,
-                    n
+                    n,
+                    config
                 );
-                totalPrize += RipsMath.calculatePrizeAmount(prizeNum, config);
             }
 
             ranges[i].claimed = true;
-        }
-
-        if (totalPrize > 0) {
-            uint256 protocolFee = (totalPrize * protocolFeePercent) / 10000;
-            uint256 userPrize = totalPrize - protocolFee;
-
-            if (protocolFee > 0) {
-                (bool feeSuccess, ) = feeRecipient.call{value: protocolFee}("");
-                if (!feeSuccess) revert FeeTransferFailed();
-            }
-
-            (bool prizeSuccess, ) = msg.sender.call{value: userPrize}("");
-            if (!prizeSuccess) revert PrizeTransferFailed();
-
-            emit PrizesClaimed(roundId, msg.sender, userPrize);
         }
     }
 
