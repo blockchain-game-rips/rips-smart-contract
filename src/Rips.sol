@@ -170,25 +170,52 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function requestRefund(uint256 roundId) external nonReentrant {
+    function refund(uint256 roundId) external nonReentrant {
+        //TODO: move validation to separate function
         Round storage round = _rounds[roundId];
-        StakeConfig storage config = _stakeConfigs[round.stakeId];
 
-        if (round.status != RoundStatus.Active) revert RoundNotExpired();
-        if (block.timestamp < round.startTime + config.duration)
-            revert RoundNotExpired();
+        uint stakeId = round.stakeId;
+        if (stakeId == 0) revert RoundNotExist();
+
+        StakeConfig storage config = _stakeConfigs[stakeId];
+
+        if (!_isRoundExpired(round, config)) revert RoundNotExpired();
         if (_hasRefunded[roundId][msg.sender]) revert AlreadyRefunded();
 
+        uint ticketsToRefund = _getTicketAmountToRefund(roundId);
+
+        _hasRefunded[roundId][msg.sender] = true;
+        _refund(roundId, msg.sender, ticketsToRefund * config.ticketCost);
+    }
+
+    function _getTicketAmountToRefund(
+        uint roundId
+    ) internal view returns (uint) {
+        //TODO: check what happens if user doesn't have ranges
         TicketRange[] storage ranges = _userTickets[roundId][msg.sender];
         uint256 totalTickets = 0;
+        //TODO: refund in multiple transaction or limit ticketCup to be able claim in one tx
         for (uint256 i = 0; i < ranges.length; i++) {
             totalTickets += ranges[i].count;
         }
 
         if (totalTickets == 0) revert NoTicketsToRefund();
 
-        _hasRefunded[roundId][msg.sender] = true;
-        _refund(roundId, msg.sender, totalTickets * config.ticketCost);
+        return totalTickets;
+    }
+
+    function _isRoundExpired(
+        Round storage round,
+        StakeConfig storage config
+    ) internal view returns (bool) {
+        if (
+            (round.status == RoundStatus.Active) &&
+            (block.timestamp > round.startTime + config.duration)
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     function getUserTickets(
@@ -196,16 +223,6 @@ contract Rips is RipsVrf, ReentrancyGuard {
         address user
     ) external view returns (TicketRange[] memory) {
         return _userTickets[roundId][user];
-    }
-
-    function isRoundActive(uint256 roundId) external view returns (bool) {
-        Round storage round = _rounds[roundId];
-
-        if (round.status != RoundStatus.Active) return false;
-
-        StakeConfig storage config = _stakeConfigs[round.stakeId];
-
-        return block.timestamp < round.startTime + config.duration;
     }
 
     function _refund(uint256 roundId, address to, uint256 amount) private {

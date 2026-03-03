@@ -55,6 +55,7 @@ interface IRips {
     error AlreadyRefunded();
     error NoTicketsToRefund();
     error RefundFailed();
+    error RoundNotExist();
 
     event StakeCreated(
         uint256 indexed stakeId,
@@ -101,7 +102,7 @@ interface IRips {
         uint256 maxRanges
     ) external;
 
-    function requestRefund(uint256 roundId) external;
+    function refund(uint256 roundId) external;
 
     function createStake(
         StakeConfig calldata config
@@ -119,6 +120,4 @@ interface IRips {
     function getStakeConfig(
         uint256 stakeId
     ) external view returns (StakeConfig memory);
-
-    function isRoundActive(uint256 roundId) external view returns (bool);
 }
