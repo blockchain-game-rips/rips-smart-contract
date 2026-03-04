@@ -8,7 +8,10 @@ library RipsMath {
         return n > 0 && (n & (n - 1)) == 0;
     }
 
-    function deriveCoprimeA(uint256 randomValue, uint256 n) internal pure returns (uint256) {
+    function deriveCoprimeA(
+        uint256 randomValue,
+        uint256 n
+    ) internal pure returns (uint256) {
         uint256 a = randomValue % n;
         if (a == 0) a = 1;
         if (a % 2 == 0) a = a + 1;
@@ -21,7 +24,7 @@ library RipsMath {
         uint256 b,
         uint256 n
     ) internal pure returns (uint256) {
-        return (a * ticketNumber + b) % n + 1;
+        return ((a * ticketNumber + b) % n) + 1;
     }
 
     function calculateTotalPrize(
@@ -32,7 +35,22 @@ library RipsMath {
         IRips.StakeConfig storage config
     ) internal view returns (uint256) {
         uint256 prizeNumber = calculatePrizeNumber(ticketNumber, a, b, n);
+
         return calculatePrizeAmount(prizeNumber, config);
+    }
+
+    function prizeForPositionInTier(
+        IRips.PrizeTier storage tier,
+        uint256 positionInTier
+    ) internal view returns (uint256) {
+        if (tier.winnersInTier == 1) return tier.minPrize;
+
+        uint256 prizeRange = tier.maxPrize - tier.minPrize;
+
+        return
+            tier.minPrize +
+            (prizeRange * positionInTier) /
+            (tier.winnersInTier - 1);
     }
 
     function calculatePrizeAmount(
@@ -43,14 +61,12 @@ library RipsMath {
 
         for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
             IRips.PrizeTier storage tier = config.prizeDistribution[i];
+
             uint256 tierStart = cumulativeWinners + 1;
             uint256 tierEnd = cumulativeWinners + tier.winnersInTier;
 
             if (prizeNumber >= tierStart && prizeNumber <= tierEnd) {
-                uint256 positionInTier = prizeNumber - tierStart;
-                if (tier.winnersInTier == 1) return tier.minPrize;
-                uint256 prizeRange = tier.maxPrize - tier.minPrize;
-                return tier.minPrize + (prizeRange * positionInTier) / (tier.winnersInTier - 1);
+                return prizeForPositionInTier(tier, prizeNumber - tierStart);
             }
 
             cumulativeWinners += tier.winnersInTier;
