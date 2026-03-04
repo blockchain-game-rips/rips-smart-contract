@@ -19,7 +19,7 @@ interface IRips {
     }
 
     struct PrizeTier {
-        uint256 winnersInTier;
+        uint256 prizeCount;
         uint256 minPrize;
         uint256 maxPrize;
     }
@@ -41,7 +41,7 @@ interface IRips {
     error TicketCapNotPowerOfTwo();
     error EmptyPrizeDistribution();
     error InvalidPrizeRange();
-    error WinnersSumMismatch();
+    error PrizeCountMismatch();
     error PrizePoolMismatch();
     error StakeNotExist();
     error ZeroTickets();

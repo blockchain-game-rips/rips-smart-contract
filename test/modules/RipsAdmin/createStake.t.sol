@@ -43,7 +43,7 @@ contract Rips_CreateStake {
         _;
     }
 
-    function test_RevertWhen_TotalWinnersDoesNotEqualTicketCap()
+    function test_RevertWhen_TotalPrizeCountDoesNotEqualTicketCap()
         external
         whenTheCallerIsTheOwner
         whenTicketCapIsAPowerOfTwo
@@ -53,7 +53,7 @@ contract Rips_CreateStake {
         // it should revert.
     }
 
-    modifier whenTotalWinnersEqualsTicketCap() {
+    modifier whenTotalPrizeCountEqualsTicketCap() {
         _;
     }
 
@@ -63,7 +63,7 @@ contract Rips_CreateStake {
         whenTicketCapIsAPowerOfTwo
         whenPrizeDistributionIsNotEmpty
         whenAllTiersHaveValidPrizeRanges
-        whenTotalWinnersEqualsTicketCap
+        whenTotalPrizeCountEqualsTicketCap
     {
         // it should revert.
     }
@@ -74,7 +74,7 @@ contract Rips_CreateStake {
         whenTicketCapIsAPowerOfTwo
         whenPrizeDistributionIsNotEmpty
         whenAllTiersHaveValidPrizeRanges
-        whenTotalWinnersEqualsTicketCap
+        whenTotalPrizeCountEqualsTicketCap
     {
         // it should store the stake configuration.
         // it should create an initial round.

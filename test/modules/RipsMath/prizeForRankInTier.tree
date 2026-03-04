@@ -1,7 +1,7 @@
 RipsMath_PrizeForRankInTier
-├── when the tier has a single winner
+├── when the tier has a single prize
 │   └── it should return the min prize.
-└── when the tier has multiple winners
+└── when the tier has multiple prizes
     ├── when the rank is first in the tier
     │   └── it should return the min prize.
     ├── when the rank is last in the tier

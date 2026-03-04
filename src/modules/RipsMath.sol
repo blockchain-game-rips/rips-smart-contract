@@ -40,11 +40,11 @@ library RipsMath {
         view
         returns (uint256)
     {
-        if (tier.winnersInTier == 1) return tier.minPrize;
+        if (tier.prizeCount == 1) return tier.minPrize;
 
         uint256 prizeRange = tier.maxPrize - tier.minPrize;
 
-        return tier.minPrize + (prizeRange * (rank - 1)) / (tier.winnersInTier - 1);
+        return tier.minPrize + (prizeRange * (rank - 1)) / (tier.prizeCount - 1);
     }
 
     function calculatePrizeAmount(uint256 prizeNumber, IRips.StakeConfig storage config)
@@ -52,22 +52,22 @@ library RipsMath {
         view
         returns (uint256)
     {
-        uint256 cumulativeWinners = 0;
+        uint256 cumulativePrizes = 0;
 
         for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
             IRips.PrizeTier storage tier = config.prizeDistribution[i];
 
-            uint256 tierStart = cumulativeWinners + 1;
-            uint256 tierEnd = cumulativeWinners + tier.winnersInTier;
+            uint256 tierStart = cumulativePrizes + 1;
+            uint256 tierEnd = cumulativePrizes + tier.prizeCount;
 
             if (prizeNumber >= tierStart && prizeNumber <= tierEnd) {
-                return prizeForRankInTier(tier, prizeNumber - cumulativeWinners);
+                return prizeForRankInTier(tier, prizeNumber - cumulativePrizes);
             }
 
-            cumulativeWinners += tier.winnersInTier;
+            cumulativePrizes += tier.prizeCount;
         }
 
-        // Unreachable: calculatePrizeNumber guarantees prizeNumber is in [1, totalWinners].
+        // Unreachable: calculatePrizeNumber guarantees prizeNumber is in [1, totalPrizeCount].
         revert();
     }
 }

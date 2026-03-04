@@ -22,17 +22,17 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
             revert EmptyPrizeDistribution();
         }
 
-        uint256 totalWinners = 0;
+        uint256 totalPrizeCount = 0;
         uint256 totalPrizePool = 0;
 
         for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
             PrizeTier memory tier = config.prizeDistribution[i];
             if (tier.minPrize > tier.maxPrize) revert InvalidPrizeRange();
-            totalWinners += tier.winnersInTier;
-            totalPrizePool += (tier.winnersInTier * (tier.minPrize + tier.maxPrize)) / 2;
+            totalPrizeCount += tier.prizeCount;
+            totalPrizePool += (tier.prizeCount * (tier.minPrize + tier.maxPrize)) / 2;
         }
 
-        if (totalWinners != config.ticketCap) revert WinnersSumMismatch();
+        if (totalPrizeCount != config.ticketCap) revert PrizeCountMismatch();
         if (totalPrizePool != config.ticketCap * config.ticketCost) {
             revert PrizePoolMismatch();
         }

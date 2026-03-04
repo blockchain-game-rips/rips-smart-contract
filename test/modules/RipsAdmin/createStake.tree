@@ -11,9 +11,9 @@ Rips_CreateStake
             ├── when a tier has min prize greater than max prize
             │   └── it should revert.
             └── when all tiers have valid prize ranges
-                ├── when total winners does not equal ticket cap
+                ├── when total prize count does not equal ticket cap
                 │   └── it should revert.
-                └── when total winners equals ticket cap
+                └── when total prize count equals ticket cap
                     ├── when total prize pool does not equal ticket cap times ticket cost
                     │   └── it should revert.
                     └── when total prize pool equals ticket cap times ticket cost
