@@ -43,6 +43,14 @@ contract RipsHarness is Rips {
         return RipsMath.calculatePrizeNumber(ticketNumber, a, b, n);
     }
 
+    function exposed_prizeForRankInTier(uint256 stakeId, uint256 tierIndex, uint256 rank)
+        external
+        view
+        returns (uint256)
+    {
+        return RipsMath.prizeForRankInTier(_stakeConfigs[stakeId].prizeDistribution[tierIndex], rank);
+    }
+
     function exposed_calculatePrizeAmount(uint256 prizeNumber, uint256 stakeId)
         external
         view

@@ -31,6 +31,9 @@ contract RipsTestBase is Test {
         );
 
         vrfCoordinator.addConsumer(vrfSubscriptionId, address(rips));
+
+        vm.prank(owner);
+        rips.acceptOwnership();
     }
 
     uint96 private constant VRF_BASE_FEE = 0.1 ether;

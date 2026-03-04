@@ -35,7 +35,7 @@ library RipsMath {
         return calculatePrizeAmount(prizeNumber, config);
     }
 
-    function prizeForPositionInTier(IRips.PrizeTier storage tier, uint256 positionInTier)
+    function prizeForRankInTier(IRips.PrizeTier storage tier, uint256 rank)
         internal
         view
         returns (uint256)
@@ -44,7 +44,7 @@ library RipsMath {
 
         uint256 prizeRange = tier.maxPrize - tier.minPrize;
 
-        return tier.minPrize + (prizeRange * positionInTier) / (tier.winnersInTier - 1);
+        return tier.minPrize + (prizeRange * (rank - 1)) / (tier.winnersInTier - 1);
     }
 
     function calculatePrizeAmount(uint256 prizeNumber, IRips.StakeConfig storage config)
@@ -61,7 +61,7 @@ library RipsMath {
             uint256 tierEnd = cumulativeWinners + tier.winnersInTier;
 
             if (prizeNumber >= tierStart && prizeNumber <= tierEnd) {
-                return prizeForPositionInTier(tier, prizeNumber - tierStart);
+                return prizeForRankInTier(tier, prizeNumber - cumulativeWinners);
             }
 
             cumulativeWinners += tier.winnersInTier;
