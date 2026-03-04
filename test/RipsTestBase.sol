@@ -20,7 +20,6 @@ contract RipsTestBase is Test {
         subscriptionId = vrfCoordinator.createSubscription();
         vrfCoordinator.fundSubscription(subscriptionId, 10 ether);
 
-        vm.prank(owner);
         rips = new RipsHarness(
             address(vrfCoordinator),
             subscriptionId,
