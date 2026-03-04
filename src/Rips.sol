@@ -22,15 +22,14 @@ contract Rips is RipsVrf, ReentrancyGuard {
         setProtocolFee(initialFeePercent);
     }
 
-    function buyTickets(
-        uint256 stakeId,
-        uint256 ticketCount
-    ) external payable whenNotPaused nonReentrant {
-        (
-            uint256 roundId,
-            Round storage round,
-            StakeConfig storage config
-        ) = _resolveActiveRoundAndStake(stakeId);
+    function buyTickets(uint256 stakeId, uint256 ticketCount)
+        external
+        payable
+        whenNotPaused
+        nonReentrant
+    {
+        (uint256 roundId, Round storage round, StakeConfig storage config) =
+            _resolveActiveRoundAndStake(stakeId);
 
         _validateBuyTickets(ticketCount, config);
 
@@ -48,21 +47,19 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function _validateBuyTickets(
-        uint ticketCount,
-        StakeConfig storage config
-    ) internal {
+    function _validateBuyTickets(uint256 ticketCount, StakeConfig storage config) internal {
         if (ticketCount == 0) revert ZeroTickets();
 
-        if (msg.value != ticketCount * config.ticketCost)
+        if (msg.value != ticketCount * config.ticketCost) {
             revert IncorrectPayment();
+        }
     }
 
-    function _getTicketsToBuy(
-        Round storage round,
-        StakeConfig storage config,
-        uint ticketCount
-    ) internal view returns (uint) {
+    function _getTicketsToBuy(Round storage round, StakeConfig storage config, uint256 ticketCount)
+        internal
+        view
+        returns (uint256)
+    {
         uint256 available = config.ticketCap - round.ticketsSold;
 
         return ticketCount > available ? available : ticketCount;
@@ -78,11 +75,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function _purchaseTickets(
-        uint roundId,
-        Round storage round,
-        uint ticketsToBuy
-    ) internal {
+    function _purchaseTickets(uint256 roundId, Round storage round, uint256 ticketsToBuy) internal {
         uint256 startTicket = round.ticketsSold;
 
         round.ticketsSold += ticketsToBuy;
@@ -92,15 +85,9 @@ contract Rips is RipsVrf, ReentrancyGuard {
         emit TicketsPurchased(roundId, msg.sender, startTicket, ticketsToBuy);
     }
 
-    function _resolveActiveRoundAndStake(
-        uint256 stakeId
-    )
+    function _resolveActiveRoundAndStake(uint256 stakeId)
         private
-        returns (
-            uint256 roundId,
-            Round storage round,
-            StakeConfig storage stakeConfig
-        )
+        returns (uint256 roundId, Round storage round, StakeConfig storage stakeConfig)
     {
         roundId = _stakeToActiveRound[stakeId];
 
@@ -117,11 +104,10 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function claimPrizes(
-        uint256 roundId,
-        uint256 startIndex,
-        uint256 maxRanges
-    ) external nonReentrant {
+    function claimPrizes(uint256 roundId, uint256 startIndex, uint256 maxRanges)
+        external
+        nonReentrant
+    {
         //TODO: validation to separate function
         Round storage round = _rounds[roundId];
         if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();
@@ -131,13 +117,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
         StakeConfig storage config = _stakeConfigs[round.stakeId];
 
-        uint256 totalPrize = _accumulateClaimedPrizes(
-            ranges,
-            startIndex,
-            maxRanges,
-            round,
-            config
-        );
+        uint256 totalPrize = _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
 
         if (totalPrize > 0) {
             _distributePrize(roundId, totalPrize);
@@ -149,12 +129,12 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 userPrize = totalPrize - protocolFee;
 
         if (protocolFee > 0) {
-            (bool feeSuccess, ) = feeRecipient.call{value: protocolFee}("");
+            (bool feeSuccess,) = feeRecipient.call{value: protocolFee}("");
             if (!feeSuccess) revert FeeTransferFailed();
         }
 
         //TODO: ensure that protocol fee < 100%
-        (bool prizeSuccess, ) = msg.sender.call{value: userPrize}("");
+        (bool prizeSuccess,) = msg.sender.call{value: userPrize}("");
         if (!prizeSuccess) revert PrizeTransferFailed();
 
         emit PrizesClaimed(roundId, msg.sender, userPrize);
@@ -179,13 +159,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
             for (uint256 j = 0; j < ranges[i].count; j++) {
                 uint256 ticketNum = ranges[i].start + j;
-                totalPrize += RipsMath.calculateTotalPrize(
-                    ticketNum,
-                    a,
-                    b,
-                    n,
-                    config
-                );
+                totalPrize += RipsMath.calculateTotalPrize(ticketNum, a, b, n, config);
             }
 
             ranges[i].claimed = true;
@@ -196,7 +170,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         //TODO: move validation to separate function
         Round storage round = _rounds[roundId];
 
-        uint stakeId = round.stakeId;
+        uint256 stakeId = round.stakeId;
         if (stakeId == 0) revert RoundNotExist();
 
         StakeConfig storage config = _stakeConfigs[stakeId];
@@ -204,15 +178,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (!_isRoundExpired(round, config)) revert RoundNotExpired();
         if (_hasRefunded[roundId][msg.sender]) revert AlreadyRefunded();
 
-        uint ticketsToRefund = _getTicketAmountToRefund(roundId);
+        uint256 ticketsToRefund = _getTicketAmountToRefund(roundId);
 
         _hasRefunded[roundId][msg.sender] = true;
         _refund(roundId, msg.sender, ticketsToRefund * config.ticketCost);
     }
 
-    function _getTicketAmountToRefund(
-        uint roundId
-    ) internal view returns (uint) {
+    function _getTicketAmountToRefund(uint256 roundId) internal view returns (uint256) {
         //TODO: check what happens if user doesn't have ranges
         TicketRange[] storage ranges = _userTickets[roundId][msg.sender];
         uint256 totalTickets = 0;
@@ -226,13 +198,14 @@ contract Rips is RipsVrf, ReentrancyGuard {
         return totalTickets;
     }
 
-    function _isRoundExpired(
-        Round storage round,
-        StakeConfig storage config
-    ) internal view returns (bool) {
+    function _isRoundExpired(Round storage round, StakeConfig storage config)
+        internal
+        view
+        returns (bool)
+    {
         if (
-            (round.status == RoundStatus.Active) &&
-            (block.timestamp > round.startTime + config.duration)
+            (round.status == RoundStatus.Active)
+                && (block.timestamp > round.startTime + config.duration)
         ) {
             return true;
         }
@@ -240,15 +213,16 @@ contract Rips is RipsVrf, ReentrancyGuard {
         return false;
     }
 
-    function getUserTickets(
-        uint256 roundId,
-        address user
-    ) external view returns (TicketRange[] memory) {
+    function getUserTickets(uint256 roundId, address user)
+        external
+        view
+        returns (TicketRange[] memory)
+    {
         return _userTickets[roundId][user];
     }
 
     function _refund(uint256 roundId, address to, uint256 amount) private {
-        (bool success, ) = to.call{value: amount}("");
+        (bool success,) = to.call{value: amount}("");
 
         if (!success) revert RefundFailed();
 
@@ -266,15 +240,10 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 currentStart = startTicket;
 
         while (remaining > 0) {
-            uint256 rangeSize = remaining > MAX_TICKETS_PER_RANGE
-                ? MAX_TICKETS_PER_RANGE
-                : remaining;
+            uint256 rangeSize =
+                remaining > MAX_TICKETS_PER_RANGE ? MAX_TICKETS_PER_RANGE : remaining;
             ranges.push(
-                TicketRange({
-                    start: uint96(currentStart),
-                    count: uint96(rangeSize),
-                    claimed: false
-                })
+                TicketRange({start: uint96(currentStart), count: uint96(rangeSize), claimed: false})
             );
             currentStart += rangeSize;
             remaining -= rangeSize;

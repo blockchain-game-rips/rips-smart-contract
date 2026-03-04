@@ -18,7 +18,11 @@ contract Rips_CreateStake {
         _;
     }
 
-    function test_RevertWhen_PrizeDistributionIsEmpty() external whenTheCallerIsTheOwner whenTicketCapIsAPowerOfTwo {
+    function test_RevertWhen_PrizeDistributionIsEmpty()
+        external
+        whenTheCallerIsTheOwner
+        whenTicketCapIsAPowerOfTwo
+    {
         // it should revert.
     }
 

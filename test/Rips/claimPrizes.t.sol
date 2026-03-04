@@ -18,7 +18,11 @@ contract Rips_ClaimPrizes {
         _;
     }
 
-    function test_WhenAllRangesInScopeAreAlreadyClaimed() external whenTheRoundIsFinalized whenStartIndexIsValid {
+    function test_WhenAllRangesInScopeAreAlreadyClaimed()
+        external
+        whenTheRoundIsFinalized
+        whenStartIndexIsValid
+    {
         // it should not transfer any ETH.
     }
 

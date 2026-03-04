@@ -10,10 +10,7 @@ contract Rips_BuyTickets {
         _;
     }
 
-    function test_RevertWhen_TheStakeDoesNotExist()
-        external
-        whenTheContractIsNotPaused
-    {
+    function test_RevertWhen_TheStakeDoesNotExist() external whenTheContractIsNotPaused {
         // it should revert.
     }
 

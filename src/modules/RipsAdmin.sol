@@ -14,13 +14,13 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         _unpause();
     }
 
-    function createStake(
-        StakeConfig calldata config
-    ) external onlyOwner returns (uint256 stakeId) {
-        if (!RipsMath.isPowerOfTwo(config.ticketCap))
+    function createStake(StakeConfig calldata config) external onlyOwner returns (uint256 stakeId) {
+        if (!RipsMath.isPowerOfTwo(config.ticketCap)) {
             revert TicketCapNotPowerOfTwo();
-        if (config.prizeDistribution.length == 0)
+        }
+        if (config.prizeDistribution.length == 0) {
             revert EmptyPrizeDistribution();
+        }
 
         uint256 totalWinners = 0;
         uint256 totalPrizePool = 0;
@@ -29,14 +29,13 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
             PrizeTier memory tier = config.prizeDistribution[i];
             if (tier.minPrize > tier.maxPrize) revert InvalidPrizeRange();
             totalWinners += tier.winnersInTier;
-            totalPrizePool +=
-                (tier.winnersInTier * (tier.minPrize + tier.maxPrize)) /
-                2;
+            totalPrizePool += (tier.winnersInTier * (tier.minPrize + tier.maxPrize)) / 2;
         }
 
         if (totalWinners != config.ticketCap) revert WinnersSumMismatch();
-        if (totalPrizePool != config.ticketCap * config.ticketCost)
+        if (totalPrizePool != config.ticketCap * config.ticketCost) {
             revert PrizePoolMismatch();
+        }
 
         stakeId = _nextStakeId++;
 
@@ -71,9 +70,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         emit FeeRecipientUpdated(newRecipient);
     }
 
-    function getStakeConfig(
-        uint256 stakeId
-    ) external view returns (StakeConfig memory) {
+    function getStakeConfig(uint256 stakeId) external view returns (StakeConfig memory) {
         return _stakeConfigs[stakeId];
     }
 

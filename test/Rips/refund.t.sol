@@ -18,7 +18,11 @@ contract Rips_Refund {
         _;
     }
 
-    function test_RevertWhen_TheCallerHasAlreadyBeenRefunded() external whenTheRoundExists whenTheRoundIsExpired {
+    function test_RevertWhen_TheCallerHasAlreadyBeenRefunded()
+        external
+        whenTheRoundExists
+        whenTheRoundIsExpired
+    {
         // it should revert.
     }
 

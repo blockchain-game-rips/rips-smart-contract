@@ -53,10 +53,10 @@ abstract contract RipsVrf is RipsAdmin {
         emit RandomnessRequested(roundId, requestId);
     }
 
-    function fulfillRandomWords(
-        uint256 requestId,
-        uint256[] calldata randomWords
-    ) internal override {
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
+        internal
+        override
+    {
         uint256 roundId = _vrfRequestToRound[requestId];
         Round storage round = _rounds[roundId];
         StakeConfig storage config = _stakeConfigs[round.stakeId];
