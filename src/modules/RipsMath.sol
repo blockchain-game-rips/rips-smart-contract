@@ -20,7 +20,7 @@ library RipsMath {
         pure
         returns (uint256)
     {
-        return ((a * ticketNumber + b) % n) + 1;
+        return (a * ticketNumber + b) % n;
     }
 
     function calculateTotalPrize(

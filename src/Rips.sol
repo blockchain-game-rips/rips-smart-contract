@@ -158,8 +158,8 @@ contract Rips is RipsVrf, ReentrancyGuard {
             if (ranges[i].claimed) continue;
 
             for (uint256 j = 0; j < ranges[i].count; j++) {
-                uint256 ticketNum = ranges[i].start + j;
-                totalPrize += RipsMath.calculateTotalPrize(ticketNum, a, b, n, config);
+                uint256 ticketNumber = ranges[i].start + j + 1;
+                totalPrize += RipsMath.calculateTotalPrize(ticketNumber, a, b, n, config);
             }
 
             ranges[i].claimed = true;

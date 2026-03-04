@@ -1,3 +1,2 @@
 RipsMath_CalculatePrizeNumber
-├── it should return a one-indexed prize number.
 └── it should correctly apply the affine permutation formula.
