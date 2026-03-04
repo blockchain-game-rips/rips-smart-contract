@@ -67,6 +67,7 @@ library RipsMath {
             cumulativeWinners += tier.winnersInTier;
         }
 
-        return 0;
+        // Unreachable: calculatePrizeNumber guarantees prizeNumber is in [1, totalWinners].
+        revert();
     }
 }

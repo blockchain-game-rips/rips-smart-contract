@@ -1,2 +1,3 @@
 RipsMath_CalculatePrizeNumber
-└── it should correctly apply the affine permutation formula.
+├── it result is always in range.
+└── it different ticket numbers produce different prize numbers.

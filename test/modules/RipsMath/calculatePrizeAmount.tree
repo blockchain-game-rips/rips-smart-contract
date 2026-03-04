@@ -1,13 +1,8 @@
 RipsMath_CalculatePrizeAmount
-├── when the prize number does not match any tier
-│   └── it should return zero.
-└── when the prize number matches a tier
-    ├── when the tier has a single winner
-    │   └── it should return the min prize.
-    └── when the tier has multiple winners
-        ├── when the prize is at the start of the tier
-        │   └── it should return the min prize.
-        ├── when the prize is at the end of the tier
-        │   └── it should return the max prize.
-        └── when the prize is in the middle of the tier
-            └── it should linearly interpolate between min and max prize.
+├── it should never revert.
+├── when the prize number is in the first tier
+│   └── it should return the prize for that position.
+├── when the prize number is in the last tier
+│   └── it should return the prize for that position.
+└── when the prize number is in a middle tier
+    └── it should return the prize for that position.

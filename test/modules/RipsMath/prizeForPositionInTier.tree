@@ -1,0 +1,10 @@
+RipsMath_PrizeForPositionInTier
+├── when the tier has a single winner
+│   └── it should return the min prize.
+└── when the tier has multiple winners
+    ├── when the prize is at the start of the tier
+    │   └── it should return the min prize.
+    ├── when the prize is at the end of the tier
+    │   └── it should return the max prize.
+    └── when the prize is in the middle of the tier
+        └── it should linearly interpolate between min and max prize.
