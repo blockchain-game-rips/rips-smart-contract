@@ -1,0 +1,6 @@
+Rips_UpdateCallbackGasLimit
+├── when the caller is not the owner
+│   └── it should revert.
+└── when the caller is the owner
+    ├── it should update the callback gas limit.
+    └── it should emit a {CallbackGasLimitUpdated} event.

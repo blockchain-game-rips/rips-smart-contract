@@ -1,0 +1,16 @@
+Rips_Refund
+├── when the round does not exist
+│   └── it should revert.
+└── when the round exists
+    ├── when the round is not expired
+    │   └── it should revert.
+    └── when the round is expired
+        ├── when the caller has already been refunded
+        │   └── it should revert.
+        └── when the caller has not been refunded
+            ├── when the caller has no tickets in the round
+            │   └── it should revert.
+            └── when the caller has tickets in the round
+                ├── it should mark the caller as refunded.
+                ├── it should transfer the refund amount.
+                └── it should emit a {RefundIssued} event.

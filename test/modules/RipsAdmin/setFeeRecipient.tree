@@ -1,0 +1,9 @@
+Rips_SetFeeRecipient
+├── when the caller is not the owner
+│   └── it should revert.
+└── when the caller is the owner
+    ├── when the new recipient is the zero address
+    │   └── it should revert.
+    └── when the new recipient is not the zero address
+        ├── it should update the fee recipient.
+        └── it should emit a {FeeRecipientUpdated} event.

@@ -1,0 +1,7 @@
+RipsMath_DeriveCoprimeA
+├── when the random value mod n is zero
+│   └── it should return one.
+├── when the random value mod n is even
+│   └── it should return the value plus one.
+└── when the random value mod n is odd
+    └── it should return the value unchanged.

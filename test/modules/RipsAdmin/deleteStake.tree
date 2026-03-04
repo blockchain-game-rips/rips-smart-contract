@@ -1,0 +1,9 @@
+Rips_DeleteStake
+├── when the caller is not the owner
+│   └── it should revert.
+└── when the caller is the owner
+    ├── when the stake is already deleted
+    │   └── it should revert.
+    └── when the stake is not deleted
+        ├── it should mark the stake as deleted.
+        └── it should emit a {StakeDeleted} event.

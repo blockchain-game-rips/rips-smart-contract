@@ -1,0 +1,7 @@
+RipsMath_IsPowerOfTwo
+├── when n is zero
+│   └── it should return false.
+├── when n is a power of two
+│   └── it should return true.
+└── when n is not a power of two
+    └── it should return false.

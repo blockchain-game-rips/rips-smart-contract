@@ -1,0 +1,23 @@
+Rips_CreateStake
+├── when the caller is not the owner
+│   └── it should revert.
+└── when the caller is the owner
+    ├── when ticket cap is not a power of two
+    │   └── it should revert.
+    └── when ticket cap is a power of two
+        ├── when prize distribution is empty
+        │   └── it should revert.
+        └── when prize distribution is not empty
+            ├── when a tier has min prize greater than max prize
+            │   └── it should revert.
+            └── when all tiers have valid prize ranges
+                ├── when total winners does not equal ticket cap
+                │   └── it should revert.
+                └── when total winners equals ticket cap
+                    ├── when total prize pool does not equal ticket cap times ticket cost
+                    │   └── it should revert.
+                    └── when total prize pool equals ticket cap times ticket cost
+                        ├── it should store the stake configuration.
+                        ├── it should create an initial round.
+                        ├── it should increment the next stake ID.
+                        └── it should emit a {StakeCreated} event.

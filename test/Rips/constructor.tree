@@ -1,0 +1,7 @@
+Rips_Constructor
+├── when initial owner is zero address
+│   └── it should revert.
+└── when initial owner is not zero address
+    ├── it should transfer ownership to initial owner.
+    ├── it should set fee recipient to initial owner.
+    └── it should set protocol fee to initial fee percent.
