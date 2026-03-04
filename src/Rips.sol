@@ -8,12 +8,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 contract Rips is RipsVrf, ReentrancyGuard {
     constructor(
         address vrfCoordinator,
-        uint256 subscriptionId,
-        bytes32 keyHash,
+        uint256 vrfSubscriptionId,
+        bytes32 vrfKeyHash,
         uint32 callbackGasLimit,
         address initialOwner,
         uint256 initialFeePercent
-    ) RipsVrf(vrfCoordinator, subscriptionId, keyHash, callbackGasLimit) {
+    ) RipsVrf(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit) {
         if (initialOwner == address(0)) revert ZeroAddress();
 
         transferOwnership(initialOwner);

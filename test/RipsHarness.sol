@@ -7,16 +7,16 @@ import "../src/modules/RipsMath.sol";
 contract RipsHarness is Rips {
     constructor(
         address vrfCoordinator,
-        uint256 subscriptionId,
-        bytes32 keyHash,
+        uint256 vrfSubscriptionId,
+        bytes32 vrfKeyHash,
         uint32 callbackGasLimit,
         address initialOwner,
         uint256 initialFeePercent
     )
         Rips(
             vrfCoordinator,
-            subscriptionId,
-            keyHash,
+            vrfSubscriptionId,
+            vrfKeyHash,
             callbackGasLimit,
             initialOwner,
             initialFeePercent

@@ -12,18 +12,18 @@ contract RipsTestBase is Test {
     address internal owner = makeAddr("owner");
     address internal user = makeAddr("user");
 
-    uint256 internal subscriptionId;
+    uint256 internal vrfSubscriptionId;
 
     function setUp() public virtual {
         vrfCoordinator = new VRFCoordinatorV2_5Mock(0.1 ether, 1 gwei, 4e15);
 
-        subscriptionId = vrfCoordinator.createSubscription();
-        vrfCoordinator.fundSubscription(subscriptionId, 10 ether);
+        vrfSubscriptionId = vrfCoordinator.createSubscription();
+        vrfCoordinator.fundSubscription(vrfSubscriptionId, 10 ether);
 
         rips = new RipsHarness(
-            address(vrfCoordinator), subscriptionId, bytes32(uint256(1)), 100_000, owner, 500
+            address(vrfCoordinator), vrfSubscriptionId, bytes32(uint256(1)), 100_000, owner, 500
         );
 
-        vrfCoordinator.addConsumer(subscriptionId, address(rips));
+        vrfCoordinator.addConsumer(vrfSubscriptionId, address(rips));
     }
 }

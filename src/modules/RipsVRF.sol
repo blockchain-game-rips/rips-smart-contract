@@ -9,20 +9,20 @@ abstract contract RipsVrf is RipsAdmin {
     uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
     uint32 public constant VRF_NUM_WORDS = 2;
 
-    uint256 public immutable s_subscriptionId;
-    bytes32 public immutable s_keyHash;
+    uint256 public immutable vrfSubscriptionId;
+    bytes32 public immutable vrfKeyHash;
     uint32 private s_callbackGasLimit;
 
     mapping(uint256 requestId => uint256 roundId) internal _vrfRequestToRound;
 
     constructor(
         address vrfCoordinator,
-        uint256 subscriptionId,
-        bytes32 keyHash,
+        uint256 vrfSubscriptionId_,
+        bytes32 vrfKeyHash_,
         uint32 callbackGasLimit
     ) VRFConsumerBaseV2Plus(vrfCoordinator) {
-        s_subscriptionId = subscriptionId;
-        s_keyHash = keyHash;
+        vrfSubscriptionId = vrfSubscriptionId_;
+        vrfKeyHash = vrfKeyHash_;
         s_callbackGasLimit = callbackGasLimit;
     }
 
@@ -36,8 +36,8 @@ abstract contract RipsVrf is RipsAdmin {
         if (round.status != RoundStatus.SoldOut) revert RoundNotSoldOut();
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
-                keyHash: s_keyHash,
-                subId: s_subscriptionId,
+                keyHash: vrfKeyHash,
+                subId: vrfSubscriptionId,
                 requestConfirmations: VRF_REQUEST_CONFIRMATIONS,
                 callbackGasLimit: s_callbackGasLimit,
                 numWords: VRF_NUM_WORDS,
