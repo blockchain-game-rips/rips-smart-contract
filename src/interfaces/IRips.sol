@@ -87,6 +87,4 @@ interface IRips {
         external
         view
         returns (TicketRange[] memory);
-
-    function getStakeConfig(uint256 stakeId) external view returns (StakeConfig memory);
 }

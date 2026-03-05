@@ -1,5 +1,0 @@
-Rips_GetStakeConfig
-├── when the stake ID has not been created
-│   └── it should return a default empty config.
-└── when the stake ID exists
-    └── it should return the stored stake configuration.

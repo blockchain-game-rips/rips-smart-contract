@@ -70,10 +70,6 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         emit FeeRecipientUpdated(newRecipient);
     }
 
-    function getStakeConfig(uint256 stakeId) external view returns (StakeConfig memory) {
-        return _stakeConfigs[stakeId];
-    }
-
     function _createRound(uint256 stakeId) internal returns (uint256 roundId) {
         roundId = _nextRoundId++;
 
