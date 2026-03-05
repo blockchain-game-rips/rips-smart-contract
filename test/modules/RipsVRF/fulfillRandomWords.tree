@@ -1,6 +1,6 @@
 Rips_FulfillRandomWords
 └── when called by the VRF coordinator
-    ├── it should derive a coprime value from the first random word.
-    ├── it should set randomB from the second random word modulo ticket cap.
+    ├── it should derive a coprime value from the random word.
+    ├── it should set randomB from the hash of the random word modulo ticket cap.
     ├── it should set round status to Finalized.
     └── it should emit a {RoundFinalized} event.

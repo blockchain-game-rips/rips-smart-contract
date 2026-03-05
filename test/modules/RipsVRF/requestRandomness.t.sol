@@ -7,7 +7,7 @@ contract Rips_RequestRandomness {
     }
 
     function test_WhenTheRoundIsSoldOut() external {
-        // it should request random words from Chainlink VRF.
+        // it should request a random word from Chainlink VRF.
         // it should set round status to VRFRequested.
         // it should map the VRF request ID to the round ID.
         // it should emit a {RandomnessRequested} event.

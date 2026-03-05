@@ -7,7 +7,7 @@ import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 abstract contract RipsVrf is RipsAdmin {
     uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
-    uint32 public constant VRF_NUM_WORDS = 2;
+    uint32 public constant VRF_NUM_WORDS = 1;
 
     uint256 public immutable vrfSubscriptionId;
     bytes32 public immutable vrfKeyHash;
@@ -62,8 +62,9 @@ abstract contract RipsVrf is RipsAdmin {
         StakeConfig storage config = _stakeConfigs[round.stakeId];
 
         uint256 n = config.ticketCap;
-        round.randomA = RipsMath.deriveCoprimeA(randomWords[0], n);
-        round.randomB = randomWords[1] % n;
+        uint256 randomWord = randomWords[0];
+        round.randomA = RipsMath.deriveCoprimeA(randomWord, n);
+        round.randomB = uint256(keccak256(abi.encode(randomWord))) % n;
         round.status = RoundStatus.Finalized;
 
         emit RoundFinalized(roundId, round.randomA, round.randomB);
