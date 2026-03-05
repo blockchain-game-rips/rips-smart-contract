@@ -1,21 +1,35 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.0;
+pragma solidity ^0.8.13;
 
-contract Rips_SetProtocolFee {
+import "../../RipsTestBase.sol";
+
+contract Rips_SetProtocolFee is RipsTestBase {
+    uint256 private constant MAX_FEE_PERCENT = 10000;
+
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
-        // it should revert.
+        vm.prank(user);
+        vm.expectRevert();
+        rips.setProtocolFee(500);
     }
 
     modifier whenTheCallerIsTheOwner() {
+        vm.startPrank(owner);
         _;
+        vm.stopPrank();
     }
 
     function test_RevertWhen_TheNewFeeExceeds10000() external whenTheCallerIsTheOwner {
-        // it should revert.
+        vm.expectRevert(IRips.FeeTooHigh.selector);
+        rips.setProtocolFee(MAX_FEE_PERCENT + 1);
     }
 
     function test_WhenTheNewFeeIsAtMost10000() external whenTheCallerIsTheOwner {
-        // it should update the protocol fee percent.
-        // it should emit a {ProtocolFeeUpdated} event.
+        uint256 newFee = 300;
+
+        vm.expectEmit();
+        emit IRips.ProtocolFeeUpdated(newFee);
+        rips.setProtocolFee(newFee);
+
+        assertEq(rips.protocolFeePercent(), newFee);
     }
 }

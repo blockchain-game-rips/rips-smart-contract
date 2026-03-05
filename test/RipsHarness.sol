@@ -68,4 +68,20 @@ contract RipsHarness is Rips {
     ) external view returns (uint256) {
         return RipsMath.calculateTotalPrize(ticketNumber, a, b, n, _stakeConfigs[stakeId]);
     }
+
+    function exposed_nextStakeId() external view returns (uint256) {
+        return _nextStakeId;
+    }
+
+    function exposed_nextRoundId() external view returns (uint256) {
+        return _nextRoundId;
+    }
+
+    function exposed_stakeConfig(uint256 stakeId) external view returns (StakeConfig memory) {
+        return _stakeConfigs[stakeId];
+    }
+
+    function exposed_stakeToActiveRound(uint256 stakeId) external view returns (uint256) {
+        return _stakeToActiveRound[stakeId];
+    }
 }

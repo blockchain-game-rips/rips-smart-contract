@@ -1,12 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.0;
+pragma solidity ^0.8.13;
 
-contract Rips_Pause {
+import "../../RipsTestBase.sol";
+
+contract Rips_Pause is RipsTestBase {
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
-        // it should revert.
+        vm.prank(user);
+        vm.expectRevert();
+        rips.pause();
     }
 
     function test_WhenTheCallerIsTheOwner() external {
-        // it should pause the contract.
+        vm.prank(owner);
+        rips.pause();
+
+        assertTrue(rips.paused());
     }
 }

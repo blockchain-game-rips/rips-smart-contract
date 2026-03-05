@@ -1,21 +1,34 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.0;
+pragma solidity ^0.8.13;
 
-contract Rips_SetFeeRecipient {
+import "../../RipsTestBase.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+
+contract Rips_SetFeeRecipient is RipsTestBase {
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
-        // it should revert.
+        vm.prank(user);
+        vm.expectRevert();
+        rips.setFeeRecipient(user);
     }
 
     modifier whenTheCallerIsTheOwner() {
+        vm.startPrank(owner);
         _;
+        vm.stopPrank();
     }
 
     function test_RevertWhen_TheNewRecipientIsTheZeroAddress() external whenTheCallerIsTheOwner {
-        // it should revert.
+        vm.expectRevert(VRFConsumerBaseV2Plus.ZeroAddress.selector);
+        rips.setFeeRecipient(address(0));
     }
 
     function test_WhenTheNewRecipientIsNotTheZeroAddress() external whenTheCallerIsTheOwner {
-        // it should update the fee recipient.
-        // it should emit a {FeeRecipientUpdated} event.
+        address newRecipient = makeAddr("newRecipient");
+
+        vm.expectEmit();
+        emit IRips.FeeRecipientUpdated(newRecipient);
+        rips.setFeeRecipient(newRecipient);
+
+        assertEq(rips.feeRecipient(), newRecipient);
     }
 }
