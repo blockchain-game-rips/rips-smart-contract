@@ -2,7 +2,7 @@ RipsMath_CalculatePrizeAmount
 ├── it should never revert.
 ├── when the prize number is in the first tier
 │   └── it should return the prize for that position.
-├── when the prize number is in the last tier
+├── when the prize number is in a middle tier
 │   └── it should return the prize for that position.
-└── when the prize number is in a middle tier
+└── when the prize number is in the last tier
     └── it should return the prize for that position.

@@ -22,12 +22,14 @@ contract Rips is RipsVrf, ReentrancyGuard {
         setProtocolFee(initialFeePercent);
     }
 
-    function buyTickets(uint256 stakeId, uint256 ticketCount)
+    function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient)
         external
         payable
         whenNotPaused
         nonReentrant
     {
+        if (recipient == address(0)) revert ZeroAddress();
+
         (uint256 roundId, Round storage round, StakeConfig storage config) =
             _resolveActiveRoundAndStake(stakeId);
 
@@ -35,7 +37,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
         uint256 toBuy = _getTicketsToBuy(round, config, ticketCount);
 
-        _purchaseTickets(roundId, round, toBuy);
+        _purchaseTickets(roundId, round, recipient, toBuy);
 
         if (round.ticketsSold == config.ticketCap) {
             _handleSoldOut(stakeId, round);
@@ -75,14 +77,19 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function _purchaseTickets(uint256 roundId, Round storage round, uint256 ticketsToBuy) internal {
+    function _purchaseTickets(
+        uint256 roundId,
+        Round storage round,
+        address recipient,
+        uint256 ticketsToBuy
+    ) internal {
         uint256 startTicket = round.ticketsSold;
 
         round.ticketsSold += ticketsToBuy;
 
-        _storeTicketRanges(roundId, msg.sender, startTicket, ticketsToBuy);
+        _storeTicketRanges(roundId, recipient, startTicket, ticketsToBuy);
 
-        emit TicketsPurchased(roundId, msg.sender, startTicket, ticketsToBuy);
+        emit TicketsPurchased(roundId, recipient, startTicket, ticketsToBuy);
     }
 
     function _resolveActiveRoundAndStake(uint256 stakeId)
@@ -104,15 +111,17 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function claimPrizes(uint256 roundId, uint256 startIndex, uint256 maxRanges)
+    function claimPrizes(uint256 roundId, uint256 startIndex, uint256 maxRanges, address recipient)
         external
         nonReentrant
     {
+        if (recipient == address(0)) revert ZeroAddress();
+
         //TODO: validation to separate function
         Round storage round = _rounds[roundId];
         if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();
 
-        TicketRange[] storage ranges = _userTickets[roundId][msg.sender];
+        TicketRange[] storage ranges = _userTickets[roundId][recipient];
         if (startIndex >= ranges.length) revert InvalidStartIndex();
 
         StakeConfig storage config = _stakeConfigs[round.stakeId];
@@ -120,11 +129,11 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 totalPrize = _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
 
         if (totalPrize > 0) {
-            _distributePrize(roundId, totalPrize);
+            _distributePrize(roundId, recipient, totalPrize);
         }
     }
 
-    function _distributePrize(uint256 roundId, uint256 totalPrize) private {
+    function _distributePrize(uint256 roundId, address recipient, uint256 totalPrize) private {
         uint256 protocolFee = (totalPrize * protocolFeePercent) / 10000;
         uint256 userPrize = totalPrize - protocolFee;
 
@@ -134,10 +143,10 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
 
         //TODO: ensure that protocol fee < 100%
-        (bool prizeSuccess,) = msg.sender.call{value: userPrize}("");
+        (bool prizeSuccess,) = recipient.call{value: userPrize}("");
         if (!prizeSuccess) revert PrizeTransferFailed();
 
-        emit PrizesClaimed(roundId, msg.sender, userPrize);
+        emit PrizesClaimed(roundId, recipient, userPrize);
     }
 
     function _accumulateClaimedPrizes(
@@ -166,7 +175,9 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function refund(uint256 roundId) external nonReentrant {
+    function refund(uint256 roundId, address recipient) external nonReentrant {
+        if (recipient == address(0)) revert ZeroAddress();
+
         //TODO: move validation to separate function
         Round storage round = _rounds[roundId];
 
@@ -176,17 +187,21 @@ contract Rips is RipsVrf, ReentrancyGuard {
         StakeConfig storage config = _stakeConfigs[stakeId];
 
         if (!_isRoundExpired(round, config)) revert RoundNotExpired();
-        if (_hasRefunded[roundId][msg.sender]) revert AlreadyRefunded();
+        if (_hasRefunded[roundId][recipient]) revert AlreadyRefunded();
 
-        uint256 ticketsToRefund = _getTicketAmountToRefund(roundId);
+        uint256 ticketsToRefund = _getTicketAmountToRefund(roundId, recipient);
 
-        _hasRefunded[roundId][msg.sender] = true;
-        _refund(roundId, msg.sender, ticketsToRefund * config.ticketCost);
+        _hasRefunded[roundId][recipient] = true;
+        _refund(roundId, recipient, ticketsToRefund * config.ticketCost);
     }
 
-    function _getTicketAmountToRefund(uint256 roundId) internal view returns (uint256) {
+    function _getTicketAmountToRefund(uint256 roundId, address recipient)
+        internal
+        view
+        returns (uint256)
+    {
         //TODO: check what happens if user doesn't have ranges
-        TicketRange[] storage ranges = _userTickets[roundId][msg.sender];
+        TicketRange[] storage ranges = _userTickets[roundId][recipient];
         uint256 totalTickets = 0;
         //TODO: refund in multiple transaction or limit ticketCup to be able claim in one tx
         for (uint256 i = 0; i < ranges.length; i++) {

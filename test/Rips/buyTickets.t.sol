@@ -10,6 +10,10 @@ contract Rips_BuyTickets {
         _;
     }
 
+    function test_RevertWhen_RecipientIsZeroAddress() external whenTheContractIsNotPaused {
+        // it should revert.
+    }
+
     function test_RevertWhen_TheStakeDoesNotExist() external whenTheContractIsNotPaused {
         // it should revert.
     }
@@ -88,6 +92,18 @@ contract Rips_BuyTickets {
         // it should update tickets sold count.
         // it should store ticket ranges for the buyer.
         // it should emit a {TicketsPurchased} event.
+    }
+
+    function test_WhenRecipientIsDifferentFromTheCaller()
+        external
+        whenTheContractIsNotPaused
+        whenTheStakeExists
+        whenTheActiveRoundHasNotExpired
+        whenTicketCountIsGreaterThanZero
+        whenThePaymentAmountIsCorrect
+        whenRequestedTicketsAreFewerThanAvailable
+    {
+        // it should store ticket ranges for the recipient, not the caller.
     }
 
     function test_WhenTicketCountExceedsMAX_TICKETS_PER_RANGE()

@@ -10,6 +10,10 @@ contract Rips_ClaimPrizes {
         _;
     }
 
+    function test_RevertWhen_RecipientIsZeroAddress() external whenTheRoundIsFinalized {
+        // it should revert.
+    }
+
     function test_RevertWhen_StartIndexIsOutOfBounds() external whenTheRoundIsFinalized {
         // it should revert.
     }
@@ -38,6 +42,15 @@ contract Rips_ClaimPrizes {
     {
         // it should mark processed ranges as claimed.
         // it should calculate correct prizes using the affine permutation.
+    }
+
+    function test_WhenRecipientIsDifferentFromTheCaller()
+        external
+        whenTheRoundIsFinalized
+        whenStartIndexIsValid
+        whenThereAreUnclaimedRanges
+    {
+        // it should transfer the prize to the recipient, not the caller.
     }
 
     function test_WhenProtocolFeeIsZero()

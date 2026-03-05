@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "../../RipsTestBase.sol";
 
-contract RipsVRF_UpdateCallbackGasLimit is RipsTestBase {
+contract Rips_UpdateCallbackGasLimit is RipsTestBase {
     event CallbackGasLimitUpdated(uint32 newLimit);
     uint32 private constant NEW_GAS_LIMIT = 200_000;
 

@@ -2,6 +2,8 @@ Rips_ClaimPrizes
 ├── when the round is not finalized
 │   └── it should revert.
 └── when the round is finalized
+    ├── when recipient is zero address
+    │   └── it should revert.
     ├── when start index is out of bounds
     │   └── it should revert.
     └── when start index is valid
@@ -10,10 +12,12 @@ Rips_ClaimPrizes
         └── when there are unclaimed ranges
             ├── it should mark processed ranges as claimed.
             ├── it should calculate correct prizes using the affine permutation.
+            ├── when recipient is different from the caller
+            │   └── it should transfer the prize to the recipient, not the caller.
             ├── when protocol fee is zero
-            │   ├── it should transfer the full prize to the caller.
+            │   ├── it should transfer the full prize to the recipient.
             │   └── it should emit a {PrizesClaimed} event.
             └── when protocol fee is greater than zero
                 ├── it should transfer the fee to the fee recipient.
-                ├── it should transfer the remaining prize to the caller.
+                ├── it should transfer the remaining prize to the recipient.
                 └── it should emit a {PrizesClaimed} event.

@@ -13,7 +13,8 @@ contract Rips_DeleteStake is RipsTestBase {
         super.setUp();
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
+        tiers[0] =
+            IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
 
         vm.prank(owner);
         stakeId = rips.createStake(

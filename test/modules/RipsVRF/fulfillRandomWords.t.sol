@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "../../RipsTestBase.sol";
 import "../../../src/modules/RipsMath.sol";
 
-contract RipsVRF_FulfillRandomWords is RipsTestBase {
+contract Rips_FulfillRandomWords is RipsTestBase {
     event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
 
     uint256 private constant TICKET_CAP = 2;
@@ -20,7 +20,8 @@ contract RipsVRF_FulfillRandomWords is RipsTestBase {
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
+        tiers[0] =
+            IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
 
         vm.prank(owner);
         stakeId = rips.createStake(
@@ -36,7 +37,7 @@ contract RipsVRF_FulfillRandomWords is RipsTestBase {
 
         vm.deal(user, TICKET_CAP * TICKET_COST);
         vm.prank(user);
-        rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP);
+        rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP, user);
 
         vrfRequestId = rips.requestRandomness(roundId);
     }

@@ -71,11 +71,12 @@ interface IRips {
     event FeeRecipientUpdated(address newRecipient);
     event CallbackGasLimitUpdated(uint32 newLimit);
 
-    function buyTickets(uint256 stakeId, uint256 ticketCount) external payable;
+    function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient) external payable;
 
-    function claimPrizes(uint256 roundId, uint256 startIndex, uint256 maxRanges) external;
+    function claimPrizes(uint256 roundId, uint256 startIndex, uint256 maxRanges, address recipient)
+        external;
 
-    function refund(uint256 roundId) external;
+    function refund(uint256 roundId, address recipient) external;
 
     function createStake(StakeConfig calldata config) external returns (uint256 stakeId);
 

@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "../../RipsTestBase.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
-contract RipsVRF_RequestRandomness is RipsTestBase {
+contract Rips_RequestRandomness is RipsTestBase {
     event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
 
     event RandomWordsRequested(
@@ -30,7 +30,8 @@ contract RipsVRF_RequestRandomness is RipsTestBase {
         super.setUp();
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
+        tiers[0] =
+            IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
 
         vm.prank(owner);
         stakeId = rips.createStake(
@@ -46,7 +47,7 @@ contract RipsVRF_RequestRandomness is RipsTestBase {
 
         vm.deal(user, TICKET_CAP * TICKET_COST);
         vm.prank(user);
-        rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP);
+        rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP, user);
     }
 
     function test_RevertWhen_TheRoundIsNotSoldOut() external {

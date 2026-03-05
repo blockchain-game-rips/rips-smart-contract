@@ -2,6 +2,8 @@ Rips_BuyTickets
 ├── when the contract is paused
 │   └── it should revert.
 └── when the contract is not paused
+    ├── when recipient is zero address
+    │   └── it should revert.
     ├── when the stake does not exist
     │   └── it should revert.
     └── when the stake exists
@@ -20,8 +22,10 @@ Rips_BuyTickets
                 └── when the payment amount is correct
                     ├── when requested tickets are fewer than available
                     │   ├── it should update tickets sold count.
-                    │   ├── it should store ticket ranges for the buyer.
+                    │   ├── it should store ticket ranges for the recipient.
                     │   ├── it should emit a {TicketsPurchased} event.
+                    │   ├── when recipient is different from the caller
+                    │   │   └── it should store ticket ranges for the recipient, not the caller.
                     │   └── when ticket count exceeds MAX_TICKETS_PER_RANGE
                     │       └── it should split into multiple ticket ranges.
                     ├── when requested tickets equal the remaining capacity
@@ -35,5 +39,5 @@ Rips_BuyTickets
                     └── when requested tickets exceed available tickets
                         ├── it should purchase only the available tickets.
                         ├── it should set round status to SoldOut.
-                        ├── it should refund excess payment to the buyer.
+                        ├── it should refund excess payment to the caller.
                         └── it should emit a {TicketsPurchased} event.
