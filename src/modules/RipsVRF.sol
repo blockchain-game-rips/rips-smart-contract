@@ -5,6 +5,7 @@ import "./RipsAdmin.sol";
 import "./RipsMath.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
+//TODO: refund if too much time has passed since vrf requested
 abstract contract RipsVrf is RipsAdmin {
     uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
     uint32 public constant VRF_NUM_WORDS = 1;
@@ -27,6 +28,7 @@ abstract contract RipsVrf is RipsAdmin {
     }
 
     function updateCallbackGasLimit(uint32 newLimit) external onlyOwner {
+        //TODO: consider case when admin set insufficient gas limit and callback is reverted
         s_callbackGasLimit = newLimit;
         emit CallbackGasLimitUpdated(newLimit);
     }
