@@ -31,10 +31,11 @@ abstract contract RipsVrf is RipsAdmin {
         emit CallbackGasLimitUpdated(newLimit);
     }
 
-    function requestRandomness(uint256 roundId) external {
+    function requestRandomness(uint256 roundId) external returns (uint256 requestId) {
         Round storage round = _rounds[roundId];
         if (round.status != RoundStatus.SoldOut) revert RoundNotSoldOut();
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+
+        requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: vrfKeyHash,
                 subId: vrfSubscriptionId,

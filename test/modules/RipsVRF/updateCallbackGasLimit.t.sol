@@ -1,13 +1,27 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.0;
+pragma solidity ^0.8.13;
 
-contract Rips_UpdateCallbackGasLimit {
+import "../../RipsTestBase.sol";
+
+contract RipsVRF_UpdateCallbackGasLimit is RipsTestBase {
+    event CallbackGasLimitUpdated(uint32 newLimit);
+    uint32 private constant NEW_GAS_LIMIT = 200_000;
+
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
-        // it should revert.
+        vm.prank(user);
+        vm.expectRevert("Only callable by owner");
+        rips.updateCallbackGasLimit(NEW_GAS_LIMIT);
     }
 
-    function test_WhenTheCallerIsTheOwner() external {
-        // it should update the callback gas limit.
-        // it should emit a {CallbackGasLimitUpdated} event.
+    modifier whenTheCallerIsTheOwner() {
+        vm.prank(owner);
+        _;
+    }
+
+    function test_WhenTheCallerIsTheOwner() external whenTheCallerIsTheOwner {
+        vm.expectEmit();
+        emit CallbackGasLimitUpdated(NEW_GAS_LIMIT);
+
+        rips.updateCallbackGasLimit(NEW_GAS_LIMIT);
     }
 }

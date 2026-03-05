@@ -81,7 +81,7 @@ interface IRips {
 
     function deleteStake(uint256 stakeId) external;
 
-    function requestRandomness(uint256 roundId) external;
+    function requestRandomness(uint256 roundId) external returns (uint256 requestId);
 
     function getUserTickets(uint256 roundId, address user)
         external
