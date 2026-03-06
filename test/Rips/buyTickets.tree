@@ -1,43 +1,37 @@
 Rips_BuyTickets
 ├── when the contract is paused
 │   └── it should revert.
-└── when the contract is not paused
-    ├── when recipient is zero address
-    │   └── it should revert.
-    ├── when the stake does not exist
-    │   └── it should revert.
-    └── when the stake exists
-        ├── when the active round has expired
-        │   ├── when the stake is deleted
-        │   │   └── it should revert.
-        │   └── when the stake is not deleted
-        │       ├── it should create a new round.
-        │       └── it should emit a {RoundCreated} event.
-        └── when the active round has not expired
-            ├── when ticket count is zero
-            │   └── it should revert.
-            └── when ticket count is greater than zero
-                ├── when the payment amount is incorrect
-                │   └── it should revert.
-                └── when the payment amount is correct
-                    ├── when requested tickets are fewer than available
-                    │   ├── it should update tickets sold count.
-                    │   ├── it should store ticket ranges for the recipient.
-                    │   ├── it should emit a {TicketsPurchased} event.
-                    │   ├── when recipient is different from the caller
-                    │   │   └── it should store ticket ranges for the recipient, not the caller.
-                    │   └── when ticket count exceeds MAX_TICKETS_PER_RANGE
-                    │       └── it should split into multiple ticket ranges.
-                    ├── when requested tickets equal the remaining capacity
-                    │   ├── it should purchase all requested tickets.
-                    │   ├── it should set round status to SoldOut.
-                    │   ├── it should emit a {TicketsPurchased} event.
-                    │   ├── given the stake is not deleted
-                    │   │   └── it should create a new round for the stake.
-                    │   └── given the stake is deleted
-                    │       └── it should clear the active round mapping.
-                    └── when requested tickets exceed available tickets
-                        ├── it should purchase only the available tickets.
-                        ├── it should set round status to SoldOut.
-                        ├── it should refund excess payment to the caller.
-                        └── it should emit a {TicketsPurchased} event.
+├── when recipient is zero address
+│   └── it should revert.
+├── when the stake does not exist
+│   └── it should revert.
+├── when the active round has expired and the stake is deleted
+│   └── it should revert.
+├── when the active round has expired and the stake is not deleted
+│   ├── it should create a new round.
+│   └── it should emit a {RoundCreated} event.
+├── when ticket count is zero
+│   └── it should revert.
+├── when the payment amount is incorrect
+│   └── it should revert.
+├── when requested tickets are fewer than available
+│   ├── it should update tickets sold count.
+│   ├── it should store ticket ranges for the recipient.
+│   ├── it should emit a {TicketsPurchased} event.
+│   ├── when recipient is different from the caller
+│   │   └── it should store ticket ranges for the recipient, not the caller.
+│   └── when ticket count exceeds MAX_TICKETS_PER_RANGE
+│       └── it should split into multiple ticket ranges.
+├── when requested tickets equal the remaining capacity
+│   ├── it should purchase all requested tickets.
+│   ├── it should set round status to SoldOut.
+│   ├── it should emit a {TicketsPurchased} event.
+│   ├── given the stake is not deleted
+│   │   └── it should create a new round for the stake.
+│   └── given the stake is deleted
+│       └── it should clear the active round mapping.
+└── when requested tickets exceed available tickets
+    ├── it should purchase only the available tickets.
+    ├── it should set round status to SoldOut.
+    ├── it should refund excess payment to the caller.
+    └── it should emit a {TicketsPurchased} event.

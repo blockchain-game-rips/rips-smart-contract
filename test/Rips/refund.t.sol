@@ -6,40 +6,19 @@ contract Rips_Refund {
         // it should revert.
     }
 
-    modifier whenTheRoundExists() {
-        _;
-    }
-
-    function test_RevertWhen_RecipientIsZeroAddress() external whenTheRoundExists {
+    function test_RevertWhen_RecipientIsZeroAddress() external {
         // it should revert.
     }
 
-    function test_RevertWhen_TheRoundIsNotExpired() external whenTheRoundExists {
+    function test_RevertWhen_TheRoundIsNotExpired() external {
         // it should revert.
     }
 
-    modifier whenTheRoundIsExpired() {
-        _;
-    }
-
-    function test_RevertWhen_TheRecipientHasAlreadyBeenRefunded()
-        external
-        whenTheRoundExists
-        whenTheRoundIsExpired
-    {
+    function test_RevertWhen_TheRecipientHasAlreadyBeenRefunded() external {
         // it should revert.
     }
 
-    modifier whenTheRecipientHasNotBeenRefunded() {
-        _;
-    }
-
-    function test_RevertWhen_TheRecipientHasNoTicketsInTheRound()
-        external
-        whenTheRoundExists
-        whenTheRoundIsExpired
-        whenTheRecipientHasNotBeenRefunded
-    {
+    function test_RevertWhen_TheRecipientHasNoTicketsInTheRound() external {
         // it should revert.
     }
 
@@ -49,9 +28,6 @@ contract Rips_Refund {
 
     function test_WhenTheRecipientHasTicketsInTheRound()
         external
-        whenTheRoundExists
-        whenTheRoundIsExpired
-        whenTheRecipientHasNotBeenRefunded
         whenTheRecipientHasTicketsInTheRound
     {
         // it should mark the recipient as refunded.
@@ -61,43 +37,8 @@ contract Rips_Refund {
 
     function test_WhenRecipientIsDifferentFromTheCaller()
         external
-        whenTheRoundExists
-        whenTheRoundIsExpired
-        whenTheRecipientHasNotBeenRefunded
         whenTheRecipientHasTicketsInTheRound
     {
         // it should transfer the refund to the recipient, not the caller.
-    }
-
-    function test_RevertWhen_TheCallerHasAlreadyBeenRefunded()
-        external
-        whenTheRoundExists
-        whenTheRoundIsExpired
-    {
-        // it should revert.
-    }
-
-    modifier whenTheCallerHasNotBeenRefunded() {
-        _;
-    }
-
-    function test_RevertWhen_TheCallerHasNoTicketsInTheRound()
-        external
-        whenTheRoundExists
-        whenTheRoundIsExpired
-        whenTheCallerHasNotBeenRefunded
-    {
-        // it should revert.
-    }
-
-    function test_WhenTheCallerHasTicketsInTheRound()
-        external
-        whenTheRoundExists
-        whenTheRoundIsExpired
-        whenTheCallerHasNotBeenRefunded
-    {
-        // it should mark the caller as refunded.
-        // it should transfer the refund amount.
-        // it should emit a {RefundIssued} event.
     }
 }

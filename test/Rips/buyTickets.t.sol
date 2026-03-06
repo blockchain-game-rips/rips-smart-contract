@@ -6,74 +6,29 @@ contract Rips_BuyTickets {
         // it should revert.
     }
 
-    modifier whenTheContractIsNotPaused() {
-        _;
-    }
-
-    function test_RevertWhen_RecipientIsZeroAddress() external whenTheContractIsNotPaused {
+    function test_RevertWhen_RecipientIsZeroAddress() external {
         // it should revert.
     }
 
-    function test_RevertWhen_TheStakeDoesNotExist() external whenTheContractIsNotPaused {
+    function test_RevertWhen_TheStakeDoesNotExist() external {
         // it should revert.
     }
 
-    modifier whenTheStakeExists() {
-        _;
-    }
-
-    modifier whenTheActiveRoundHasExpired() {
-        _;
-    }
-
-    function test_RevertWhen_TheStakeIsDeleted()
-        external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasExpired
-    {
+    function test_RevertWhen_TheActiveRoundHasExpiredAndTheStakeIsDeleted() external {
         // it should revert.
     }
 
-    function test_WhenTheStakeIsNotDeleted()
-        external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasExpired
-    {
+    function test_WhenTheActiveRoundHasExpiredAndTheStakeIsNotDeleted() external {
         // it should create a new round.
         // it should emit a {RoundCreated} event.
     }
 
-    modifier whenTheActiveRoundHasNotExpired() {
-        _;
-    }
-
-    function test_RevertWhen_TicketCountIsZero()
-        external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-    {
+    function test_RevertWhen_TicketCountIsZero() external {
         // it should revert.
     }
 
-    modifier whenTicketCountIsGreaterThanZero() {
-        _;
-    }
-
-    function test_RevertWhen_ThePaymentAmountIsIncorrect()
-        external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-        whenTicketCountIsGreaterThanZero
-    {
+    function test_RevertWhen_ThePaymentAmountIsIncorrect() external {
         // it should revert.
-    }
-
-    modifier whenThePaymentAmountIsCorrect() {
-        _;
     }
 
     modifier whenRequestedTicketsAreFewerThanAvailable() {
@@ -82,25 +37,15 @@ contract Rips_BuyTickets {
 
     function test_WhenRequestedTicketsAreFewerThanAvailable()
         external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-        whenTicketCountIsGreaterThanZero
-        whenThePaymentAmountIsCorrect
         whenRequestedTicketsAreFewerThanAvailable
     {
         // it should update tickets sold count.
-        // it should store ticket ranges for the buyer.
+        // it should store ticket ranges for the recipient.
         // it should emit a {TicketsPurchased} event.
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller()
         external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-        whenTicketCountIsGreaterThanZero
-        whenThePaymentAmountIsCorrect
         whenRequestedTicketsAreFewerThanAvailable
     {
         // it should store ticket ranges for the recipient, not the caller.
@@ -108,11 +53,6 @@ contract Rips_BuyTickets {
 
     function test_WhenTicketCountExceedsMAX_TICKETS_PER_RANGE()
         external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-        whenTicketCountIsGreaterThanZero
-        whenThePaymentAmountIsCorrect
         whenRequestedTicketsAreFewerThanAvailable
     {
         // it should split into multiple ticket ranges.
@@ -124,11 +64,6 @@ contract Rips_BuyTickets {
 
     function test_WhenRequestedTicketsEqualTheRemainingCapacity()
         external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-        whenTicketCountIsGreaterThanZero
-        whenThePaymentAmountIsCorrect
         whenRequestedTicketsEqualTheRemainingCapacity
     {
         // it should purchase all requested tickets.
@@ -138,39 +73,19 @@ contract Rips_BuyTickets {
 
     function test_GivenTheStakeIsNotDeleted()
         external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-        whenTicketCountIsGreaterThanZero
-        whenThePaymentAmountIsCorrect
         whenRequestedTicketsEqualTheRemainingCapacity
     {
         // it should create a new round for the stake.
     }
 
-    function test_GivenTheStakeIsDeleted()
-        external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-        whenTicketCountIsGreaterThanZero
-        whenThePaymentAmountIsCorrect
-        whenRequestedTicketsEqualTheRemainingCapacity
-    {
+    function test_GivenTheStakeIsDeleted() external whenRequestedTicketsEqualTheRemainingCapacity {
         // it should clear the active round mapping.
     }
 
-    function test_WhenRequestedTicketsExceedAvailableTickets()
-        external
-        whenTheContractIsNotPaused
-        whenTheStakeExists
-        whenTheActiveRoundHasNotExpired
-        whenTicketCountIsGreaterThanZero
-        whenThePaymentAmountIsCorrect
-    {
+    function test_WhenRequestedTicketsExceedAvailableTickets() external {
         // it should purchase only the available tickets.
         // it should set round status to SoldOut.
-        // it should refund excess payment to the buyer.
+        // it should refund excess payment to the caller.
         // it should emit a {TicketsPurchased} event.
     }
 }

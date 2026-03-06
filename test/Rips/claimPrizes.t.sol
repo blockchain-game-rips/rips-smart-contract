@@ -6,27 +6,15 @@ contract Rips_ClaimPrizes {
         // it should revert.
     }
 
-    modifier whenTheRoundIsFinalized() {
-        _;
-    }
-
-    function test_RevertWhen_RecipientIsZeroAddress() external whenTheRoundIsFinalized {
+    function test_RevertWhen_RecipientIsZeroAddress() external {
         // it should revert.
     }
 
-    function test_RevertWhen_StartIndexIsOutOfBounds() external whenTheRoundIsFinalized {
+    function test_RevertWhen_StartIndexIsOutOfBounds() external {
         // it should revert.
     }
 
-    modifier whenStartIndexIsValid() {
-        _;
-    }
-
-    function test_WhenAllRangesInScopeAreAlreadyClaimed()
-        external
-        whenTheRoundIsFinalized
-        whenStartIndexIsValid
-    {
+    function test_WhenAllRangesInScopeAreAlreadyClaimed() external {
         // it should not transfer any ETH.
     }
 
@@ -34,43 +22,23 @@ contract Rips_ClaimPrizes {
         _;
     }
 
-    function test_WhenThereAreUnclaimedRanges()
-        external
-        whenTheRoundIsFinalized
-        whenStartIndexIsValid
-        whenThereAreUnclaimedRanges
-    {
+    function test_WhenThereAreUnclaimedRanges() external whenThereAreUnclaimedRanges {
         // it should mark processed ranges as claimed.
         // it should calculate correct prizes using the affine permutation.
     }
 
-    function test_WhenRecipientIsDifferentFromTheCaller()
-        external
-        whenTheRoundIsFinalized
-        whenStartIndexIsValid
-        whenThereAreUnclaimedRanges
-    {
+    function test_WhenRecipientIsDifferentFromTheCaller() external whenThereAreUnclaimedRanges {
         // it should transfer the prize to the recipient, not the caller.
     }
 
-    function test_WhenProtocolFeeIsZero()
-        external
-        whenTheRoundIsFinalized
-        whenStartIndexIsValid
-        whenThereAreUnclaimedRanges
-    {
-        // it should transfer the full prize to the caller.
+    function test_WhenProtocolFeeIsZero() external whenThereAreUnclaimedRanges {
+        // it should transfer the full prize to the recipient.
         // it should emit a {PrizesClaimed} event.
     }
 
-    function test_WhenProtocolFeeIsGreaterThanZero()
-        external
-        whenTheRoundIsFinalized
-        whenStartIndexIsValid
-        whenThereAreUnclaimedRanges
-    {
+    function test_WhenProtocolFeeIsGreaterThanZero() external whenThereAreUnclaimedRanges {
         // it should transfer the fee to the fee recipient.
-        // it should transfer the remaining prize to the caller.
+        // it should transfer the remaining prize to the recipient.
         // it should emit a {PrizesClaimed} event.
     }
 }
