@@ -1,14 +1,24 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.0;
+pragma solidity ^0.8.13;
 
-contract Rips_Constructor {
+import "../RipsTestBase.sol";
+
+contract Rips_Constructor is RipsTestBase {
     function test_RevertWhen_InitialOwnerIsZeroAddress() external {
-        // it should revert.
+        vm.expectRevert();
+        new RipsHarness(
+            address(vrfCoordinator),
+            vrfSubscriptionId,
+            VRF_KEY_HASH,
+            VRF_CALLBACK_GAS_LIMIT,
+            address(0),
+            INITIAL_FEE_PERCENT
+        );
     }
 
-    function test_WhenInitialOwnerIsNotZeroAddress() external {
-        // it should transfer ownership to initial owner.
-        // it should set fee recipient to initial owner.
-        // it should set protocol fee to initial fee percent.
+    function test_WhenInitialOwnerIsNotZeroAddress() external view {
+        assertEq(rips.owner(), owner);
+        assertEq(rips.feeRecipient(), owner);
+        assertEq(rips.protocolFeePercent(), INITIAL_FEE_PERCENT);
     }
 }
