@@ -86,4 +86,12 @@ contract RipsHarness is Rips {
     function exposed_stakeToActiveRound(uint256 stakeId) external view returns (uint256) {
         return _stakeToActiveRound[stakeId];
     }
+
+    function exposed_round(uint256 roundId) external view returns (Round memory) {
+        return _rounds[roundId];
+    }
+
+    function exposed_stakeDeleted(uint256 stakeId) external view returns (bool) {
+        return _stakeDeleted[stakeId];
+    }
 }
