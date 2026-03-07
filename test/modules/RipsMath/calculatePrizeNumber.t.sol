@@ -6,16 +6,19 @@ import "../../RipsTestBase.sol";
 contract RipsMath_CalculatePrizeNumber is RipsTestBase {
     uint256 private constant HALF_UINT128 = type(uint128).max;
 
-    function test_ResultIsAlwaysInRange(uint256 ticketNumber, uint256 a, uint256 b, uint256 n)
-        external
-        view
-    {
+    function test_ResultIsAlwaysBetween1AndNInclusive(
+        uint256 ticketNumber,
+        uint256 a,
+        uint256 b,
+        uint256 n
+    ) external view {
         vm.assume(n > 0);
         vm.assume(a <= HALF_UINT128 && ticketNumber <= HALF_UINT128 && b <= HALF_UINT128);
 
         uint256 result = rips.exposed_calculatePrizeNumber(ticketNumber, a, b, n);
 
-        assertLt(result, n);
+        assertGe(result, 1);
+        assertLe(result, n);
     }
 
     function test_DifferentTicketNumbersProduceDifferentPrizeNumbers(
@@ -39,4 +42,5 @@ contract RipsMath_CalculatePrizeNumber is RipsTestBase {
             rips.exposed_calculatePrizeNumber(ticketB, a, b, n)
         );
     }
+
 }

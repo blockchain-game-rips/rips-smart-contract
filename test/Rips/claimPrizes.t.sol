@@ -1,44 +1,151 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.0;
+pragma solidity ^0.8.13;
 
-contract Rips_ClaimPrizes {
+import "../RipsTestBase.sol";
+
+contract Rips_ClaimPrizes is RipsTestBase {
+    uint256 private constant TICKET_CAP = 4;
+    uint256 private constant TICKET_COST = 1 ether;
+    uint256 private constant DURATION = 1 days;
+    uint256 private constant START_INDEX = 0;
+    uint256 private constant MAX_RANGES = 10;
+
+    uint256 private stakeId;
+    uint256 private roundId;
+
+    function setUp() public override {
+        super.setUp();
+
+        vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
+
+        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
+        tiers[0] =
+            IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
+
+        vm.prank(owner);
+        stakeId = rips.createStake(
+            IRips.StakeConfig({
+                prizeDistribution: tiers,
+                ticketCap: TICKET_CAP,
+                duration: DURATION,
+                ticketCost: TICKET_COST
+            })
+        );
+
+        roundId = rips.exposed_stakeToActiveRound(stakeId);
+
+        vm.deal(user, 100 ether);
+        vm.prank(user);
+        rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP, user);
+    }
+
+    function _finalizeRound() private {
+        uint256 vrfRequestId = rips.requestRandomness(roundId);
+        vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
+    }
+
     function test_RevertWhen_TheRoundIsNotFinalized() external {
-        // it should revert.
+        vm.prank(user);
+        vm.expectRevert(IRips.RoundNotFinalized.selector);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
     }
 
     function test_RevertWhen_RecipientIsZeroAddress() external {
-        // it should revert.
+        _finalizeRound();
+
+        vm.prank(user);
+        vm.expectRevert();
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, address(0));
     }
 
     function test_RevertWhen_StartIndexIsOutOfBounds() external {
-        // it should revert.
+        _finalizeRound();
+
+        IRips.TicketRange[] memory ranges = rips.getUserTickets(roundId, user);
+        uint256 outOfBoundsIndex = ranges.length;
+
+        vm.prank(user);
+        vm.expectRevert(IRips.InvalidStartIndex.selector);
+        rips.claimPrizes(roundId, outOfBoundsIndex, MAX_RANGES, user);
     }
 
     function test_WhenAllRangesInScopeAreAlreadyClaimed() external {
-        // it should not transfer any ETH.
+        _finalizeRound();
+
+        vm.prank(user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+
+        uint256 balanceBefore = user.balance;
+
+        vm.prank(user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+
+        assertEq(user.balance, balanceBefore);
     }
 
     modifier whenThereAreUnclaimedRanges() {
+        _finalizeRound();
         _;
     }
 
     function test_WhenThereAreUnclaimedRanges() external whenThereAreUnclaimedRanges {
-        // it should mark processed ranges as claimed.
-        // it should calculate correct prizes using the affine permutation.
+        vm.prank(user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+
+        IRips.TicketRange[] memory ranges = rips.getUserTickets(roundId, user);
+        for (uint256 i = 0; i < ranges.length; i++) {
+            assertTrue(ranges[i].claimed);
+        }
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller() external whenThereAreUnclaimedRanges {
-        // it should transfer the prize to the recipient, not the caller.
+        address caller = makeAddr("caller");
+
+        uint256 totalPrize = TICKET_CAP * TICKET_COST;
+        uint256 protocolFee = (totalPrize * INITIAL_FEE_PERCENT) / 10_000;
+        uint256 userPrize = totalPrize - protocolFee;
+
+        uint256 recipientBalanceBefore = user.balance;
+        uint256 callerBalanceBefore = caller.balance;
+
+        vm.prank(caller);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+
+        assertEq(user.balance, recipientBalanceBefore + userPrize);
+        assertEq(caller.balance, callerBalanceBefore);
     }
 
     function test_WhenProtocolFeeIsZero() external whenThereAreUnclaimedRanges {
-        // it should transfer the full prize to the recipient.
-        // it should emit a {PrizesClaimed} event.
+        vm.prank(owner);
+        rips.setProtocolFee(0);
+
+        uint256 totalPrize = TICKET_CAP * TICKET_COST;
+        uint256 balanceBefore = user.balance;
+
+        vm.expectEmit();
+        emit IRips.PrizesClaimed(roundId, user, totalPrize);
+
+        vm.prank(user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+
+        assertEq(user.balance, balanceBefore + totalPrize);
     }
 
     function test_WhenProtocolFeeIsGreaterThanZero() external whenThereAreUnclaimedRanges {
-        // it should transfer the fee to the fee recipient.
-        // it should transfer the remaining prize to the recipient.
-        // it should emit a {PrizesClaimed} event.
+        uint256 totalPrize = TICKET_CAP * TICKET_COST;
+        uint256 protocolFee = (totalPrize * INITIAL_FEE_PERCENT) / 10_000;
+        uint256 userPrize = totalPrize - protocolFee;
+
+        uint256 userBalanceBefore = user.balance;
+        uint256 feeRecipientBalanceBefore = owner.balance;
+
+        vm.expectEmit();
+        emit IRips.PrizesClaimed(roundId, user, userPrize);
+
+        vm.prank(user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+
+        assertEq(user.balance, userBalanceBefore + userPrize);
+        assertEq(owner.balance, feeRecipientBalanceBefore + protocolFee);
     }
 }
