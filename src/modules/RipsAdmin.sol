@@ -15,6 +15,18 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
     }
 
     function createStake(StakeConfig calldata config) external onlyOwner returns (uint256 stakeId) {
+        _validateStakeConfig(config);
+
+        stakeId = _nextStakeId++;
+
+        _storeStakeConfig(stakeId, config);
+
+        _createRound(stakeId);
+
+        emit StakeCreated(stakeId, config.ticketCap, config.ticketCost);
+    }
+
+    function _validateStakeConfig(StakeConfig calldata config) private pure {
         if (!RipsMath.isPowerOfTwo(config.ticketCap)) {
             revert TicketCapNotPowerOfTwo();
         }
@@ -26,7 +38,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         uint256 totalPrizePool = 0;
 
         for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
-            PrizeTier memory tier = config.prizeDistribution[i];
+            PrizeTier calldata tier = config.prizeDistribution[i];
             if (tier.minPrize > tier.maxPrize) revert InvalidPrizeRange();
             totalPrizeCount += tier.prizeCount;
             totalPrizePool += (tier.prizeCount * (tier.minPrize + tier.maxPrize)) / 2;
@@ -36,9 +48,9 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         if (totalPrizePool != config.ticketCap * config.ticketCost) {
             revert PrizePoolMismatch();
         }
+    }
 
-        stakeId = _nextStakeId++;
-
+    function _storeStakeConfig(uint256 stakeId, StakeConfig calldata config) private {
         StakeConfig storage newConfig = _stakeConfigs[stakeId];
         newConfig.ticketCap = config.ticketCap;
         newConfig.duration = config.duration;
@@ -46,10 +58,6 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
             newConfig.prizeDistribution.push(config.prizeDistribution[i]);
         }
-
-        _createRound(stakeId);
-
-        emit StakeCreated(stakeId, config.ticketCap, config.ticketCost);
     }
 
     function deleteStake(uint256 stakeId) external onlyOwner {
