@@ -4,9 +4,6 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_Refund is RipsTestBase {
-    uint256 private constant TICKET_CAP = 4;
-    uint256 private constant TICKET_COST = 1 ether;
-    uint256 private constant DURATION = 1 days;
     uint256 private constant TICKETS_BOUGHT = 2;
 
     uint256 private stakeId;
@@ -15,25 +12,12 @@ contract Rips_Refund is RipsTestBase {
     function setUp() public override {
         super.setUp();
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] =
-            IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
-
-        vm.prank(owner);
-        stakeId = rips.createStake(
-            IRips.StakeConfig({
-                prizeDistribution: tiers,
-                ticketCap: TICKET_CAP,
-                duration: DURATION,
-                ticketCost: TICKET_COST
-            })
-        );
-
+        stakeId = _createDefaultStake();
         roundId = rips.exposed_stakeToActiveRound(stakeId);
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.buyTickets{value: TICKETS_BOUGHT * TICKET_COST}(stakeId, TICKETS_BOUGHT, user);
+        rips.buyTickets{value: TICKETS_BOUGHT * DEFAULT_TICKET_COST}(stakeId, TICKETS_BOUGHT, user);
     }
 
     function test_RevertWhen_TheRoundDoesNotExist() external {
@@ -57,7 +41,7 @@ contract Rips_Refund is RipsTestBase {
     }
 
     function test_RevertWhen_TheRecipientHasAlreadyBeenRefunded() external {
-        vm.warp(block.timestamp + DURATION + 1);
+        vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         vm.prank(user);
         rips.refund(roundId, user);
@@ -68,7 +52,7 @@ contract Rips_Refund is RipsTestBase {
     }
 
     function test_RevertWhen_TheRecipientHasNoTicketsInTheRound() external {
-        vm.warp(block.timestamp + DURATION + 1);
+        vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         address noTickets = makeAddr("noTickets");
 
@@ -78,7 +62,7 @@ contract Rips_Refund is RipsTestBase {
     }
 
     modifier whenTheRecipientHasTicketsInTheRound() {
-        vm.warp(block.timestamp + DURATION + 1);
+        vm.warp(block.timestamp + DEFAULT_DURATION + 1);
         _;
     }
 
@@ -86,7 +70,7 @@ contract Rips_Refund is RipsTestBase {
         external
         whenTheRecipientHasTicketsInTheRound
     {
-        uint256 expectedRefund = TICKETS_BOUGHT * TICKET_COST;
+        uint256 expectedRefund = TICKETS_BOUGHT * DEFAULT_TICKET_COST;
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
@@ -107,7 +91,7 @@ contract Rips_Refund is RipsTestBase {
         whenTheRecipientHasTicketsInTheRound
     {
         address caller = makeAddr("caller");
-        uint256 expectedRefund = TICKETS_BOUGHT * TICKET_COST;
+        uint256 expectedRefund = TICKETS_BOUGHT * DEFAULT_TICKET_COST;
 
         uint256 recipientBalanceBefore = user.balance;
         uint256 callerBalanceBefore = caller.balance;

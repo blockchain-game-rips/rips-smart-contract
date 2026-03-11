@@ -4,10 +4,6 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_BuyTickets is RipsTestBase {
-    uint256 private constant TICKET_CAP = 4;
-    uint256 private constant TICKET_COST = 1 ether;
-    uint256 private constant DURATION = 1 days;
-
     uint256 private stakeId;
     uint256 private roundId;
     uint256 private ticketsToBuy;
@@ -15,20 +11,7 @@ contract Rips_BuyTickets is RipsTestBase {
     function setUp() public override {
         super.setUp();
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] =
-            IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
-
-        vm.prank(owner);
-        stakeId = rips.createStake(
-            IRips.StakeConfig({
-                prizeDistribution: tiers,
-                ticketCap: TICKET_CAP,
-                duration: DURATION,
-                ticketCost: TICKET_COST
-            })
-        );
-
+        stakeId = _createDefaultStake();
         roundId = rips.exposed_stakeToActiveRound(stakeId);
 
         vm.deal(user, 100 ether);
@@ -40,13 +23,13 @@ contract Rips_BuyTickets is RipsTestBase {
 
         vm.prank(user);
         vm.expectRevert();
-        rips.buyTickets{value: TICKET_COST}(stakeId, 1, user);
+        rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
     }
 
     function test_RevertWhen_RecipientIsZeroAddress() external {
         vm.prank(user);
         vm.expectRevert();
-        rips.buyTickets{value: TICKET_COST}(stakeId, 1, address(0));
+        rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, address(0));
     }
 
     function test_RevertWhen_TheStakeDoesNotExist() external {
@@ -54,22 +37,22 @@ contract Rips_BuyTickets is RipsTestBase {
 
         vm.prank(user);
         vm.expectRevert(IRips.StakeNotExist.selector);
-        rips.buyTickets{value: TICKET_COST}(nonExistentStakeId, 1, user);
+        rips.buyTickets{value: DEFAULT_TICKET_COST}(nonExistentStakeId, 1, user);
     }
 
     function test_RevertWhen_TheActiveRoundHasExpiredAndTheStakeIsDeleted() external {
         vm.prank(owner);
         rips.deleteStake(stakeId);
 
-        vm.warp(block.timestamp + DURATION + 1);
+        vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         vm.prank(user);
         vm.expectRevert(IRips.StakeNotExist.selector);
-        rips.buyTickets{value: TICKET_COST}(stakeId, 1, user);
+        rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
     }
 
     function test_WhenTheActiveRoundHasExpiredAndTheStakeIsNotDeleted() external {
-        vm.warp(block.timestamp + DURATION + 1);
+        vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         uint256 expectedNewRoundId = rips.exposed_nextRoundId();
 
@@ -77,7 +60,7 @@ contract Rips_BuyTickets is RipsTestBase {
         emit IRips.RoundCreated(expectedNewRoundId, stakeId, block.timestamp);
 
         vm.prank(user);
-        rips.buyTickets{value: TICKET_COST}(stakeId, 1, user);
+        rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
 
         uint256 newRoundId = rips.exposed_stakeToActiveRound(stakeId);
         assertNotEq(newRoundId, roundId);
@@ -92,7 +75,7 @@ contract Rips_BuyTickets is RipsTestBase {
     function test_RevertWhen_ThePaymentAmountIsIncorrect() external {
         vm.prank(user);
         vm.expectRevert(IRips.IncorrectPayment.selector);
-        rips.buyTickets{value: TICKET_COST + 1}(stakeId, 1, user);
+        rips.buyTickets{value: DEFAULT_TICKET_COST + 1}(stakeId, 1, user);
     }
 
     modifier whenRequestedTicketsAreFewerThanAvailable() {
@@ -108,7 +91,7 @@ contract Rips_BuyTickets is RipsTestBase {
         emit IRips.TicketsPurchased(roundId, user, 0, ticketsToBuy);
 
         vm.prank(user);
-        rips.buyTickets{value: ticketsToBuy * TICKET_COST}(stakeId, ticketsToBuy, user);
+        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, ticketsToBuy);
@@ -126,7 +109,7 @@ contract Rips_BuyTickets is RipsTestBase {
         address recipient = makeAddr("recipient");
 
         vm.prank(user);
-        rips.buyTickets{value: ticketsToBuy * TICKET_COST}(stakeId, ticketsToBuy, recipient);
+        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, recipient);
 
         IRips.TicketRange[] memory recipientRanges = rips.getUserTickets(roundId, recipient);
         assertEq(recipientRanges.length, 1);
@@ -153,7 +136,7 @@ contract Rips_BuyTickets is RipsTestBase {
             IRips.StakeConfig({
                 prizeDistribution: tiers,
                 ticketCap: largeTicketCap,
-                duration: DURATION,
+                duration: DEFAULT_DURATION,
                 ticketCost: ticketCost
             })
         );
@@ -171,7 +154,7 @@ contract Rips_BuyTickets is RipsTestBase {
     }
 
     modifier whenRequestedTicketsEqualTheRemainingCapacity() {
-        ticketsToBuy = TICKET_CAP;
+        ticketsToBuy = DEFAULT_TICKET_CAP;
         _;
     }
 
@@ -183,10 +166,10 @@ contract Rips_BuyTickets is RipsTestBase {
         emit IRips.TicketsPurchased(roundId, user, 0, ticketsToBuy);
 
         vm.prank(user);
-        rips.buyTickets{value: ticketsToBuy * TICKET_COST}(stakeId, ticketsToBuy, user);
+        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
 
         IRips.Round memory round = rips.exposed_round(roundId);
-        assertEq(round.ticketsSold, TICKET_CAP);
+        assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
         assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
     }
 
@@ -197,7 +180,7 @@ contract Rips_BuyTickets is RipsTestBase {
         uint256 expectedNewRoundId = rips.exposed_nextRoundId();
 
         vm.prank(user);
-        rips.buyTickets{value: ticketsToBuy * TICKET_COST}(stakeId, ticketsToBuy, user);
+        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
 
         uint256 newActiveRound = rips.exposed_stakeToActiveRound(stakeId);
         assertEq(newActiveRound, expectedNewRoundId);
@@ -209,21 +192,21 @@ contract Rips_BuyTickets is RipsTestBase {
         rips.deleteStake(stakeId);
 
         vm.prank(user);
-        rips.buyTickets{value: ticketsToBuy * TICKET_COST}(stakeId, ticketsToBuy, user);
+        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
 
         uint256 activeRound = rips.exposed_stakeToActiveRound(stakeId);
         assertEq(activeRound, 0);
     }
 
     function test_WhenRequestedTicketsExceedAvailableTickets() external {
-        uint256 initialBuy = TICKET_CAP - 1;
+        uint256 initialBuy = DEFAULT_TICKET_CAP - 1;
         vm.prank(user);
-        rips.buyTickets{value: initialBuy * TICKET_COST}(stakeId, initialBuy, user);
+        rips.buyTickets{value: initialBuy * DEFAULT_TICKET_COST}(stakeId, initialBuy, user);
 
         ticketsToBuy = 3;
-        uint256 availableTickets = TICKET_CAP - initialBuy;
-        uint256 payment = ticketsToBuy * TICKET_COST;
-        uint256 expectedRefund = (ticketsToBuy - availableTickets) * TICKET_COST;
+        uint256 availableTickets = DEFAULT_TICKET_CAP - initialBuy;
+        uint256 payment = ticketsToBuy * DEFAULT_TICKET_COST;
+        uint256 expectedRefund = (ticketsToBuy - availableTickets) * DEFAULT_TICKET_COST;
 
         uint256 balanceBefore = user.balance;
 
@@ -234,7 +217,7 @@ contract Rips_BuyTickets is RipsTestBase {
         rips.buyTickets{value: payment}(stakeId, ticketsToBuy, user);
 
         IRips.Round memory round = rips.exposed_round(roundId);
-        assertEq(round.ticketsSold, TICKET_CAP);
+        assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
         assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
 
         uint256 balanceAfter = user.balance;

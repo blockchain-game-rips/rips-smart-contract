@@ -4,9 +4,6 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_ClaimPrizes is RipsTestBase {
-    uint256 private constant TICKET_CAP = 4;
-    uint256 private constant TICKET_COST = 1 ether;
-    uint256 private constant DURATION = 1 days;
     uint256 private constant START_INDEX = 0;
     uint256 private constant MAX_RANGES = 10;
 
@@ -18,25 +15,12 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] =
-            IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
-
-        vm.prank(owner);
-        stakeId = rips.createStake(
-            IRips.StakeConfig({
-                prizeDistribution: tiers,
-                ticketCap: TICKET_CAP,
-                duration: DURATION,
-                ticketCost: TICKET_COST
-            })
-        );
-
+        stakeId = _createDefaultStake();
         roundId = rips.exposed_stakeToActiveRound(stakeId);
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP, user);
+        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(stakeId, DEFAULT_TICKET_CAP, user);
     }
 
     function _finalizeRound() private {
@@ -101,7 +85,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
     function test_WhenRecipientIsDifferentFromTheCaller() external whenThereAreUnclaimedRanges {
         address caller = makeAddr("caller");
 
-        uint256 totalPrize = TICKET_CAP * TICKET_COST;
+        uint256 totalPrize = DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST;
         uint256 protocolFee = (totalPrize * INITIAL_FEE_PERCENT) / 10_000;
         uint256 userPrize = totalPrize - protocolFee;
 
@@ -119,7 +103,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         vm.prank(owner);
         rips.setProtocolFee(0);
 
-        uint256 totalPrize = TICKET_CAP * TICKET_COST;
+        uint256 totalPrize = DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST;
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
@@ -132,7 +116,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
     }
 
     function test_WhenProtocolFeeIsGreaterThanZero() external whenThereAreUnclaimedRanges {
-        uint256 totalPrize = TICKET_CAP * TICKET_COST;
+        uint256 totalPrize = DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST;
         uint256 protocolFee = (totalPrize * INITIAL_FEE_PERCENT) / 10_000;
         uint256 userPrize = totalPrize - protocolFee;
 
