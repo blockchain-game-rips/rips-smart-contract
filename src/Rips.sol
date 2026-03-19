@@ -201,13 +201,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         view
         returns (uint256)
     {
-        //TODO: check what happens if user doesn't have ranges
-        TicketRange[] storage ranges = _userTickets[roundId][recipient];
-        uint256 totalTickets = 0;
-        //TODO: refund in multiple transaction or limit ticketCup to be able claim in one tx
-        for (uint256 i = 0; i < ranges.length; i++) {
-            totalTickets += ranges[i].count;
-        }
+        uint256 totalTickets = _userTicketCount[roundId][recipient];
 
         if (totalTickets == 0) revert NoTicketsToRefund();
 
@@ -264,5 +258,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
             currentStart += rangeSize;
             remaining -= rangeSize;
         }
+
+        _userTicketCount[roundId][buyer] += ticketCount;
     }
 }

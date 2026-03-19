@@ -128,7 +128,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
-            prizeCount: largeTicketCap, minPrize: ticketCost, maxPrize: ticketCost
+            prizeCount: uint64(largeTicketCap), minPrize: uint128(ticketCost), maxPrize: uint128(ticketCost)
         });
 
         vm.prank(owner);

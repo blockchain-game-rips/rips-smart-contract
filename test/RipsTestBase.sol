@@ -48,9 +48,9 @@ contract RipsTestBase is Test {
     function _createDefaultStake() internal returns (uint256 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
-            prizeCount: DEFAULT_TICKET_CAP,
-            minPrize: DEFAULT_TICKET_COST,
-            maxPrize: DEFAULT_TICKET_COST
+            prizeCount: uint64(DEFAULT_TICKET_CAP),
+            minPrize: uint128(DEFAULT_TICKET_COST),
+            maxPrize: uint128(DEFAULT_TICKET_COST)
         });
 
         vm.prank(owner);

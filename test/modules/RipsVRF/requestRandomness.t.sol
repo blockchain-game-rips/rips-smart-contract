@@ -31,7 +31,7 @@ contract Rips_RequestRandomness is RipsTestBase {
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] =
-            IRips.PrizeTier({prizeCount: TICKET_CAP, minPrize: TICKET_COST, maxPrize: TICKET_COST});
+            IRips.PrizeTier({prizeCount: uint64(TICKET_CAP), minPrize: uint128(TICKET_COST), maxPrize: uint128(TICKET_COST)});
 
         vm.prank(owner);
         stakeId = rips.createStake(

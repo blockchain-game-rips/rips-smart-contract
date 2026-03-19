@@ -19,5 +19,7 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     mapping(uint256 stakeId => uint256 roundId) internal _stakeToActiveRound;
     mapping(uint256 roundId => mapping(address buyer => TicketRange[] ranges)) internal
         _userTickets;
+    mapping(uint256 roundId => mapping(address buyer => uint256 ticketCount)) internal
+        _userTicketCount;
     mapping(uint256 roundId => mapping(address user => bool refunded)) internal _hasRefunded;
 }

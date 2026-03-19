@@ -16,9 +16,9 @@ contract RipsMath_PrizeForRankInTier is RipsTestBase {
         // tier 0: 1 prize,  prize = 1 ether
         // tier 1: 3 prizes, prizes from 0 to 2 ether
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](2);
-        tiers[0] = IRips.PrizeTier({prizeCount: 1, minPrize: SINGLE_PRIZE, maxPrize: SINGLE_PRIZE});
+        tiers[0] = IRips.PrizeTier({prizeCount: 1, minPrize: uint128(SINGLE_PRIZE), maxPrize: uint128(SINGLE_PRIZE)});
         tiers[1] =
-            IRips.PrizeTier({prizeCount: 3, minPrize: RANGE_MIN_PRIZE, maxPrize: RANGE_MAX_PRIZE});
+            IRips.PrizeTier({prizeCount: 3, minPrize: uint128(RANGE_MIN_PRIZE), maxPrize: uint128(RANGE_MAX_PRIZE)});
 
         vm.prank(owner);
         stakeId = rips.createStake(

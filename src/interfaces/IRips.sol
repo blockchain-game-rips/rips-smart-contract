@@ -19,9 +19,9 @@ interface IRips {
     }
 
     struct PrizeTier {
-        uint256 prizeCount;
-        uint256 minPrize;
-        uint256 maxPrize;
+        uint64 prizeCount;
+        uint128 minPrize;
+        uint128 maxPrize;
     }
 
     struct StakeConfig {
