@@ -82,8 +82,8 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         roundId = _nextRoundId++;
 
         Round storage round = _rounds[roundId];
-        round.stakeId = stakeId;
-        round.startTime = block.timestamp;
+        round.stakeId = uint64(stakeId);
+        round.startTime = uint40(block.timestamp);
         round.status = RoundStatus.Active;
 
         _stakeToActiveRound[stakeId] = roundId;

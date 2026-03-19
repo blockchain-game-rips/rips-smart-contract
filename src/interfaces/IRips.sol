@@ -10,9 +10,9 @@ interface IRips {
     }
 
     struct Round {
-        uint256 stakeId;
-        uint256 startTime;
-        uint256 ticketsSold;
+        uint64 stakeId;
+        uint40 startTime;
+        uint32 ticketsSold;
         RoundStatus status;
         uint256 randomA;
         uint256 randomB;

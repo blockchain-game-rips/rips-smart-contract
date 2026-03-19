@@ -85,7 +85,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
     ) internal {
         uint256 startTicket = round.ticketsSold;
 
-        round.ticketsSold += ticketsToBuy;
+        round.ticketsSold += uint32(ticketsToBuy);
 
         _storeTicketRanges(roundId, recipient, startTicket, ticketsToBuy);
 
