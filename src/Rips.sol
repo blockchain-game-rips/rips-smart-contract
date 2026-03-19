@@ -159,6 +159,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 a = round.randomA;
         uint256 b = round.randomB;
         uint256 n = config.ticketCap;
+        PrizeTier[] memory prizeDistribution = config.prizeDistribution;
 
         uint256 endIndex = startIndex + maxRanges;
         if (endIndex > ranges.length) endIndex = ranges.length;
@@ -168,7 +169,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
             for (uint256 j = 0; j < ranges[i].count; j++) {
                 uint256 ticketNumber = ranges[i].start + j + 1;
-                totalPrize += RipsMath.calculateTotalPrize(ticketNumber, a, b, n, config);
+                totalPrize += RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution);
             }
 
             ranges[i].claimed = true;

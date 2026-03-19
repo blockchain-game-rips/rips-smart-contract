@@ -28,16 +28,16 @@ library RipsMath {
         uint256 a,
         uint256 b,
         uint256 n,
-        IRips.StakeConfig storage config
-    ) internal view returns (uint256) {
+        IRips.PrizeTier[] memory prizeDistribution
+    ) internal pure returns (uint256) {
         uint256 prizeNumber = calculatePrizeNumber(ticketNumber, a, b, n);
 
-        return calculatePrizeAmount(prizeNumber, config);
+        return calculatePrizeAmount(prizeNumber, prizeDistribution);
     }
 
-    function prizeForRankInTier(IRips.PrizeTier storage tier, uint256 rank)
+    function prizeForRankInTier(IRips.PrizeTier memory tier, uint256 rank)
         internal
-        view
+        pure
         returns (uint256)
     {
         if (tier.prizeCount == 1) return tier.minPrize;
@@ -47,15 +47,15 @@ library RipsMath {
         return tier.minPrize + (prizeRange * (rank - 1)) / (tier.prizeCount - 1);
     }
 
-    function calculatePrizeAmount(uint256 prizeNumber, IRips.StakeConfig storage config)
+    function calculatePrizeAmount(uint256 prizeNumber, IRips.PrizeTier[] memory prizeDistribution)
         internal
-        view
+        pure
         returns (uint256)
     {
         uint256 cumulativePrizes = 0;
 
-        for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
-            IRips.PrizeTier storage tier = config.prizeDistribution[i];
+        for (uint256 i = 0; i < prizeDistribution.length; i++) {
+            IRips.PrizeTier memory tier = prizeDistribution[i];
 
             uint256 tierStart = cumulativePrizes + 1;
             uint256 tierEnd = cumulativePrizes + tier.prizeCount;
