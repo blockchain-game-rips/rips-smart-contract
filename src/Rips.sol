@@ -149,6 +149,14 @@ contract Rips is RipsVrf, ReentrancyGuard {
         emit PrizesClaimed(roundId, recipient, userPrize);
     }
 
+    struct PrizeCalcParams {
+        uint256 a;
+        uint256 b;
+        uint256 n;
+        PrizeTier[] tiers;
+        uint64[] bounds;
+    }
+
     function _accumulateClaimedPrizes(
         TicketRange[] storage ranges,
         uint256 startIndex,
@@ -156,8 +164,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         Round storage round,
         StakeConfig storage config
     ) private returns (uint256 totalPrize) {
-        PrizeTier[] memory prizeDistribution = config.prizeDistribution;
-        uint64[] memory tierBoundaries = _tierBoundaries[round.stakeId];
+        PrizeCalcParams memory p = PrizeCalcParams({
+            a: round.randomA,
+            b: round.randomB,
+            n: config.ticketCap,
+            tiers: config.prizeDistribution,
+            bounds: _tierBoundaries[round.stakeId]
+        });
 
         uint256 endIndex = startIndex + maxRanges;
         if (endIndex > ranges.length) endIndex = ranges.length;
@@ -165,26 +178,37 @@ contract Rips is RipsVrf, ReentrancyGuard {
         for (uint256 i = startIndex; i < endIndex; i++) {
             if (ranges[i].claimed) continue;
 
-            totalPrize += _accumulateRangePrize(
-                ranges[i], round.randomA, round.randomB, config.ticketCap, prizeDistribution, tierBoundaries
-            );
+            uint256 rangeStart = ranges[i].start;
+            uint256 count = ranges[i].count;
+
+            for (uint256 j = 0; j < count; j++) {
+                totalPrize += _calculateTicketPrize(rangeStart + j + 1, p);
+            }
 
             ranges[i].claimed = true;
         }
     }
 
-    function _accumulateRangePrize(
-        TicketRange storage range,
-        uint256 a,
-        uint256 b,
-        uint256 n,
-        PrizeTier[] memory prizeDistribution,
-        uint64[] memory tierBoundaries
-    ) private view returns (uint256 rangePrize) {
-        for (uint256 j = 0; j < range.count; j++) {
-            uint256 ticketNumber = range.start + j + 1;
-            rangePrize += RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution, tierBoundaries);
+    function _calculateTicketPrize(uint256 ticketNumber, PrizeCalcParams memory p)
+        private
+        pure
+        returns (uint256)
+    {
+        uint256 prizeNumber = (p.a * ticketNumber + p.b) % p.n + 1;
+
+        for (uint256 t = 0; t < p.bounds.length; t++) {
+            if (prizeNumber <= p.bounds[t]) {
+                PrizeTier memory tier = p.tiers[t];
+                uint256 rank = prizeNumber - (t == 0 ? 0 : p.bounds[t - 1]);
+
+                if (tier.prizeCount == 1) return tier.minPrize;
+
+                return tier.minPrize + ((tier.maxPrize - tier.minPrize) * (rank - 1))
+                    / (tier.prizeCount - 1);
+            }
         }
+
+        revert();
     }
 
     function refund(uint256 roundId, address recipient) external nonReentrant {
