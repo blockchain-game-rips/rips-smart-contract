@@ -55,8 +55,14 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         newConfig.ticketCap = config.ticketCap;
         newConfig.duration = config.duration;
         newConfig.ticketCost = config.ticketCost;
+
+        uint64 cumulative = 0;
+
         for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
             newConfig.prizeDistribution.push(config.prizeDistribution[i]);
+
+            cumulative += config.prizeDistribution[i].prizeCount;
+            _tierBoundaries[stakeId].push(cumulative);
         }
     }
 

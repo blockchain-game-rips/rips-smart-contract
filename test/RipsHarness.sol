@@ -59,8 +59,9 @@ contract RipsHarness is Rips {
         returns (uint256)
     {
         PrizeTier[] memory prizeDistribution = _stakeConfigs[stakeId].prizeDistribution;
+        uint64[] memory tierBoundaries = _tierBoundaries[stakeId];
 
-        return RipsMath.calculatePrizeAmount(prizeNumber, prizeDistribution);
+        return RipsMath.calculatePrizeAmount(prizeNumber, prizeDistribution, tierBoundaries);
     }
 
     function exposed_calculateTotalPrize(
@@ -71,8 +72,9 @@ contract RipsHarness is Rips {
         uint256 stakeId
     ) external view returns (uint256) {
         PrizeTier[] memory prizeDistribution = _stakeConfigs[stakeId].prizeDistribution;
+        uint64[] memory tierBoundaries = _tierBoundaries[stakeId];
 
-        return RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution);
+        return RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution, tierBoundaries);
     }
 
     function exposed_nextStakeId() external view returns (uint256) {

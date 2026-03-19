@@ -156,10 +156,8 @@ contract Rips is RipsVrf, ReentrancyGuard {
         Round storage round,
         StakeConfig storage config
     ) private returns (uint256 totalPrize) {
-        uint256 a = round.randomA;
-        uint256 b = round.randomB;
-        uint256 n = config.ticketCap;
         PrizeTier[] memory prizeDistribution = config.prizeDistribution;
+        uint64[] memory tierBoundaries = _tierBoundaries[round.stakeId];
 
         uint256 endIndex = startIndex + maxRanges;
         if (endIndex > ranges.length) endIndex = ranges.length;
@@ -167,12 +165,25 @@ contract Rips is RipsVrf, ReentrancyGuard {
         for (uint256 i = startIndex; i < endIndex; i++) {
             if (ranges[i].claimed) continue;
 
-            for (uint256 j = 0; j < ranges[i].count; j++) {
-                uint256 ticketNumber = ranges[i].start + j + 1;
-                totalPrize += RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution);
-            }
+            totalPrize += _accumulateRangePrize(
+                ranges[i], round.randomA, round.randomB, config.ticketCap, prizeDistribution, tierBoundaries
+            );
 
             ranges[i].claimed = true;
+        }
+    }
+
+    function _accumulateRangePrize(
+        TicketRange storage range,
+        uint256 a,
+        uint256 b,
+        uint256 n,
+        PrizeTier[] memory prizeDistribution,
+        uint64[] memory tierBoundaries
+    ) private view returns (uint256 rangePrize) {
+        for (uint256 j = 0; j < range.count; j++) {
+            uint256 ticketNumber = range.start + j + 1;
+            rangePrize += RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution, tierBoundaries);
         }
     }
 

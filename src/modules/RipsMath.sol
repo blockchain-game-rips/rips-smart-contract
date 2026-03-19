@@ -28,11 +28,12 @@ library RipsMath {
         uint256 a,
         uint256 b,
         uint256 n,
-        IRips.PrizeTier[] memory prizeDistribution
+        IRips.PrizeTier[] memory prizeDistribution,
+        uint64[] memory tierBoundaries
     ) internal pure returns (uint256) {
         uint256 prizeNumber = calculatePrizeNumber(ticketNumber, a, b, n);
 
-        return calculatePrizeAmount(prizeNumber, prizeDistribution);
+        return calculatePrizeAmount(prizeNumber, prizeDistribution, tierBoundaries);
     }
 
     function prizeForRankInTier(IRips.PrizeTier memory tier, uint256 rank)
@@ -47,24 +48,18 @@ library RipsMath {
         return tier.minPrize + (prizeRange * (rank - 1)) / (tier.prizeCount - 1);
     }
 
-    function calculatePrizeAmount(uint256 prizeNumber, IRips.PrizeTier[] memory prizeDistribution)
-        internal
-        pure
-        returns (uint256)
-    {
-        uint256 cumulativePrizes = 0;
+    function calculatePrizeAmount(
+        uint256 prizeNumber,
+        IRips.PrizeTier[] memory prizeDistribution,
+        uint64[] memory tierBoundaries
+    ) internal pure returns (uint256) {
+        for (uint256 i = 0; i < tierBoundaries.length; i++) {
+            if (prizeNumber <= tierBoundaries[i]) {
+                uint256 tierStart = i == 0 ? 0 : tierBoundaries[i - 1];
+                uint256 rank = prizeNumber - tierStart;
 
-        for (uint256 i = 0; i < prizeDistribution.length; i++) {
-            IRips.PrizeTier memory tier = prizeDistribution[i];
-
-            uint256 tierStart = cumulativePrizes + 1;
-            uint256 tierEnd = cumulativePrizes + tier.prizeCount;
-
-            if (prizeNumber >= tierStart && prizeNumber <= tierEnd) {
-                return prizeForRankInTier(tier, prizeNumber - cumulativePrizes);
+                return prizeForRankInTier(prizeDistribution[i], rank);
             }
-
-            cumulativePrizes += tier.prizeCount;
         }
 
         // Unreachable: calculatePrizeNumber guarantees prizeNumber is in [1, totalPrizeCount].
