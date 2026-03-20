@@ -15,7 +15,7 @@ import "../RipsTestBase.sol";
 //   Tier 7:  1 prize  @ 10 ether        avg 10.0 = 10 ether
 //                                            total = 128 ether
 contract Rips_SevenTiers is RipsTestBase {
-    uint256 private constant TICKET_CAP  = 128;
+    uint256 private constant TICKET_CAP = 128;
     uint256 private constant TICKET_COST = 1 ether;
 
     uint256 private stakeId;
@@ -27,13 +27,13 @@ contract Rips_SevenTiers is RipsTestBase {
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 1000 ether);
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](7);
-        tiers[0] = IRips.PrizeTier({prizeCount: 50, minPrize: 0.1 ether,  maxPrize: 0.5 ether});
-        tiers[1] = IRips.PrizeTier({prizeCount: 34, minPrize: 0.3 ether,  maxPrize: 0.7 ether});
-        tiers[2] = IRips.PrizeTier({prizeCount: 20, minPrize: 0.5 ether,  maxPrize: 1.5 ether});
-        tiers[3] = IRips.PrizeTier({prizeCount: 12, minPrize: 1 ether,    maxPrize: 3 ether});
-        tiers[4] = IRips.PrizeTier({prizeCount: 8,  minPrize: 2 ether,    maxPrize: 4 ether});
-        tiers[5] = IRips.PrizeTier({prizeCount: 3,  minPrize: 4 ether,    maxPrize: 8 ether});
-        tiers[6] = IRips.PrizeTier({prizeCount: 1,  minPrize: 10 ether,   maxPrize: 10 ether});
+        tiers[0] = IRips.PrizeTier({prizeCount: 50, minPrize: 0.1 ether, maxPrize: 0.5 ether});
+        tiers[1] = IRips.PrizeTier({prizeCount: 34, minPrize: 0.3 ether, maxPrize: 0.7 ether});
+        tiers[2] = IRips.PrizeTier({prizeCount: 20, minPrize: 0.5 ether, maxPrize: 1.5 ether});
+        tiers[3] = IRips.PrizeTier({prizeCount: 12, minPrize: 1 ether, maxPrize: 3 ether});
+        tiers[4] = IRips.PrizeTier({prizeCount: 8, minPrize: 2 ether, maxPrize: 4 ether});
+        tiers[5] = IRips.PrizeTier({prizeCount: 3, minPrize: 4 ether, maxPrize: 8 ether});
+        tiers[6] = IRips.PrizeTier({prizeCount: 1, minPrize: 10 ether, maxPrize: 10 ether});
 
         vm.prank(owner);
         stakeId = rips.createStake(

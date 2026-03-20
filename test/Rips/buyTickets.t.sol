@@ -57,7 +57,7 @@ contract Rips_BuyTickets is RipsTestBase {
         uint256 expectedNewRoundId = rips.exposed_nextRoundId();
 
         vm.expectEmit();
-        emit IRips.RoundCreated(expectedNewRoundId, stakeId, block.timestamp);
+        emit IRips.RoundCreated(expectedNewRoundId, stakeId);
 
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
@@ -88,7 +88,7 @@ contract Rips_BuyTickets is RipsTestBase {
         whenRequestedTicketsAreFewerThanAvailable
     {
         vm.expectEmit();
-        emit IRips.TicketsPurchased(roundId, user, 0, ticketsToBuy);
+        emit IRips.TicketsPurchased(roundId, user, ticketsToBuy);
 
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
@@ -128,7 +128,9 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(largeTicketCap), minPrize: uint128(ticketCost), maxPrize: uint128(ticketCost)
+            prizeCount: uint64(largeTicketCap),
+            minPrize: uint128(ticketCost),
+            maxPrize: uint128(ticketCost)
         });
 
         vm.prank(owner);
@@ -163,7 +165,7 @@ contract Rips_BuyTickets is RipsTestBase {
         whenRequestedTicketsEqualTheRemainingCapacity
     {
         vm.expectEmit();
-        emit IRips.TicketsPurchased(roundId, user, 0, ticketsToBuy);
+        emit IRips.TicketsPurchased(roundId, user, ticketsToBuy);
 
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
@@ -211,7 +213,7 @@ contract Rips_BuyTickets is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.TicketsPurchased(roundId, user, initialBuy, availableTickets);
+        emit IRips.TicketsPurchased(roundId, user, availableTickets);
 
         vm.prank(user);
         rips.buyTickets{value: payment}(stakeId, ticketsToBuy, user);

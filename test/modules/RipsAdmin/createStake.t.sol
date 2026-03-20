@@ -37,12 +37,19 @@ contract Rips_CreateStake is RipsTestBase {
 
     function test_RevertWhen_TicketCapIsNotAPowerOfTwo() external whenTheCallerIsTheOwner {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({prizeCount: 3, minPrize: uint128(DEFAULT_TICKET_COST), maxPrize: uint128(DEFAULT_TICKET_COST)});
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: 3,
+            minPrize: uint128(DEFAULT_TICKET_COST),
+            maxPrize: uint128(DEFAULT_TICKET_COST)
+        });
 
         vm.expectRevert(IRips.TicketCapNotPowerOfTwo.selector);
         rips.createStake(
             IRips.StakeConfig({
-                prizeDistribution: tiers, ticketCap: 3, duration: DEFAULT_DURATION, ticketCost: DEFAULT_TICKET_COST
+                prizeDistribution: tiers,
+                ticketCap: 3,
+                duration: DEFAULT_DURATION,
+                ticketCost: DEFAULT_TICKET_COST
             })
         );
     }
@@ -80,7 +87,9 @@ contract Rips_CreateStake is RipsTestBase {
         whenPrizeDistributionIsNotEmpty
     {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({prizeCount: uint64(DEFAULT_TICKET_CAP), minPrize: 2 ether, maxPrize: 1 ether});
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: uint64(DEFAULT_TICKET_CAP), minPrize: 2 ether, maxPrize: 1 ether
+        });
 
         vm.expectRevert(IRips.InvalidPrizeRange.selector);
         rips.createStake(
@@ -106,7 +115,9 @@ contract Rips_CreateStake is RipsTestBase {
     {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP - 1), minPrize: uint128(DEFAULT_TICKET_COST), maxPrize: uint128(DEFAULT_TICKET_COST)
+            prizeCount: uint64(DEFAULT_TICKET_CAP - 1),
+            minPrize: uint128(DEFAULT_TICKET_COST),
+            maxPrize: uint128(DEFAULT_TICKET_COST)
         });
 
         vm.expectRevert(IRips.PrizeCountMismatch.selector);
@@ -134,8 +145,11 @@ contract Rips_CreateStake is RipsTestBase {
     {
         uint256 wrongPrize = DEFAULT_TICKET_COST + 1;
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] =
-            IRips.PrizeTier({prizeCount: uint64(DEFAULT_TICKET_CAP), minPrize: uint128(wrongPrize), maxPrize: uint128(wrongPrize)});
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: uint64(DEFAULT_TICKET_CAP),
+            minPrize: uint128(wrongPrize),
+            maxPrize: uint128(wrongPrize)
+        });
 
         vm.expectRevert(IRips.PrizePoolMismatch.selector);
         rips.createStake(
@@ -159,10 +173,10 @@ contract Rips_CreateStake is RipsTestBase {
         uint256 expectedStakeId = rips.exposed_nextStakeId();
 
         vm.expectEmit();
-        emit IRips.RoundCreated(rips.exposed_nextRoundId(), expectedStakeId, block.timestamp);
+        emit IRips.RoundCreated(rips.exposed_nextRoundId(), expectedStakeId);
 
         vm.expectEmit();
-        emit IRips.StakeCreated(expectedStakeId, DEFAULT_TICKET_CAP, DEFAULT_TICKET_COST);
+        emit IRips.StakeCreated(expectedStakeId);
 
         uint256 stakeId = rips.createStake(_validConfig());
 

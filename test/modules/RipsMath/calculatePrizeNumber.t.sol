@@ -42,5 +42,4 @@ contract RipsMath_CalculatePrizeNumber is RipsTestBase {
             rips.exposed_calculatePrizeNumber(ticketB, a, b, n)
         );
     }
-
 }

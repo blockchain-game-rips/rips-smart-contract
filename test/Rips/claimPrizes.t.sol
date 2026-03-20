@@ -20,7 +20,9 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(stakeId, DEFAULT_TICKET_CAP, user);
+        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
+            stakeId, DEFAULT_TICKET_CAP, user
+        );
     }
 
     function _finalizeRound() private {

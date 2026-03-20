@@ -74,7 +74,8 @@ contract RipsHarness is Rips {
         PrizeTier[] memory prizeDistribution = _stakeConfigs[stakeId].prizeDistribution;
         uint64[] memory tierBoundaries = _tierBoundaries[stakeId];
 
-        return RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution, tierBoundaries);
+        return
+            RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution, tierBoundaries);
     }
 
     function exposed_nextStakeId() external view returns (uint256) {

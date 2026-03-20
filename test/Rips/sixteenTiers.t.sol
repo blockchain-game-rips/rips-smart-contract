@@ -29,9 +29,7 @@ contract Rips_SixteenTiers is RipsTestBase {
             uint128 k = uint128(2 * i + 1);
 
             tiers[i] = IRips.PrizeTier({
-                prizeCount: uint64(TICKETS_PER_TIER),
-                minPrize: k * MN_UNIT,
-                maxPrize: k * MX_UNIT
+                prizeCount: uint64(TICKETS_PER_TIER), minPrize: k * MN_UNIT, maxPrize: k * MX_UNIT
             });
         }
 

@@ -23,9 +23,15 @@ contract RipsMath_CalculatePrizeAmount is RipsTestBase {
         super.setUp();
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
-        tiers[0] = IRips.PrizeTier({prizeCount: 2, minPrize: uint128(PRIZE_1), maxPrize: uint128(PRIZE_2)});
-        tiers[1] = IRips.PrizeTier({prizeCount: 2, minPrize: uint128(PRIZE_3), maxPrize: uint128(PRIZE_4)});
-        tiers[2] = IRips.PrizeTier({prizeCount: 4, minPrize: uint128(PRIZE_5), maxPrize: uint128(PRIZE_8)});
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: 2, minPrize: uint128(PRIZE_1), maxPrize: uint128(PRIZE_2)
+        });
+        tiers[1] = IRips.PrizeTier({
+            prizeCount: 2, minPrize: uint128(PRIZE_3), maxPrize: uint128(PRIZE_4)
+        });
+        tiers[2] = IRips.PrizeTier({
+            prizeCount: 4, minPrize: uint128(PRIZE_5), maxPrize: uint128(PRIZE_8)
+        });
 
         vm.prank(owner);
         stakeId = rips.createStake(

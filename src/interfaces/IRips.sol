@@ -57,12 +57,10 @@ interface IRips {
     error RefundFailed();
     error RoundNotExist();
 
-    event StakeCreated(uint256 indexed stakeId, uint256 ticketCap, uint256 ticketCost);
+    event StakeCreated(uint256 indexed stakeId);
     event StakeDeleted(uint256 indexed stakeId);
-    event RoundCreated(uint256 indexed roundId, uint256 indexed stakeId, uint256 startTime);
-    event TicketsPurchased(
-        uint256 indexed roundId, address indexed buyer, uint256 startTicket, uint256 count
-    );
+    event RoundCreated(uint256 indexed roundId, uint256 indexed stakeId);
+    event TicketsPurchased(uint256 indexed roundId, address indexed buyer, uint256 count);
     event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
     event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
     event PrizesClaimed(uint256 indexed roundId, address indexed claimer, uint256 amount);

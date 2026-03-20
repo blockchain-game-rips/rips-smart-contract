@@ -89,7 +89,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
         _storeTicketRanges(roundId, recipient, startTicket, ticketsToBuy);
 
-        emit TicketsPurchased(roundId, recipient, startTicket, ticketsToBuy);
+        emit TicketsPurchased(roundId, recipient, ticketsToBuy);
     }
 
     function _resolveActiveRoundAndStake(uint256 stakeId)

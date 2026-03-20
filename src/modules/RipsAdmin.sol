@@ -23,7 +23,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
 
         _createRound(stakeId);
 
-        emit StakeCreated(stakeId, config.ticketCap, config.ticketCost);
+        emit StakeCreated(stakeId);
     }
 
     function _validateStakeConfig(StakeConfig calldata config) private pure {
@@ -41,7 +41,8 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
             PrizeTier calldata tier = config.prizeDistribution[i];
             if (tier.minPrize > tier.maxPrize) revert InvalidPrizeRange();
             totalPrizeCount += tier.prizeCount;
-            totalPrizePool += (uint256(tier.prizeCount) * (uint256(tier.minPrize) + uint256(tier.maxPrize))) / 2;
+            totalPrizePool += (uint256(tier.prizeCount)
+                    * (uint256(tier.minPrize) + uint256(tier.maxPrize))) / 2;
         }
 
         if (totalPrizeCount != config.ticketCap) revert PrizeCountMismatch();
@@ -94,6 +95,6 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
 
         _stakeToActiveRound[stakeId] = roundId;
 
-        emit RoundCreated(roundId, stakeId, block.timestamp);
+        emit RoundCreated(roundId, stakeId);
     }
 }
