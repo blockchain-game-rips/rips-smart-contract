@@ -11,14 +11,9 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 vrfSubscriptionId,
         bytes32 vrfKeyHash,
         uint32 callbackGasLimit,
-        address initialOwner,
         uint256 initialFeePercent
     ) RipsVrf(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit) {
-        if (initialOwner == address(0)) revert ZeroAddress();
-
-        transferOwnership(initialOwner);
-
-        setFeeRecipient(initialOwner);
+        setFeeRecipient(msg.sender);
         setProtocolFee(initialFeePercent);
     }
 
