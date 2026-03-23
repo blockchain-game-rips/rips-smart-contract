@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "./RipsHarness.sol";
-import "../script/VrfHelper.sol";
+import "./VrfHelper.sol";
 import "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract RipsTestBase is Test {
