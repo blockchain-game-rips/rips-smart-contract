@@ -1,4 +1,4 @@
-.PHONY: check fix scaffold
+.PHONY: check fix scaffold local
 
 TREE_PATH ?= test/**/*.tree
 
@@ -10,3 +10,6 @@ fix:
 
 scaffold:
 	bulloak scaffold -w $(TREE_PATH) && forge fmt
+
+local:
+	sh local/setup.sh
