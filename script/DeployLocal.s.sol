@@ -10,7 +10,7 @@ contract DeployLocal is Script {
     uint32 private constant DEFAULT_CALLBACK_GAS = 100_000;
     uint256 private constant DEFAULT_FEE_PERCENT = 500; // 5%
 
-    function run() external returns (address rips, uint256 stakeId) {
+    function run() external returns (address rips, address vrfSetup) {
         bytes32 keyHash = vm.envOr("VRF_KEY_HASH", DEFAULT_KEY_HASH);
         uint32 callbackGasLimit =
             uint32(vm.envOr("VRF_CALLBACK_GAS", uint256(DEFAULT_CALLBACK_GAS)));
@@ -18,20 +18,22 @@ contract DeployLocal is Script {
 
         vm.startBroadcast();
 
-        VrfSetup vrfSetup = new VrfSetup();
-        VRFCoordinatorV2_5Mock coordinator = vrfSetup.coordinator();
-        uint256 subscriptionId = vrfSetup.subscriptionId();
+        VrfSetup vrfSetupContract = new VrfSetup();
+        VRFCoordinatorV2_5Mock coordinatorContract = vrfSetupContract.coordinator();
+        uint256 subscriptionId = vrfSetupContract.subscriptionId();
 
-        Rips ripsContract =
-            new Rips(address(coordinator), subscriptionId, keyHash, callbackGasLimit, feePercent);
+        Rips ripsContract = new Rips(
+            address(coordinatorContract), subscriptionId, keyHash, callbackGasLimit, feePercent
+        );
 
-        vrfSetup.addConsumer(address(ripsContract));
+        vrfSetupContract.addConsumer(address(ripsContract));
 
-        stakeId = _createDefaultStake(ripsContract);
+        _createDefaultStake(ripsContract);
 
         vm.stopBroadcast();
 
         rips = address(ripsContract);
+        vrfSetup = address(vrfSetupContract);
     }
 
     function _createDefaultStake(Rips rips) internal returns (uint256 stakeId) {
