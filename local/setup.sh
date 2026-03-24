@@ -5,14 +5,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 STATE_DIR="$SCRIPT_DIR/state"
 RPC_URL="http://localhost:8545"
-CHAIN_ID=31337
+CHAIN_ID=8453
 DEPLOYER_ADDRESS="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 DEPLOYER_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
 mkdir -p "$STATE_DIR"
 
 echo "Starting anvil..."
-anvil --silent --dump-state "$STATE_DIR/anvil-state.json" &
+anvil --silent --chain-id $CHAIN_ID --dump-state "$STATE_DIR/anvil-state.json" &
 ANVIL_PID=$!
 trap 'kill $ANVIL_PID 2>/dev/null; wait $ANVIL_PID 2>/dev/null' EXIT
 sleep 1
