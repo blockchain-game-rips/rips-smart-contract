@@ -88,7 +88,7 @@ contract Rips_BuyTickets is RipsTestBase {
         whenRequestedTicketsAreFewerThanAvailable
     {
         vm.expectEmit();
-        emit IRips.TicketsPurchased(roundId, user, ticketsToBuy);
+        emit IRips.TicketsPurchased(roundId, user, ticketsToBuy, 0);
 
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
@@ -165,7 +165,7 @@ contract Rips_BuyTickets is RipsTestBase {
         whenRequestedTicketsEqualTheRemainingCapacity
     {
         vm.expectEmit();
-        emit IRips.TicketsPurchased(roundId, user, ticketsToBuy);
+        emit IRips.TicketsPurchased(roundId, user, ticketsToBuy, 0);
 
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
@@ -213,7 +213,7 @@ contract Rips_BuyTickets is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.TicketsPurchased(roundId, user, availableTickets);
+        emit IRips.TicketsPurchased(roundId, user, availableTickets, initialBuy);
 
         vm.prank(user);
         rips.buyTickets{value: payment}(stakeId, ticketsToBuy, user);
