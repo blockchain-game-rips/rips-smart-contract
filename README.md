@@ -1,66 +1,45 @@
-## Foundry
+# Rips Smart Contract
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A prize protocol where users buy tickets for rounds, winners are selected via Chainlink VRF, and prizes are distributed across configurable tiers.
 
-Foundry consists of:
+## Overview
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- **Stakes** define round configurations (ticket price, cap, duration, prize tiers)
+- **Rounds** are created automatically per stake; users buy tickets within a round
+- **Chainlink VRF** provides verifiable randomness to finalize rounds
+- **Prize tiers** support linear interpolation between min/max prizes
+- **Refunds** are available for expired rounds that never filled
 
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
+## Setup
 
 ```shell
-$ forge build
+forge install
 ```
 
-### Test
+## Testing
+
+Uses [Forge](https://book.getfoundry.sh/) for tests and [Bulloak](https://github.com/alexfertel/bulloak) to scaffold/validate test structure from `.tree` spec files.
 
 ```shell
-$ forge test
+forge test
 ```
 
-### Format
+### Bulloak
+
+`.tree` files in `test/` describe the expected test structure. Use `make` commands to manage them:
 
 ```shell
-$ forge fmt
+make scaffold   # generate test files from .tree specs
+make check      # verify test files match .tree specs
+make fix        # auto-fix mismatches and format
 ```
 
-### Gas Snapshots
+## Local Setup
+
+Spins up a local Anvil node (chain ID 8453), deploys a mock VRF coordinator and the Rips contract, and writes deployment addresses to `local/state/deployments.json` for use by off-chain tooling.
 
 ```shell
-$ forge snapshot
+make local
 ```
 
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Output: `local/state/deployments.json` with `rips`, `vrfCoordinator`, and `subscriptionId`.
