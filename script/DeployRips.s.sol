@@ -16,7 +16,8 @@ contract DeployRips is Script {
         address coordinator = vm.envAddress("VRF_COORDINATOR");
         uint256 subscriptionId = vm.envUint("VRF_SUBSCRIPTION_ID");
         bytes32 keyHash = vm.envOr("VRF_KEY_HASH", DEFAULT_KEY_HASH);
-        uint32 callbackGasLimit = uint32(vm.envOr("VRF_CALLBACK_GAS", uint256(DEFAULT_CALLBACK_GAS)));
+        uint32 callbackGasLimit =
+            uint32(vm.envOr("VRF_CALLBACK_GAS", uint256(DEFAULT_CALLBACK_GAS)));
         uint256 feePercent = vm.envOr("INITIAL_FEE_PERCENT", DEFAULT_FEE_PERCENT);
 
         VRFCoordinatorV2_5Mock coordinatorContract = VRFCoordinatorV2_5Mock(coordinator);
@@ -25,11 +26,12 @@ contract DeployRips is Script {
 
         coordinatorContract.fundSubscription(subscriptionId, VRF_FUND_AMOUNT);
 
-        Rips ripsContract = new Rips(coordinator, subscriptionId, keyHash, callbackGasLimit, feePercent);
+        Rips ripsContract =
+            new Rips(coordinator, subscriptionId, keyHash, callbackGasLimit, feePercent);
 
         coordinatorContract.addConsumer(subscriptionId, address(ripsContract));
 
-        _createDefaultStake(ripsContract);
+        _createDefaultStakes(ripsContract);
 
         vm.stopBroadcast();
 
@@ -38,19 +40,39 @@ contract DeployRips is Script {
         console.log("rips:", rips);
     }
 
-    function _createDefaultStake(Rips rips) internal {
+    function _createDefaultStakes(Rips rips) internal returns (uint256 stakeId1, uint256 stakeId2) {
+        stakeId1 = _createDefaultStake1(rips);
+        stakeId2 = _createDefaultStake2(rips);
+    }
+
+    function _createDefaultStake1(Rips rips) internal returns (uint256 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
 
         tiers[0] = IRips.PrizeTier({prizeCount: 5, minPrize: 0.0008 ether, maxPrize: 0.0012 ether});
+
         tiers[1] = IRips.PrizeTier({prizeCount: 2, minPrize: 0.007 ether, maxPrize: 0.008 ether});
+
         tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.02 ether, maxPrize: 0.02 ether});
 
-        rips.createStake(
+        stakeId = rips.createStake(
             IRips.StakeConfig({
-                prizeDistribution: tiers,
-                ticketCap: 8,
-                duration: 1 days,
-                ticketCost: 0.005 ether
+                prizeDistribution: tiers, ticketCap: 8, duration: 5 minutes, ticketCost: 0.005 ether
+            })
+        );
+    }
+
+    function _createDefaultStake2(Rips rips) internal returns (uint256 stakeId) {
+        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
+
+        tiers[0] = IRips.PrizeTier({prizeCount: 5, minPrize: 0.0016 ether, maxPrize: 0.0024 ether});
+
+        tiers[1] = IRips.PrizeTier({prizeCount: 2, minPrize: 0.014 ether, maxPrize: 0.016 ether});
+
+        tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.04 ether, maxPrize: 0.04 ether});
+
+        stakeId = rips.createStake(
+            IRips.StakeConfig({
+                prizeDistribution: tiers, ticketCap: 8, duration: 5 minutes, ticketCost: 0.01 ether
             })
         );
     }
