@@ -200,6 +200,21 @@ contract Rips_BuyTickets is RipsTestBase {
         assertEq(activeRound, 0);
     }
 
+    function test_WhenRoundExpiredThenBuyAllTickets_RoundIsSoldOut() external {
+        vm.warp(block.timestamp + DEFAULT_DURATION + 1);
+
+        // nextRoundId before the call = the round that _resolveActiveRoundAndStake will create for the expired round
+        uint256 newRoundId = rips.exposed_nextRoundId();
+
+        vm.prank(user);
+        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(stakeId, DEFAULT_TICKET_CAP, user);
+
+        // newRoundId is the round bought into (created on expiry); it should be SoldOut
+        IRips.Round memory round = rips.exposed_round(newRoundId);
+        assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
+        assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
+    }
+
     function test_WhenRequestedTicketsExceedAvailableTickets() external {
         uint256 initialBuy = DEFAULT_TICKET_CAP - 1;
         vm.prank(user);

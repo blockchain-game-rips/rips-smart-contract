@@ -103,6 +103,8 @@ contract Rips is RipsVrf, ReentrancyGuard {
             if (_stakeDeleted[stakeId]) revert StakeNotExist();
 
             roundId = _createRound(stakeId);
+
+            round = _rounds[roundId];
         }
     }
 
