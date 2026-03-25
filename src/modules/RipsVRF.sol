@@ -33,6 +33,7 @@ abstract contract RipsVrf is RipsAdmin {
         emit CallbackGasLimitUpdated(newLimit);
     }
 
+    //TODO: if there is insufficient LINK balance on the subscription or chainlink stops to work account funds will be frozen
     function requestRandomness(uint256 roundId) external returns (uint256 requestId) {
         Round storage round = _rounds[roundId];
         if (round.status != RoundStatus.SoldOut) revert RoundNotSoldOut();
