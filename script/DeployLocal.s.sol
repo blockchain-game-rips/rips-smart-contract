@@ -28,7 +28,7 @@ contract DeployLocal is Script {
 
         vrfSetupContract.addConsumer(address(ripsContract));
 
-        _createDefaultStake(ripsContract);
+        _createDefaultStakes(ripsContract);
 
         vm.stopBroadcast();
 
@@ -36,7 +36,12 @@ contract DeployLocal is Script {
         vrfSetup = address(vrfSetupContract);
     }
 
-    function _createDefaultStake(Rips rips) internal returns (uint256 stakeId) {
+    function _createDefaultStakes(Rips rips) internal {
+        _createDefaultStake1(rips);
+        _createDefaultStake2(rips);
+    }
+
+    function _createDefaultStake1(Rips rips) internal returns (uint256 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
 
         tiers[0] = IRips.PrizeTier({prizeCount: 5, minPrize: 0.0008 ether, maxPrize: 0.0012 ether});
@@ -47,7 +52,23 @@ contract DeployLocal is Script {
 
         stakeId = rips.createStake(
             IRips.StakeConfig({
-                prizeDistribution: tiers, ticketCap: 8, duration: 1 days, ticketCost: 0.005 ether
+                prizeDistribution: tiers, ticketCap: 8, duration: 5 minutes, ticketCost: 0.005 ether
+            })
+        );
+    }
+
+    function _createDefaultStake2(Rips rips) internal returns (uint256 stakeId) {
+        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
+
+        tiers[0] = IRips.PrizeTier({prizeCount: 5, minPrize: 0.0016 ether, maxPrize: 0.0024 ether});
+
+        tiers[1] = IRips.PrizeTier({prizeCount: 2, minPrize: 0.014 ether, maxPrize: 0.016 ether});
+
+        tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.04 ether, maxPrize: 0.04 ether});
+
+        stakeId = rips.createStake(
+            IRips.StakeConfig({
+                prizeDistribution: tiers, ticketCap: 8, duration: 5 minutes, ticketCost: 0.01 ether
             })
         );
     }
