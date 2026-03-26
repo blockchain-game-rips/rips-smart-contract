@@ -9,7 +9,7 @@ uint256 constant VRF_FUND_AMOUNT = 10 ether;
 
 contract DeployRips is Script {
     bytes32 private constant DEFAULT_KEY_HASH = bytes32(uint256(1));
-    uint32 private constant DEFAULT_CALLBACK_GAS = 100_000;
+    uint32 private constant DEFAULT_CALLBACK_GAS = 200_000;
     uint256 private constant DEFAULT_FEE_PERCENT = 500; // 5%
 
     function run() external returns (address rips) {
