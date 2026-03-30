@@ -65,11 +65,11 @@ interface IRips {
     event StakeDeleted(uint256 indexed stakeId);
     event RoundCreated(uint256 indexed roundId, uint256 indexed stakeId);
     event TicketsPurchased(
-        uint256 indexed roundId, address indexed buyer, uint256 count, uint256 startTicketIndex
+        uint256 indexed roundId, address indexed user, uint256 count, uint256 startTicketIndex
     );
     event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
     event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
-    event PrizesClaimed(uint256 indexed roundId, address indexed claimer, uint256 amount);
+    event PrizesClaimed(uint256 indexed roundId, address indexed user, uint256 amount);
     event RefundIssued(uint256 indexed roundId, address indexed user, uint256 amount);
     event ProtocolFeeUpdated(uint256 newFeePercent);
     event FeeRecipientUpdated(address newRecipient);
