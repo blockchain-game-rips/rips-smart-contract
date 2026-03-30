@@ -53,6 +53,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
 
     function _storeStakeConfig(uint256 stakeId, StakeConfig calldata config) private {
         StakeConfig storage newConfig = _stakeConfigs[stakeId];
+        newConfig.currency = config.currency;
         newConfig.ticketCap = config.ticketCap;
         newConfig.duration = config.duration;
         newConfig.ticketCost = config.ticketCost;

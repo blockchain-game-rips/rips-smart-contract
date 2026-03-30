@@ -4,8 +4,12 @@ pragma solidity ^0.8.13;
 import "./modules/RipsVrf.sol";
 import "./modules/RipsMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Rips is RipsVrf, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     constructor(
         address vrfCoordinator,
         uint256 vrfSubscriptionId,
@@ -24,11 +28,10 @@ contract Rips is RipsVrf, ReentrancyGuard {
         nonReentrant
     {
         if (recipient == address(0)) revert ZeroAddress();
+        if (ticketCount == 0) revert ZeroTickets();
 
         (uint256 roundId, Round storage round, StakeConfig storage config) =
             _resolveActiveRoundAndStake(stakeId);
-
-        _validateBuyTickets(ticketCount, config);
 
         uint256 toBuy = _getTicketsToBuy(round, config, ticketCount);
 
@@ -38,17 +41,12 @@ contract Rips is RipsVrf, ReentrancyGuard {
             _handleSoldOut(stakeId, round);
         }
 
-        uint256 excess = ticketCount - toBuy;
-        if (excess > 0) {
-            _refund(roundId, msg.sender, excess * config.ticketCost);
-        }
-    }
+        uint256 nativeExcess = _receivePayment(config, toBuy, msg.sender);
 
-    function _validateBuyTickets(uint256 ticketCount, StakeConfig storage config) internal {
-        if (ticketCount == 0) revert ZeroTickets();
+        if (nativeExcess > 0) {
+            (bool success,) = msg.sender.call{value: nativeExcess}("");
 
-        if (msg.value != ticketCount * config.ticketCost) {
-            revert IncorrectPayment();
+            if (!success) revert ReturnExcessFailed();
         }
     }
 
@@ -126,24 +124,62 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 totalPrize = _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
 
         if (totalPrize > 0) {
-            _distributePrize(roundId, recipient, totalPrize);
+            _distributePrize(roundId, round, recipient, totalPrize);
         }
     }
 
-    function _distributePrize(uint256 roundId, address recipient, uint256 totalPrize) private {
+    function _distributePrize(
+        uint256 roundId,
+        Round storage round,
+        address recipient,
+        uint256 totalPrize
+    ) private {
+        address currency = _stakeConfigs[round.stakeId].currency;
+
         uint256 protocolFee = (totalPrize * protocolFeePercent) / 10000;
         uint256 userPrize = totalPrize - protocolFee;
 
         if (protocolFee > 0) {
-            (bool feeSuccess,) = feeRecipient.call{value: protocolFee}("");
-            if (!feeSuccess) revert FeeTransferFailed();
+            if (_isNative(currency)) {
+                (bool feeSuccess,) = feeRecipient.call{value: protocolFee}("");
+                if (!feeSuccess) revert FeeTransferFailed();
+            } else {
+                IERC20(currency).safeTransfer(feeRecipient, protocolFee);
+            }
         }
 
         //TODO: ensure that protocol fee < 100%
-        (bool prizeSuccess,) = recipient.call{value: userPrize}("");
-        if (!prizeSuccess) revert PrizeTransferFailed();
+        _sendPayment(currency, recipient, userPrize);
 
         emit PrizesClaimed(roundId, recipient, userPrize);
+    }
+
+    function _receivePayment(StakeConfig storage config, uint256 toBuy, address from)
+        private
+        returns (uint256 nativeExcess)
+    {
+        uint256 requiredPayment = toBuy * config.ticketCost;
+        address currency = config.currency;
+
+        if (_isNative(currency)) {
+            if (msg.value < requiredPayment) revert IncorrectPayment();
+
+            nativeExcess = msg.value - requiredPayment;
+        } else {
+            if (msg.value != 0) revert EthSentForERC20();
+
+            IERC20(currency).safeTransferFrom(from, address(this), requiredPayment);
+        }
+    }
+
+    function _sendPayment(address currency, address to, uint256 amount) private {
+        if (_isNative(currency)) {
+            (bool success,) = to.call{value: amount}("");
+
+            if (!success) revert PrizeTransferFailed();
+        } else {
+            IERC20(currency).safeTransfer(to, amount);
+        }
     }
 
     struct PrizeCalcParams {
@@ -225,7 +261,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 ticketsToRefund = _getTicketAmountToRefund(roundId, recipient);
 
         _hasRefunded[roundId][recipient] = true;
-        _refund(roundId, recipient, ticketsToRefund * config.ticketCost);
+        _refund(roundId, config.currency, recipient, ticketsToRefund * config.ticketCost);
     }
 
     function _getTicketAmountToRefund(uint256 roundId, address recipient)
@@ -263,10 +299,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         return _userTickets[roundId][user];
     }
 
-    function _refund(uint256 roundId, address to, uint256 amount) private {
-        (bool success,) = to.call{value: amount}("");
-
-        if (!success) revert RefundFailed();
+    function _refund(uint256 roundId, address currency, address to, uint256 amount) private {
+        if (_isNative(currency)) {
+            (bool success,) = to.call{value: amount}("");
+            if (!success) revert RefundFailed();
+        } else {
+            IERC20(currency).safeTransfer(to, amount);
+        }
 
         emit RefundIssued(roundId, to, amount);
     }
@@ -292,5 +331,9 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
 
         _userTicketCount[roundId][buyer] += ticketCount;
+    }
+
+    function _isNative(address currency) private returns (bool) {
+        return currency == address(0);
     }
 }

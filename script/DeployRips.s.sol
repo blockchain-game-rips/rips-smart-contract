@@ -56,7 +56,11 @@ contract DeployRips is Script {
 
         stakeId = rips.createStake(
             IRips.StakeConfig({
-                prizeDistribution: tiers, ticketCap: 8, duration: 5 minutes, ticketCost: 0.005 ether
+                currency: address(0),
+                prizeDistribution: tiers,
+                ticketCap: 8,
+                duration: 5 minutes,
+                ticketCost: 0.005 ether
             })
         );
     }
@@ -72,7 +76,11 @@ contract DeployRips is Script {
 
         stakeId = rips.createStake(
             IRips.StakeConfig({
-                prizeDistribution: tiers, ticketCap: 8, duration: 5 minutes, ticketCost: 0.01 ether
+                currency: address(0),
+                prizeDistribution: tiers,
+                ticketCap: 8,
+                duration: 5 minutes,
+                ticketCost: 0.01 ether
             })
         );
     }

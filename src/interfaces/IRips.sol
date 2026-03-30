@@ -26,6 +26,7 @@ interface IRips {
 
     struct StakeConfig {
         PrizeTier[] prizeDistribution;
+        address currency;
         uint256 ticketCap;
         uint256 duration;
         uint256 ticketCost;
@@ -37,6 +38,9 @@ interface IRips {
         bool claimed;
     }
 
+    error EthSentForERC20();
+    error NativePaymentRequired();
+    error ReturnExcessFailed();
     error FeeTooHigh();
     error TicketCapNotPowerOfTwo();
     error EmptyPrizeDistribution();
