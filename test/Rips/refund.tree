@@ -9,9 +9,17 @@ Rips_Refund
 │   └── it should revert.
 ├── when the recipient has no tickets in the round
 │   └── it should revert.
-└── when the recipient has tickets in the round
-    ├── it should mark the recipient as refunded.
-    ├── it should transfer the refund amount to the recipient.
-    ├── when recipient is different from the caller
-    │   └── it should transfer the refund to the recipient, not the caller.
-    └── it should emit a {RefundIssued} event.
+├── given the stake currency is native
+│   └── when the recipient has tickets in the round
+│       ├── it should mark the recipient as refunded.
+│       ├── it should transfer the ETH refund amount to the recipient.
+│       ├── when recipient is different from the caller
+│       │   └── it should transfer the ETH refund to the recipient, not the caller.
+│       └── it should emit a {RefundIssued} event.
+└── given the stake currency is an ERC20 token
+    └── when the recipient has tickets in the round
+        ├── it should mark the recipient as refunded.
+        ├── it should transfer the token refund amount to the recipient.
+        ├── when recipient is different from the caller
+        │   └── it should transfer the token refund to the recipient, not the caller.
+        └── it should emit a {RefundIssued} event.

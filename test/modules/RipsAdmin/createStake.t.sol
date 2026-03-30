@@ -16,6 +16,7 @@ contract Rips_CreateStake is RipsTestBase {
 
     function _validConfig() private pure returns (IRips.StakeConfig memory) {
         return IRips.StakeConfig({
+            currency: address(0),
             prizeDistribution: _validTiers(),
             ticketCap: DEFAULT_TICKET_CAP,
             duration: DEFAULT_DURATION,
@@ -46,6 +47,7 @@ contract Rips_CreateStake is RipsTestBase {
         vm.expectRevert(IRips.TicketCapNotPowerOfTwo.selector);
         rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: 3,
                 duration: DEFAULT_DURATION,
@@ -68,6 +70,7 @@ contract Rips_CreateStake is RipsTestBase {
         vm.expectRevert(IRips.EmptyPrizeDistribution.selector);
         rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: emptyTiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
@@ -94,6 +97,7 @@ contract Rips_CreateStake is RipsTestBase {
         vm.expectRevert(IRips.InvalidPrizeRange.selector);
         rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
@@ -123,6 +127,7 @@ contract Rips_CreateStake is RipsTestBase {
         vm.expectRevert(IRips.PrizeCountMismatch.selector);
         rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
@@ -154,6 +159,7 @@ contract Rips_CreateStake is RipsTestBase {
         vm.expectRevert(IRips.PrizePoolMismatch.selector);
         rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,

@@ -36,6 +36,7 @@ contract RipsMath_CalculatePrizeAmount is RipsTestBase {
         vm.prank(owner);
         stakeId = rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: TICKET_CAP,
                 duration: 1 days,
@@ -73,6 +74,7 @@ contract RipsMath_CalculatePrizeAmount is RipsTestBase {
         vm.prank(owner);
         uint256 newStakeId = rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: ticketCap,
                 duration: duration,

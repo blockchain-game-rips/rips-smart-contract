@@ -26,7 +26,11 @@ contract RipsMath_PrizeForRankInTier is RipsTestBase {
         vm.prank(owner);
         stakeId = rips.createStake(
             IRips.StakeConfig({
-                prizeDistribution: tiers, ticketCap: 4, duration: 1 days, ticketCost: 1 ether
+                currency: address(0),
+                prizeDistribution: tiers,
+                ticketCap: 4,
+                duration: 1 days,
+                ticketCost: 1 ether
             })
         );
     }

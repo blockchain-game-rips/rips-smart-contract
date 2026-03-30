@@ -39,6 +39,7 @@ contract Rips_RequestRandomness is RipsTestBase {
         vm.prank(owner);
         stakeId = rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: TICKET_CAP,
                 duration: 1 days,

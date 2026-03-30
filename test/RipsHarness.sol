@@ -91,4 +91,8 @@ contract RipsHarness is Rips {
     function exposed_stakeDeleted(uint256 stakeId) external view returns (bool) {
         return _stakeDeleted[stakeId];
     }
+
+    function exposed_hasRefunded(uint256 roundId, address user) external view returns (bool) {
+        return _hasRefunded[roundId][user];
+    }
 }

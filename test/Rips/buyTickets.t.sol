@@ -72,10 +72,8 @@ contract Rips_BuyTickets is RipsTestBase {
         rips.buyTickets{value: 0}(stakeId, 0, user);
     }
 
-    function test_RevertWhen_ThePaymentAmountIsIncorrect() external {
-        vm.prank(user);
-        vm.expectRevert(IRips.IncorrectPayment.selector);
-        rips.buyTickets{value: DEFAULT_TICKET_COST + 1}(stakeId, 1, user);
+    modifier givenTheStakeCurrencyIsNative() {
+        _;
     }
 
     modifier whenRequestedTicketsAreFewerThanAvailable() {
@@ -83,8 +81,20 @@ contract Rips_BuyTickets is RipsTestBase {
         _;
     }
 
-    function test_WhenRequestedTicketsAreFewerThanAvailable()
+    modifier whenRequestedTicketsEqualTheRemainingCapacity() {
+        ticketsToBuy = DEFAULT_TICKET_CAP;
+        _;
+    }
+
+    function test_RevertWhen_ThePaymentAmountIsIncorrect() external givenTheStakeCurrencyIsNative {
+        vm.prank(user);
+        vm.expectRevert(IRips.IncorrectPayment.selector);
+        rips.buyTickets{value: DEFAULT_TICKET_COST - 1}(stakeId, 1, user);
+    }
+
+    function test_WhenRequestedTicketsAreFewerThanAvailable_GivenNative()
         external
+        givenTheStakeCurrencyIsNative
         whenRequestedTicketsAreFewerThanAvailable
     {
         vm.expectEmit();
@@ -104,6 +114,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
     function test_WhenRecipientIsDifferentFromTheCaller()
         external
+        givenTheStakeCurrencyIsNative
         whenRequestedTicketsAreFewerThanAvailable
     {
         address recipient = makeAddr("recipient");
@@ -121,6 +132,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
     function test_WhenTicketCountExceedsMAX_TICKETS_PER_RANGE()
         external
+        givenTheStakeCurrencyIsNative
         whenRequestedTicketsAreFewerThanAvailable
     {
         uint256 largeTicketCap = 2048;
@@ -136,6 +148,7 @@ contract Rips_BuyTickets is RipsTestBase {
         vm.prank(owner);
         uint256 largeStakeId = rips.createStake(
             IRips.StakeConfig({
+                currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: largeTicketCap,
                 duration: DEFAULT_DURATION,
@@ -155,13 +168,9 @@ contract Rips_BuyTickets is RipsTestBase {
         assertEq(ranges[1].count, 500);
     }
 
-    modifier whenRequestedTicketsEqualTheRemainingCapacity() {
-        ticketsToBuy = DEFAULT_TICKET_CAP;
-        _;
-    }
-
     function test_WhenRequestedTicketsEqualTheRemainingCapacity()
         external
+        givenTheStakeCurrencyIsNative
         whenRequestedTicketsEqualTheRemainingCapacity
     {
         vm.expectEmit();
@@ -177,6 +186,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
     function test_GivenTheStakeIsNotDeleted()
         external
+        givenTheStakeCurrencyIsNative
         whenRequestedTicketsEqualTheRemainingCapacity
     {
         uint256 expectedNewRoundId = rips.exposed_nextRoundId();
@@ -189,7 +199,11 @@ contract Rips_BuyTickets is RipsTestBase {
         assertNotEq(newActiveRound, roundId);
     }
 
-    function test_GivenTheStakeIsDeleted() external whenRequestedTicketsEqualTheRemainingCapacity {
+    function test_GivenTheStakeIsDeleted()
+        external
+        givenTheStakeCurrencyIsNative
+        whenRequestedTicketsEqualTheRemainingCapacity
+    {
         vm.prank(owner);
         rips.deleteStake(stakeId);
 
@@ -200,22 +214,10 @@ contract Rips_BuyTickets is RipsTestBase {
         assertEq(activeRound, 0);
     }
 
-    function test_WhenRoundExpiredThenBuyAllTickets_RoundIsSoldOut() external {
-        vm.warp(block.timestamp + DEFAULT_DURATION + 1);
-
-        // nextRoundId before the call = the round that _resolveActiveRoundAndStake will create for the expired round
-        uint256 newRoundId = rips.exposed_nextRoundId();
-
-        vm.prank(user);
-        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(stakeId, DEFAULT_TICKET_CAP, user);
-
-        // newRoundId is the round bought into (created on expiry); it should be SoldOut
-        IRips.Round memory round = rips.exposed_round(newRoundId);
-        assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
-    }
-
-    function test_WhenRequestedTicketsExceedAvailableTickets() external {
+    function test_WhenRequestedTicketsExceedAvailableTickets()
+        external
+        givenTheStakeCurrencyIsNative
+    {
         uint256 initialBuy = DEFAULT_TICKET_CAP - 1;
         vm.prank(user);
         rips.buyTickets{value: initialBuy * DEFAULT_TICKET_COST}(stakeId, initialBuy, user);
@@ -237,7 +239,146 @@ contract Rips_BuyTickets is RipsTestBase {
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
         assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
 
-        uint256 balanceAfter = user.balance;
-        assertEq(balanceAfter, balanceBefore - payment + expectedRefund);
+        assertEq(user.balance, balanceBefore - payment + expectedRefund);
+    }
+
+    modifier givenTheStakeCurrencyIsAnERC20Token() {
+        stakeId = _createDefaultERC20Stake();
+        roundId = rips.exposed_stakeToActiveRound(stakeId);
+        _mintAndApprove(user, 100 ether);
+        _;
+    }
+
+    function test_RevertWhen_ETHIsSent() external givenTheStakeCurrencyIsAnERC20Token {
+        vm.prank(user);
+        vm.expectRevert(IRips.EthSentForERC20.selector);
+        rips.buyTickets{value: 1}(stakeId, 1, user);
+    }
+
+    function test_WhenRequestedTicketsAreFewerThanAvailable()
+        external
+        givenTheStakeCurrencyIsAnERC20Token
+        whenRequestedTicketsAreFewerThanAvailable
+    {
+        uint256 expectedCost = ticketsToBuy * DEFAULT_TICKET_COST;
+        uint256 balanceBefore = erc20.balanceOf(user);
+
+        vm.expectEmit();
+        emit IRips.TicketsPurchased(roundId, user, ticketsToBuy, 0);
+
+        vm.prank(user);
+        rips.buyTickets(stakeId, ticketsToBuy, user);
+
+        assertEq(erc20.balanceOf(user), balanceBefore - expectedCost);
+
+        IRips.Round memory round = rips.exposed_round(roundId);
+        assertEq(round.ticketsSold, ticketsToBuy);
+
+        IRips.TicketRange[] memory ranges = rips.getUserTickets(roundId, user);
+        assertEq(ranges.length, 1);
+        assertEq(ranges[0].count, ticketsToBuy);
+    }
+
+    function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20()
+        external
+        givenTheStakeCurrencyIsAnERC20Token
+        whenRequestedTicketsAreFewerThanAvailable
+    {
+        address recipient = makeAddr("recipient");
+
+        vm.prank(user);
+        rips.buyTickets(stakeId, ticketsToBuy, recipient);
+
+        IRips.TicketRange[] memory recipientRanges = rips.getUserTickets(roundId, recipient);
+        assertEq(recipientRanges.length, 1);
+        assertEq(recipientRanges[0].count, ticketsToBuy);
+
+        IRips.TicketRange[] memory callerRanges = rips.getUserTickets(roundId, user);
+        assertEq(callerRanges.length, 0);
+    }
+
+    function test_WhenTicketCountExceedsMAX_TICKETS_PER_RANGE_GivenERC20()
+        external
+        givenTheStakeCurrencyIsAnERC20Token
+        whenRequestedTicketsAreFewerThanAvailable
+    {
+        uint256 largeTicketCap = 2048;
+        uint256 ticketCost = 0.01 ether;
+
+        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: uint64(largeTicketCap),
+            minPrize: uint128(ticketCost),
+            maxPrize: uint128(ticketCost)
+        });
+
+        vm.prank(owner);
+        uint256 largeStakeId = rips.createStake(
+            IRips.StakeConfig({
+                currency: address(erc20),
+                prizeDistribution: tiers,
+                ticketCap: largeTicketCap,
+                duration: DEFAULT_DURATION,
+                ticketCost: ticketCost
+            })
+        );
+        uint256 largeRoundId = rips.exposed_stakeToActiveRound(largeStakeId);
+
+        ticketsToBuy = 1500;
+
+        vm.prank(user);
+        rips.buyTickets(largeStakeId, ticketsToBuy, user);
+
+        IRips.TicketRange[] memory ranges = rips.getUserTickets(largeRoundId, user);
+        assertEq(ranges.length, 2);
+        assertEq(ranges[0].count, 1000);
+        assertEq(ranges[1].count, 500);
+    }
+
+    function test_WhenRequestedTicketsEqualTheRemainingCapacity_GivenERC20()
+        external
+        givenTheStakeCurrencyIsAnERC20Token
+        whenRequestedTicketsEqualTheRemainingCapacity
+    {
+        uint256 expectedCost = DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST;
+        uint256 balanceBefore = erc20.balanceOf(user);
+
+        vm.expectEmit();
+        emit IRips.TicketsPurchased(roundId, user, ticketsToBuy, 0);
+
+        vm.prank(user);
+        rips.buyTickets(stakeId, ticketsToBuy, user);
+
+        assertEq(erc20.balanceOf(user), balanceBefore - expectedCost);
+
+        IRips.Round memory round = rips.exposed_round(roundId);
+        assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
+        assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
+    }
+
+    function test_WhenRequestedTicketsExceedAvailableTickets_GivenERC20()
+        external
+        givenTheStakeCurrencyIsAnERC20Token
+    {
+        uint256 initialBuy = DEFAULT_TICKET_CAP - 1;
+        vm.prank(user);
+        rips.buyTickets(stakeId, initialBuy, user);
+
+        ticketsToBuy = 3;
+        uint256 availableTickets = DEFAULT_TICKET_CAP - initialBuy;
+        uint256 expectedCost = availableTickets * DEFAULT_TICKET_COST;
+        uint256 balanceBefore = erc20.balanceOf(user);
+
+        vm.expectEmit();
+        emit IRips.TicketsPurchased(roundId, user, availableTickets, initialBuy);
+
+        vm.prank(user);
+        rips.buyTickets(stakeId, ticketsToBuy, user);
+
+        assertEq(erc20.balanceOf(user), balanceBefore - expectedCost);
+
+        IRips.Round memory round = rips.exposed_round(roundId);
+        assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
+        assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
     }
 }

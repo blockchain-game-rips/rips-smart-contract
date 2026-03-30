@@ -20,6 +20,10 @@ contract Rips_Refund is RipsTestBase {
         rips.buyTickets{value: TICKETS_BOUGHT * DEFAULT_TICKET_COST}(stakeId, TICKETS_BOUGHT, user);
     }
 
+    function _expectedRefund() private pure returns (uint256) {
+        return TICKETS_BOUGHT * DEFAULT_TICKET_COST;
+    }
+
     function test_RevertWhen_TheRoundDoesNotExist() external {
         uint256 nonExistentRoundId = 999;
 
@@ -61,6 +65,10 @@ contract Rips_Refund is RipsTestBase {
         rips.refund(roundId, noTickets);
     }
 
+    modifier givenTheStakeCurrencyIsNative() {
+        _;
+    }
+
     modifier whenTheRecipientHasTicketsInTheRound() {
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
         _;
@@ -68,30 +76,27 @@ contract Rips_Refund is RipsTestBase {
 
     function test_WhenTheRecipientHasTicketsInTheRound()
         external
+        givenTheStakeCurrencyIsNative
         whenTheRecipientHasTicketsInTheRound
     {
-        uint256 expectedRefund = TICKETS_BOUGHT * DEFAULT_TICKET_COST;
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.RefundIssued(roundId, user, expectedRefund);
+        emit IRips.RefundIssued(roundId, user, _expectedRefund());
 
         vm.prank(user);
         rips.refund(roundId, user);
 
-        assertEq(user.balance, balanceBefore + expectedRefund);
-
-        vm.prank(user);
-        vm.expectRevert(IRips.AlreadyRefunded.selector);
-        rips.refund(roundId, user);
+        assertEq(user.balance, balanceBefore + _expectedRefund());
+        assertTrue(rips.exposed_hasRefunded(roundId, user));
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller()
         external
+        givenTheStakeCurrencyIsNative
         whenTheRecipientHasTicketsInTheRound
     {
         address caller = makeAddr("caller");
-        uint256 expectedRefund = TICKETS_BOUGHT * DEFAULT_TICKET_COST;
 
         uint256 recipientBalanceBefore = user.balance;
         uint256 callerBalanceBefore = caller.balance;
@@ -99,7 +104,52 @@ contract Rips_Refund is RipsTestBase {
         vm.prank(caller);
         rips.refund(roundId, user);
 
-        assertEq(user.balance, recipientBalanceBefore + expectedRefund);
+        assertEq(user.balance, recipientBalanceBefore + _expectedRefund());
         assertEq(caller.balance, callerBalanceBefore);
+    }
+
+    modifier givenTheStakeCurrencyIsAnERC20Token() {
+        _mintAndApprove(user, TICKETS_BOUGHT * DEFAULT_TICKET_COST);
+
+        uint256 erc20StakeId = _createDefaultERC20Stake();
+        roundId = rips.exposed_stakeToActiveRound(erc20StakeId);
+
+        vm.prank(user);
+        rips.buyTickets(erc20StakeId, TICKETS_BOUGHT, user);
+
+        vm.warp(block.timestamp + DEFAULT_DURATION + 1);
+        _;
+    }
+
+    function test_WhenTheRecipientHasTicketsInTheRound_GivenERC20()
+        external
+        givenTheStakeCurrencyIsAnERC20Token
+    {
+        uint256 balanceBefore = erc20.balanceOf(user);
+
+        vm.expectEmit();
+        emit IRips.RefundIssued(roundId, user, _expectedRefund());
+
+        vm.prank(user);
+        rips.refund(roundId, user);
+
+        assertEq(erc20.balanceOf(user), balanceBefore + _expectedRefund());
+        assertTrue(rips.exposed_hasRefunded(roundId, user));
+    }
+
+    function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20()
+        external
+        givenTheStakeCurrencyIsAnERC20Token
+    {
+        address caller = makeAddr("caller");
+
+        uint256 recipientBalanceBefore = erc20.balanceOf(user);
+        uint256 callerBalanceBefore = erc20.balanceOf(caller);
+
+        vm.prank(caller);
+        rips.refund(roundId, user);
+
+        assertEq(erc20.balanceOf(user), recipientBalanceBefore + _expectedRefund());
+        assertEq(erc20.balanceOf(caller), callerBalanceBefore);
     }
 }
