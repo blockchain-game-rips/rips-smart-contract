@@ -20,7 +20,7 @@ contract Rips_Refund is RipsTestBase {
         rips.buyTickets{value: TICKETS_BOUGHT * DEFAULT_TICKET_COST}(stakeId, TICKETS_BOUGHT, user);
     }
 
-    function _expectedRefund() private pure returns (uint256) {
+    function _expectedRefundAmount() private pure returns (uint256) {
         return TICKETS_BOUGHT * DEFAULT_TICKET_COST;
     }
 
@@ -82,12 +82,12 @@ contract Rips_Refund is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.RefundIssued(roundId, user, _expectedRefund());
+        emit IRips.RefundIssued(roundId, user, TICKETS_BOUGHT);
 
         vm.prank(user);
         rips.refund(roundId, user);
 
-        assertEq(user.balance, balanceBefore + _expectedRefund());
+        assertEq(user.balance, balanceBefore + _expectedRefundAmount());
         assertTrue(rips.exposed_hasRefunded(roundId, user));
     }
 
@@ -104,7 +104,7 @@ contract Rips_Refund is RipsTestBase {
         vm.prank(caller);
         rips.refund(roundId, user);
 
-        assertEq(user.balance, recipientBalanceBefore + _expectedRefund());
+        assertEq(user.balance, recipientBalanceBefore + _expectedRefundAmount());
         assertEq(caller.balance, callerBalanceBefore);
     }
 
@@ -128,12 +128,12 @@ contract Rips_Refund is RipsTestBase {
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();
-        emit IRips.RefundIssued(roundId, user, _expectedRefund());
+        emit IRips.RefundIssued(roundId, user, TICKETS_BOUGHT);
 
         vm.prank(user);
         rips.refund(roundId, user);
 
-        assertEq(erc20.balanceOf(user), balanceBefore + _expectedRefund());
+        assertEq(erc20.balanceOf(user), balanceBefore + _expectedRefundAmount());
         assertTrue(rips.exposed_hasRefunded(roundId, user));
     }
 
@@ -149,7 +149,7 @@ contract Rips_Refund is RipsTestBase {
         vm.prank(caller);
         rips.refund(roundId, user);
 
-        assertEq(erc20.balanceOf(user), recipientBalanceBefore + _expectedRefund());
+        assertEq(erc20.balanceOf(user), recipientBalanceBefore + _expectedRefundAmount());
         assertEq(erc20.balanceOf(caller), callerBalanceBefore);
     }
 }

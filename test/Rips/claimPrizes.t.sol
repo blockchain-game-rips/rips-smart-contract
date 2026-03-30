@@ -139,7 +139,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, _totalPrize());
+        emit IRips.PrizesClaimed(roundId, user, DEFAULT_TICKET_CAP, _totalPrize());
 
         vm.prank(user);
         rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
@@ -156,7 +156,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 feeRecipientBalanceBefore = owner.balance;
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, _userPrize());
+        emit IRips.PrizesClaimed(roundId, user, DEFAULT_TICKET_CAP, _userPrize());
 
         vm.prank(user);
         rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
@@ -189,7 +189,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, _totalPrize());
+        emit IRips.PrizesClaimed(roundId, user, DEFAULT_TICKET_CAP, _totalPrize());
 
         vm.prank(user);
         rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
@@ -205,7 +205,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 feeRecipientBalanceBefore = erc20.balanceOf(owner);
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, _userPrize());
+        emit IRips.PrizesClaimed(roundId, user, DEFAULT_TICKET_CAP, _userPrize());
 
         vm.prank(user);
         rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);

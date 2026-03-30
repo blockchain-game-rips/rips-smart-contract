@@ -121,10 +121,11 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
         StakeConfig storage config = _stakeConfigs[round.stakeId];
 
-        uint256 totalPrize = _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
+        (uint256 ticketCount, uint256 totalPrize) =
+            _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
 
         if (totalPrize > 0) {
-            _distributePrize(roundId, round, recipient, totalPrize);
+            _distributePrize(roundId, round, recipient, ticketCount, totalPrize);
         }
     }
 
@@ -132,12 +133,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 roundId,
         Round storage round,
         address recipient,
-        uint256 totalPrize
+        uint256 ticketCount,
+        uint256 prize
     ) private {
         address currency = _stakeConfigs[round.stakeId].currency;
 
-        uint256 protocolFee = (totalPrize * protocolFeePercent) / 10000;
-        uint256 userPrize = totalPrize - protocolFee;
+        uint256 protocolFee = (prize * protocolFeePercent) / 10000;
+        uint256 userPrize = prize - protocolFee;
 
         if (protocolFee > 0) {
             if (_isNative(currency)) {
@@ -151,7 +153,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         //TODO: ensure that protocol fee < 100%
         _sendPayment(currency, recipient, userPrize);
 
-        emit PrizesClaimed(roundId, recipient, userPrize);
+        emit PrizesClaimed(roundId, recipient, ticketCount, userPrize);
     }
 
     function _receivePayment(StakeConfig storage config, uint256 toBuy, address from)
@@ -196,7 +198,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 maxRanges,
         Round storage round,
         StakeConfig storage config
-    ) private returns (uint256 totalPrize) {
+    ) private returns (uint256 ticketCount, uint256 totalPrize) {
         PrizeCalcParams memory p = PrizeCalcParams({
             a: round.randomA,
             b: round.randomB,
@@ -217,6 +219,8 @@ contract Rips is RipsVrf, ReentrancyGuard {
             for (uint256 j = 0; j < count; j++) {
                 totalPrize += _calculateTicketPrize(rangeStart + j + 1, p);
             }
+
+            ticketCount += count;
 
             ranges[i].claimed = true;
         }
@@ -261,7 +265,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 ticketsToRefund = _getTicketAmountToRefund(roundId, recipient);
 
         _hasRefunded[roundId][recipient] = true;
-        _refund(roundId, config.currency, recipient, ticketsToRefund * config.ticketCost);
+        _refund(
+            roundId,
+            config.currency,
+            recipient,
+            ticketsToRefund,
+            ticketsToRefund * config.ticketCost
+        );
     }
 
     function _getTicketAmountToRefund(uint256 roundId, address recipient)
@@ -299,7 +309,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         return _userTickets[roundId][user];
     }
 
-    function _refund(uint256 roundId, address currency, address to, uint256 amount) private {
+    function _refund(
+        uint256 roundId,
+        address currency,
+        address to,
+        uint256 ticketCount,
+        uint256 amount
+    ) private {
         if (_isNative(currency)) {
             (bool success,) = to.call{value: amount}("");
             if (!success) revert RefundFailed();
@@ -307,7 +323,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
             IERC20(currency).safeTransfer(to, amount);
         }
 
-        emit RefundIssued(roundId, to, amount);
+        emit RefundIssued(roundId, to, ticketCount);
     }
 
     function _storeTicketRanges(
