@@ -1,0 +1,21 @@
+Rips_UpdateStake
+├── when the caller is not the owner
+│   └── it should revert.
+├── when the stake does not exist
+│   └── it should revert.
+├── when ticket cap is not a power of two
+│   └── it should revert.
+├── when prize distribution is empty
+│   └── it should revert.
+├── when a tier has min prize greater than max prize
+│   └── it should revert.
+├── when total prize count does not equal ticket cap
+│   └── it should revert.
+├── when total prize pool does not equal ticket cap times ticket cost
+│   └── it should revert.
+├── when the config is valid
+│   ├── it should store the config as pending.
+│   └── it should emit a {StakeUpdated} event.
+└── when the next round is created after an update
+    ├── it should apply the pending config to the active stake.
+    └── it should clear the pending config.

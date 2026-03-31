@@ -95,4 +95,12 @@ contract RipsHarness is Rips {
     function exposed_hasRefunded(uint256 roundId, address user) external view returns (bool) {
         return _hasRefunded[roundId][user];
     }
+
+    function exposed_hasPendingConfig(uint256 stakeId) external view returns (bool) {
+        return _hasPendingConfig[stakeId];
+    }
+
+    function exposed_pendingConfig(uint256 stakeId) external view returns (StakeConfig memory) {
+        return _pendingConfigs[stakeId];
+    }
 }
