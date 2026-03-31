@@ -11,7 +11,6 @@ import "../src/Rips.sol";
 ///   VRF_SUBSCRIPTION_ID  - Funded VRF subscription ID
 ///   VRF_KEY_HASH         - Key hash (gas lane) for the target network
 ///   VRF_CALLBACK_GAS     - Gas limit for the VRF fulfillRandomWords callback
-///   INITIAL_FEE_PERCENT  - Protocol fee in basis points (e.g. 500 = 5%)
 ///
 /// The deployer (--sender) becomes the owner and initial fee recipient.
 ///
@@ -26,12 +25,10 @@ contract Deploy is Script {
         uint256 subscriptionId = vm.envUint("VRF_SUBSCRIPTION_ID");
         bytes32 keyHash = vm.envBytes32("VRF_KEY_HASH");
         uint32 callbackGasLimit = uint32(DEFAULT_CALLBACK_GAS);
-        uint256 feePercent = DEFAULT_FEE_PERCENT;
 
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
-        Rips ripsContract =
-            new Rips(vrfCoordinator, subscriptionId, keyHash, callbackGasLimit, feePercent);
+        Rips ripsContract = new Rips(vrfCoordinator, subscriptionId, keyHash, callbackGasLimit);
 
         rips = address(ripsContract);
         _createDefaultStakes(ripsContract);
@@ -60,7 +57,8 @@ contract Deploy is Script {
                 prizeDistribution: tiers,
                 ticketCap: 8,
                 duration: 5 minutes,
-                ticketCost: 0.0005 ether
+                ticketCost: 0.0005 ether,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -81,7 +79,8 @@ contract Deploy is Script {
                 prizeDistribution: tiers,
                 ticketCap: 8,
                 duration: 5 minutes,
-                ticketCost: 0.001 ether
+                ticketCost: 0.001 ether,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }

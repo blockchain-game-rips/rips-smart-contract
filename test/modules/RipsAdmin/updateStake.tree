@@ -13,6 +13,8 @@ Rips_UpdateStake
 │   └── it should revert.
 ├── when total prize pool does not equal ticket cap times ticket cost
 │   └── it should revert.
+├── when fee percent exceeds 10000
+│   └── it should revert.
 ├── when the config is valid
 │   ├── it should store the config as pending.
 │   └── it should emit a {StakeUpdated} event.

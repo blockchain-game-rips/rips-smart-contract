@@ -28,7 +28,8 @@ contract Rips_UpdateStake is RipsTestBase {
             prizeDistribution: tiers,
             ticketCap: newTicketCap,
             duration: DEFAULT_DURATION,
-            ticketCost: newTicketCost
+            ticketCost: newTicketCost,
+            feePercent: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -70,7 +71,8 @@ contract Rips_UpdateStake is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: 3,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -87,7 +89,8 @@ contract Rips_UpdateStake is RipsTestBase {
                 prizeDistribution: emptyTiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -110,7 +113,8 @@ contract Rips_UpdateStake is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -135,7 +139,8 @@ contract Rips_UpdateStake is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -160,9 +165,19 @@ contract Rips_UpdateStake is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
+    }
+
+    function test_RevertWhen_FeePercentExceeds10000() external whenTheCallerIsTheOwner {
+        // it should revert.
+        IRips.StakeConfig memory config = _updatedConfig();
+        config.feePercent = 10001;
+
+        vm.expectRevert(IRips.FeeTooHigh.selector);
+        rips.updateStake(stakeId, config);
     }
 
     function test_WhenTheConfigIsValid() external whenTheCallerIsTheOwner {
@@ -183,6 +198,7 @@ contract Rips_UpdateStake is RipsTestBase {
         assertEq(pending.currency, config.currency);
         assertEq(pending.duration, config.duration);
         assertEq(pending.prizeDistribution.length, config.prizeDistribution.length);
+        assertEq(pending.feePercent, config.feePercent);
     }
 
     function test_WhenTheNextRoundIsCreatedAfterAnUpdate() external whenTheCallerIsTheOwner {

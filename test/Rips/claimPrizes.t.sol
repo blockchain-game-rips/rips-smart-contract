@@ -39,7 +39,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
     }
 
     function _protocolFee() private pure returns (uint256) {
-        return (_totalPrize() * INITIAL_FEE_PERCENT) / 10_000;
+        return (_totalPrize() * DEFAULT_FEE_PERCENT) / 10_000;
     }
 
     function test_RevertWhen_TheRoundIsNotFinalized() external {
@@ -124,6 +124,37 @@ contract Rips_ClaimPrizes is RipsTestBase {
         assertEq(caller.balance, callerBalanceBefore);
     }
 
+    function _createZeroFeeNativeStake() private returns (uint256 zeroFeeRoundId) {
+        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: uint64(DEFAULT_TICKET_CAP),
+            minPrize: uint128(DEFAULT_TICKET_COST),
+            maxPrize: uint128(DEFAULT_TICKET_COST)
+        });
+
+        vm.prank(owner);
+        uint256 zeroFeeStakeId = rips.createStake(
+            IRips.StakeConfig({
+                currency: address(0),
+                prizeDistribution: tiers,
+                ticketCap: DEFAULT_TICKET_CAP,
+                duration: DEFAULT_DURATION,
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: 0
+            })
+        );
+
+        zeroFeeRoundId = rips.exposed_stakeToActiveRound(zeroFeeStakeId);
+
+        vm.prank(user);
+        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
+            zeroFeeStakeId, DEFAULT_TICKET_CAP, user
+        );
+
+        uint256 vrfRequestId = rips.requestRandomness(zeroFeeRoundId);
+        vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
+    }
+
     modifier givenTheStakeCurrencyIsNative() {
         _;
     }
@@ -133,16 +164,15 @@ contract Rips_ClaimPrizes is RipsTestBase {
         whenThereAreUnclaimedRanges
         givenTheStakeCurrencyIsNative
     {
-        vm.prank(owner);
-        rips.setProtocolFee(0);
+        uint256 zeroFeeRoundId = _createZeroFeeNativeStake();
 
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, DEFAULT_TICKET_CAP, _totalPrize());
+        emit IRips.PrizesClaimed(zeroFeeRoundId, user, DEFAULT_TICKET_CAP, _totalPrize());
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(zeroFeeRoundId, START_INDEX, MAX_RANGES, user);
 
         assertEq(user.balance, balanceBefore + _totalPrize());
     }
@@ -179,20 +209,43 @@ contract Rips_ClaimPrizes is RipsTestBase {
         _;
     }
 
-    function test_WhenProtocolFeeIsZero_GivenTheStakeCurrencyIsAnERC20Token()
-        external
-        givenTheStakeCurrencyIsAnERC20Token
-    {
+    function test_WhenProtocolFeeIsZero_GivenTheStakeCurrencyIsAnERC20Token() external {
+        _mintAndApprove(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
+
+        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: uint64(DEFAULT_TICKET_CAP),
+            minPrize: uint128(DEFAULT_TICKET_COST),
+            maxPrize: uint128(DEFAULT_TICKET_COST)
+        });
+
         vm.prank(owner);
-        rips.setProtocolFee(0);
+        uint256 zeroFeeStakeId = rips.createStake(
+            IRips.StakeConfig({
+                currency: address(erc20),
+                prizeDistribution: tiers,
+                ticketCap: DEFAULT_TICKET_CAP,
+                duration: DEFAULT_DURATION,
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: 0
+            })
+        );
+
+        uint256 zeroFeeRoundId = rips.exposed_stakeToActiveRound(zeroFeeStakeId);
+
+        vm.prank(user);
+        rips.buyTickets(zeroFeeStakeId, DEFAULT_TICKET_CAP, user);
+
+        uint256 vrfRequestId = rips.requestRandomness(zeroFeeRoundId);
+        vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, DEFAULT_TICKET_CAP, _totalPrize());
+        emit IRips.PrizesClaimed(zeroFeeRoundId, user, DEFAULT_TICKET_CAP, _totalPrize());
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(zeroFeeRoundId, START_INDEX, MAX_RANGES, user);
 
         assertEq(erc20.balanceOf(user), balanceBefore + _totalPrize());
     }

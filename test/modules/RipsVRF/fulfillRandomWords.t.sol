@@ -33,7 +33,8 @@ contract Rips_FulfillRandomWords is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: TICKET_CAP,
                 duration: 1 days,
-                ticketCost: TICKET_COST
+                ticketCost: TICKET_COST,
+                feePercent: 0
             })
         );
 

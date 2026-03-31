@@ -152,7 +152,8 @@ contract Rips_BuyTickets is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: largeTicketCap,
                 duration: DEFAULT_DURATION,
-                ticketCost: ticketCost
+                ticketCost: ticketCost,
+                feePercent: 0
             })
         );
         uint256 largeRoundId = rips.exposed_stakeToActiveRound(largeStakeId);
@@ -319,7 +320,8 @@ contract Rips_BuyTickets is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: largeTicketCap,
                 duration: DEFAULT_DURATION,
-                ticketCost: ticketCost
+                ticketCost: ticketCost,
+                feePercent: 0
             })
         );
         uint256 largeRoundId = rips.exposed_stakeToActiveRound(largeStakeId);

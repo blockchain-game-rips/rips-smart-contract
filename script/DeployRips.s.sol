@@ -18,7 +18,6 @@ contract DeployRips is Script {
         bytes32 keyHash = vm.envOr("VRF_KEY_HASH", DEFAULT_KEY_HASH);
         uint32 callbackGasLimit =
             uint32(vm.envOr("VRF_CALLBACK_GAS", uint256(DEFAULT_CALLBACK_GAS)));
-        uint256 feePercent = vm.envOr("INITIAL_FEE_PERCENT", DEFAULT_FEE_PERCENT);
 
         VRFCoordinatorV2_5Mock coordinatorContract = VRFCoordinatorV2_5Mock(coordinator);
 
@@ -26,8 +25,7 @@ contract DeployRips is Script {
 
         coordinatorContract.fundSubscription(subscriptionId, VRF_FUND_AMOUNT);
 
-        Rips ripsContract =
-            new Rips(coordinator, subscriptionId, keyHash, callbackGasLimit, feePercent);
+        Rips ripsContract = new Rips(coordinator, subscriptionId, keyHash, callbackGasLimit);
 
         coordinatorContract.addConsumer(subscriptionId, address(ripsContract));
 
@@ -60,7 +58,8 @@ contract DeployRips is Script {
                 prizeDistribution: tiers,
                 ticketCap: 8,
                 duration: 5 minutes,
-                ticketCost: 0.005 ether
+                ticketCost: 0.005 ether,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -80,7 +79,8 @@ contract DeployRips is Script {
                 prizeDistribution: tiers,
                 ticketCap: 8,
                 duration: 5 minutes,
-                ticketCost: 0.01 ether
+                ticketCost: 0.01 ether,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }

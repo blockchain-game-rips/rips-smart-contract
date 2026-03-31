@@ -10,8 +10,8 @@ import "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 contract RipsTestBase is Test {
     bytes32 internal constant VRF_KEY_HASH = bytes32(uint256(1));
     uint32 internal constant VRF_CALLBACK_GAS_LIMIT = 100_000;
-    uint256 internal constant INITIAL_FEE_PERCENT = 500;
 
+    uint256 internal constant DEFAULT_FEE_PERCENT = 500;
     uint256 internal constant DEFAULT_TICKET_CAP = 4;
     uint256 internal constant DEFAULT_TICKET_COST = 1 ether;
     uint256 internal constant DEFAULT_DURATION = 1 days;
@@ -30,11 +30,7 @@ contract RipsTestBase is Test {
 
         vm.prank(owner);
         rips = new RipsHarness(
-            address(vrfCoordinator),
-            vrfSubscriptionId,
-            VRF_KEY_HASH,
-            VRF_CALLBACK_GAS_LIMIT,
-            INITIAL_FEE_PERCENT
+            address(vrfCoordinator), vrfSubscriptionId, VRF_KEY_HASH, VRF_CALLBACK_GAS_LIMIT
         );
 
         vrfCoordinator.addConsumer(vrfSubscriptionId, address(rips));
@@ -57,7 +53,8 @@ contract RipsTestBase is Test {
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -83,7 +80,8 @@ contract RipsTestBase is Test {
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }

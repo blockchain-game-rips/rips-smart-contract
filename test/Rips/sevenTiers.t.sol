@@ -42,7 +42,8 @@ contract Rips_SevenTiers is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: TICKET_COST
+                ticketCost: TICKET_COST,
+                feePercent: 0
             })
         );
 

@@ -1,9 +1,0 @@
-Rips_SetProtocolFee
-├── when the caller is not the owner
-│   └── it should revert.
-└── when the caller is the owner
-    ├── when the new fee exceeds 10000
-    │   └── it should revert.
-    └── when the new fee is at most 10000
-        ├── it should update the protocol fee percent.
-        └── it should emit a {ProtocolFeeUpdated} event.

@@ -30,7 +30,8 @@ contract RipsMath_PrizeForRankInTier is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: 4,
                 duration: 1 days,
-                ticketCost: 1 ether
+                ticketCost: 1 ether,
+                feePercent: 0
             })
         );
     }

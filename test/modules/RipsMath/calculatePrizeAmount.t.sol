@@ -40,7 +40,8 @@ contract RipsMath_CalculatePrizeAmount is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: TICKET_CAP,
                 duration: 1 days,
-                ticketCost: TICKET_COST
+                ticketCost: TICKET_COST,
+                feePercent: 0
             })
         );
     }
@@ -78,7 +79,8 @@ contract RipsMath_CalculatePrizeAmount is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: ticketCap,
                 duration: duration,
-                ticketCost: prizePerTicket
+                ticketCost: prizePerTicket,
+                feePercent: 0
             })
         );
 

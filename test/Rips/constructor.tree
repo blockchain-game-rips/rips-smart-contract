@@ -1,5 +1,4 @@
 Rips_Constructor
 └── when deployed
     ├── it should set owner.
-    ├── it should set set recipient.
-    └── it should set protocol fee.
+    └── it should set set recipient.

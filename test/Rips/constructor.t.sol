@@ -7,6 +7,5 @@ contract Rips_Constructor is RipsTestBase {
     function test_WhenDeployed() external view {
         assertEq(rips.owner(), owner);
         assertEq(rips.feeRecipient(), owner);
-        assertEq(rips.protocolFeePercent(), INITIAL_FEE_PERCENT);
     }
 }

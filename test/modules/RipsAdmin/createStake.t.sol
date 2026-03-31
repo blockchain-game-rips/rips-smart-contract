@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "../../RipsTestBase.sol";
 
-//TODO: rethink about test and function itself
+// TODO: make the three flatten
 contract Rips_CreateStake is RipsTestBase {
     function _validTiers() private pure returns (IRips.PrizeTier[] memory tiers) {
         tiers = new IRips.PrizeTier[](1);
@@ -20,7 +20,8 @@ contract Rips_CreateStake is RipsTestBase {
             prizeDistribution: _validTiers(),
             ticketCap: DEFAULT_TICKET_CAP,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST
+            ticketCost: DEFAULT_TICKET_COST,
+            feePercent: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -51,7 +52,8 @@ contract Rips_CreateStake is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: 3,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -74,7 +76,8 @@ contract Rips_CreateStake is RipsTestBase {
                 prizeDistribution: emptyTiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -101,7 +104,8 @@ contract Rips_CreateStake is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -131,7 +135,8 @@ contract Rips_CreateStake is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -163,18 +168,40 @@ contract Rips_CreateStake is RipsTestBase {
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
 
-    function test_WhenTotalPrizePoolEqualsTicketCapTimesTicketCost()
+    modifier whenTotalPrizePoolEqualsTicketCapTimesTicketCost() {
+        _;
+    }
+
+    function test_RevertWhen_FeePercentExceeds10000()
         external
         whenTheCallerIsTheOwner
         whenTicketCapIsAPowerOfTwo
         whenPrizeDistributionIsNotEmpty
         whenAllTiersHaveValidPrizeRanges
         whenTotalPrizeCountEqualsTicketCap
+        whenTotalPrizePoolEqualsTicketCapTimesTicketCost
+    {
+        IRips.StakeConfig memory config = _validConfig();
+        config.feePercent = 10001;
+
+        vm.expectRevert(IRips.FeeTooHigh.selector);
+        rips.createStake(config);
+    }
+
+    function test_WhenFeePercentIsAtMost10000()
+        external
+        whenTheCallerIsTheOwner
+        whenTicketCapIsAPowerOfTwo
+        whenPrizeDistributionIsNotEmpty
+        whenAllTiersHaveValidPrizeRanges
+        whenTotalPrizeCountEqualsTicketCap
+        whenTotalPrizePoolEqualsTicketCapTimesTicketCost
     {
         uint256 expectedStakeId = rips.exposed_nextStakeId();
 
@@ -190,6 +217,7 @@ contract Rips_CreateStake is RipsTestBase {
         assertEq(rips.exposed_nextStakeId(), expectedStakeId + 1);
         assertEq(rips.exposed_stakeConfig(stakeId).ticketCap, DEFAULT_TICKET_CAP);
         assertEq(rips.exposed_stakeConfig(stakeId).ticketCost, DEFAULT_TICKET_COST);
+        assertEq(rips.exposed_stakeConfig(stakeId).feePercent, DEFAULT_FEE_PERCENT);
         assertNotEq(rips.exposed_stakeToActiveRound(stakeId), 0);
     }
 }

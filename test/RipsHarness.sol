@@ -9,9 +9,8 @@ contract RipsHarness is Rips {
         address vrfCoordinator,
         uint256 vrfSubscriptionId,
         bytes32 vrfKeyHash,
-        uint32 callbackGasLimit,
-        uint256 initialFeePercent
-    ) Rips(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit, initialFeePercent) {}
+        uint32 callbackGasLimit
+    ) Rips(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit) {}
 
     function exposed_isPowerOfTwo(uint256 n) external pure returns (bool) {
         return RipsMath.isPowerOfTwo(n);
