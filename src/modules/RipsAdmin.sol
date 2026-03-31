@@ -68,6 +68,63 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         }
     }
 
+    function updateStake(uint256 stakeId, StakeConfig calldata config) external onlyOwner {
+        if (_stakeDeleted[stakeId]) revert StakeNotExist();
+        if (_stakeToActiveRound[stakeId] == 0) revert StakeNotExist();
+
+        _validateStakeConfig(config);
+
+        _storePendingConfig(stakeId, config);
+
+        emit StakeUpdated(stakeId);
+    }
+
+    function _storePendingConfig(uint256 stakeId, StakeConfig calldata config) private {
+        delete _pendingConfigs[stakeId].prizeDistribution;
+        delete _pendingTierBoundaries[stakeId];
+
+        StakeConfig storage pending = _pendingConfigs[stakeId];
+        pending.currency = config.currency;
+        pending.ticketCap = config.ticketCap;
+        pending.duration = config.duration;
+        pending.ticketCost = config.ticketCost;
+
+        uint64 cumulative = 0;
+
+        for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
+            pending.prizeDistribution.push(config.prizeDistribution[i]);
+
+            cumulative += config.prizeDistribution[i].prizeCount;
+            _pendingTierBoundaries[stakeId].push(cumulative);
+        }
+
+        _hasPendingConfig[stakeId] = true;
+    }
+
+    function _applyPendingConfig(uint256 stakeId) internal {
+        if (!_hasPendingConfig[stakeId]) return;
+
+        delete _stakeConfigs[stakeId].prizeDistribution;
+        delete _tierBoundaries[stakeId];
+
+        StakeConfig storage pending = _pendingConfigs[stakeId];
+        StakeConfig storage active = _stakeConfigs[stakeId];
+
+        active.currency = pending.currency;
+        active.ticketCap = pending.ticketCap;
+        active.duration = pending.duration;
+        active.ticketCost = pending.ticketCost;
+
+        for (uint256 i = 0; i < pending.prizeDistribution.length; i++) {
+            active.prizeDistribution.push(pending.prizeDistribution[i]);
+            _tierBoundaries[stakeId].push(_pendingTierBoundaries[stakeId][i]);
+        }
+
+        delete _pendingConfigs[stakeId].prizeDistribution;
+        delete _pendingTierBoundaries[stakeId];
+        delete _hasPendingConfig[stakeId];
+    }
+
     function deleteStake(uint256 stakeId) external onlyOwner {
         if (_stakeDeleted[stakeId]) revert StakeNotExist();
         _stakeDeleted[stakeId] = true;
@@ -87,6 +144,8 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
     }
 
     function _createRound(uint256 stakeId) internal returns (uint256 roundId) {
+        _applyPendingConfig(stakeId);
+
         roundId = _nextRoundId++;
 
         Round storage round = _rounds[roundId];

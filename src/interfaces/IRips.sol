@@ -62,6 +62,7 @@ interface IRips {
     error RoundNotExist();
 
     event StakeCreated(uint256 indexed stakeId);
+    event StakeUpdated(uint256 indexed stakeId);
     event StakeDeleted(uint256 indexed stakeId);
     event RoundCreated(uint256 indexed roundId, uint256 indexed stakeId);
     event TicketsPurchased(
@@ -85,6 +86,8 @@ interface IRips {
     function refund(uint256 roundId, address recipient) external;
 
     function createStake(StakeConfig calldata config) external returns (uint256 stakeId);
+
+    function updateStake(uint256 stakeId, StakeConfig calldata config) external;
 
     function deleteStake(uint256 stakeId) external;
 
