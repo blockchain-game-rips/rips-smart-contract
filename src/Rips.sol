@@ -104,10 +104,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function claimPrizes(uint256 roundId, uint256 startIndex, uint256 maxRanges, address recipient)
-        external
-        nonReentrant
-    {
+    function claimPrizes(
+        uint256 roundId,
+        uint256 startIndex,
+        uint256 maxRanges,
+        address recipient,
+        address referrer
+    ) external nonReentrant {
         if (recipient == address(0)) revert ZeroAddress();
 
         //TODO: validation to separate function
@@ -123,7 +126,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
             _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
 
         if (totalPrize > 0) {
-            _distributePrize(roundId, round, recipient, ticketCount, totalPrize);
+            _distributePrize(roundId, round, recipient, referrer, ticketCount, totalPrize);
         }
     }
 
@@ -131,6 +134,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 roundId,
         Round storage round,
         address recipient,
+        address referrer,
         uint256 ticketCount,
         uint256 prize
     ) private {
@@ -152,7 +156,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         //TODO: ensure that protocol fee < 100%
         _sendPayment(currency, recipient, userPrize);
 
-        emit PrizesClaimed(roundId, recipient, ticketCount, userPrize);
+        emit PrizesClaimed(roundId, recipient, referrer, ticketCount, userPrize);
     }
 
     function _receivePayment(StakeConfig storage config, uint256 toBuy, address from)

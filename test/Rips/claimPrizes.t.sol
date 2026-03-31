@@ -45,7 +45,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
     function test_RevertWhen_TheRoundIsNotFinalized() external {
         vm.prank(user);
         vm.expectRevert(IRips.RoundNotFinalized.selector);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
     }
 
     function test_RevertWhen_RecipientIsZeroAddress() external {
@@ -53,7 +53,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         vm.prank(user);
         vm.expectRevert();
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, address(0));
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, address(0), referrer);
     }
 
     function test_RevertWhen_StartIndexIsOutOfBounds() external {
@@ -64,19 +64,19 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         vm.prank(user);
         vm.expectRevert(IRips.InvalidStartIndex.selector);
-        rips.claimPrizes(roundId, outOfBoundsIndex, MAX_RANGES, user);
+        rips.claimPrizes(roundId, outOfBoundsIndex, MAX_RANGES, user, referrer);
     }
 
     function test_WhenAllRangesInScopeAreAlreadyClaimed() external {
         _finalizeRound();
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
 
         uint256 balanceBefore = user.balance;
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, balanceBefore);
     }
@@ -91,7 +91,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         whenThereAreUnclaimedRanges
     {
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
 
         IRips.TicketRange[] memory ranges = rips.getUserTickets(roundId, user);
         for (uint256 i = 0; i < ranges.length; i++) {
@@ -106,7 +106,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, balanceBefore + _userPrize());
     }
@@ -118,7 +118,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 callerBalanceBefore = caller.balance;
 
         vm.prank(caller);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, recipientBalanceBefore + _userPrize());
         assertEq(caller.balance, callerBalanceBefore);
@@ -169,10 +169,10 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(zeroFeeRoundId, user, DEFAULT_TICKET_CAP, _totalPrize());
+        emit IRips.PrizesClaimed(zeroFeeRoundId, user, referrer, DEFAULT_TICKET_CAP, _totalPrize());
 
         vm.prank(user);
-        rips.claimPrizes(zeroFeeRoundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(zeroFeeRoundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, balanceBefore + _totalPrize());
     }
@@ -186,10 +186,10 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 feeRecipientBalanceBefore = owner.balance;
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, DEFAULT_TICKET_CAP, _userPrize());
+        emit IRips.PrizesClaimed(roundId, user, referrer, DEFAULT_TICKET_CAP, _userPrize());
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, userBalanceBefore + _userPrize());
         assertEq(owner.balance, feeRecipientBalanceBefore + _protocolFee());
@@ -242,10 +242,10 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(zeroFeeRoundId, user, DEFAULT_TICKET_CAP, _totalPrize());
+        emit IRips.PrizesClaimed(zeroFeeRoundId, user, referrer, DEFAULT_TICKET_CAP, _totalPrize());
 
         vm.prank(user);
-        rips.claimPrizes(zeroFeeRoundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(zeroFeeRoundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(erc20.balanceOf(user), balanceBefore + _totalPrize());
     }
@@ -258,10 +258,10 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 feeRecipientBalanceBefore = erc20.balanceOf(owner);
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, DEFAULT_TICKET_CAP, _userPrize());
+        emit IRips.PrizesClaimed(roundId, user, referrer, DEFAULT_TICKET_CAP, _userPrize());
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(erc20.balanceOf(user), userBalanceBefore + _userPrize());
         assertEq(erc20.balanceOf(owner), feeRecipientBalanceBefore + _protocolFee());

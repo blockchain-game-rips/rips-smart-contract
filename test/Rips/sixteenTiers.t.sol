@@ -67,7 +67,7 @@ contract Rips_SixteenTiers is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.prank(user);
-        rips.claimPrizes(roundId, 0, 2, user);
+        rips.claimPrizes(roundId, 0, 2, user, referrer);
 
         assertGt(user.balance, balanceBefore);
 

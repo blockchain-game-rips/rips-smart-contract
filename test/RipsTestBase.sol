@@ -22,6 +22,7 @@ contract RipsTestBase is Test {
 
     address internal owner = makeAddr("owner");
     address internal user = makeAddr("user");
+    address internal referrer = makeAddr("referrer");
 
     uint256 internal vrfSubscriptionId;
 

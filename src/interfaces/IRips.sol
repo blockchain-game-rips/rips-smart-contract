@@ -72,7 +72,11 @@ interface IRips {
     event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
     event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
     event PrizesClaimed(
-        uint256 indexed roundId, address indexed user, uint256 ticketCount, uint256 prizeAmount
+        uint256 indexed roundId,
+        address indexed user,
+        address referrer,
+        uint256 ticketCount,
+        uint256 prizeAmount
     );
     event RefundIssued(uint256 indexed roundId, address indexed user, uint256 ticketCount);
     event FeeRecipientUpdated(address newRecipient);
@@ -80,8 +84,13 @@ interface IRips {
 
     function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient) external payable;
 
-    function claimPrizes(uint256 roundId, uint256 startIndex, uint256 maxRanges, address recipient)
-        external;
+    function claimPrizes(
+        uint256 roundId,
+        uint256 startIndex,
+        uint256 maxRanges,
+        address recipient,
+        address referrer
+    ) external;
 
     function refund(uint256 roundId, address recipient) external;
 
