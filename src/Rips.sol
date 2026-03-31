@@ -14,11 +14,9 @@ contract Rips is RipsVrf, ReentrancyGuard {
         address vrfCoordinator,
         uint256 vrfSubscriptionId,
         bytes32 vrfKeyHash,
-        uint32 callbackGasLimit,
-        uint256 initialFeePercent
+        uint32 callbackGasLimit
     ) RipsVrf(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit) {
         setFeeRecipient(msg.sender);
-        setProtocolFee(initialFeePercent);
     }
 
     function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient)
@@ -136,9 +134,10 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 ticketCount,
         uint256 prize
     ) private {
-        address currency = _stakeConfigs[round.stakeId].currency;
+        StakeConfig storage stakeConfig = _stakeConfigs[round.stakeId];
+        address currency = stakeConfig.currency;
 
-        uint256 protocolFee = (prize * protocolFeePercent) / 10000;
+        uint256 protocolFee = (prize * stakeConfig.feePercent) / 10000;
         uint256 userPrize = prize - protocolFee;
 
         if (protocolFee > 0) {

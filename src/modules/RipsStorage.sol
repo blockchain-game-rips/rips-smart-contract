@@ -8,7 +8,6 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     uint256 public constant MAX_TICKETS_PER_RANGE = 1000;
 
     address public feeRecipient;
-    uint256 public protocolFeePercent;
 
     uint256 internal _nextStakeId = 1;
     uint256 internal _nextRoundId = 1;

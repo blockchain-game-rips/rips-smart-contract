@@ -30,6 +30,7 @@ interface IRips {
         uint256 ticketCap;
         uint256 duration;
         uint256 ticketCost;
+        uint256 feePercent;
     }
 
     struct TicketRange {
@@ -74,7 +75,6 @@ interface IRips {
         uint256 indexed roundId, address indexed user, uint256 ticketCount, uint256 prizeAmount
     );
     event RefundIssued(uint256 indexed roundId, address indexed user, uint256 ticketCount);
-    event ProtocolFeeUpdated(uint256 newFeePercent);
     event FeeRecipientUpdated(address newRecipient);
     event CallbackGasLimitUpdated(uint32 newLimit);
 

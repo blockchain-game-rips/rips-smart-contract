@@ -49,6 +49,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         if (totalPrizePool != config.ticketCap * config.ticketCost) {
             revert PrizePoolMismatch();
         }
+        if (config.feePercent > 10000) revert FeeTooHigh();
     }
 
     function _storeStakeConfig(uint256 stakeId, StakeConfig calldata config) private {
@@ -57,6 +58,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         newConfig.ticketCap = config.ticketCap;
         newConfig.duration = config.duration;
         newConfig.ticketCost = config.ticketCost;
+        newConfig.feePercent = config.feePercent;
 
         uint64 cumulative = 0;
 
@@ -88,6 +90,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         pending.ticketCap = config.ticketCap;
         pending.duration = config.duration;
         pending.ticketCost = config.ticketCost;
+        pending.feePercent = config.feePercent;
 
         uint64 cumulative = 0;
 
@@ -114,6 +117,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         active.ticketCap = pending.ticketCap;
         active.duration = pending.duration;
         active.ticketCost = pending.ticketCost;
+        active.feePercent = pending.feePercent;
 
         for (uint256 i = 0; i < pending.prizeDistribution.length; i++) {
             active.prizeDistribution.push(pending.prizeDistribution[i]);
@@ -129,12 +133,6 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         if (_stakeDeleted[stakeId]) revert StakeNotExist();
         _stakeDeleted[stakeId] = true;
         emit StakeDeleted(stakeId);
-    }
-
-    function setProtocolFee(uint256 newFeePercent) public onlyOwner {
-        if (newFeePercent > 10000) revert FeeTooHigh();
-        protocolFeePercent = newFeePercent;
-        emit ProtocolFeeUpdated(newFeePercent);
     }
 
     function setFeeRecipient(address newRecipient) public onlyOwner {
