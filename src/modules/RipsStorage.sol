@@ -8,6 +8,7 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     uint256 public constant MAX_TICKETS_PER_RANGE = 1000;
 
     address public feeRecipient;
+    uint16 public baseFeePercent;
 
     uint256 internal _nextStakeId = 1;
     uint256 internal _nextRoundId = 1;
@@ -25,4 +26,7 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     mapping(uint256 roundId => mapping(address buyer => uint256 ticketCount)) internal
         _userTicketCount;
     mapping(uint256 roundId => mapping(address user => bool refunded)) internal _hasRefunded;
+
+    mapping(address referrer => ReferrerStats stats) internal _referrerStats;
+    ReferralTier[] internal _referralTiers;
 }

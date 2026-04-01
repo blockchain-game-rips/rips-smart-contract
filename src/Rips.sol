@@ -145,11 +145,20 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 userPrize = prize - protocolFee;
 
         if (protocolFee > 0) {
-            if (_isNative(currency)) {
-                (bool feeSuccess,) = feeRecipient.call{value: protocolFee}("");
-                if (!feeSuccess) revert FeeTransferFailed();
-            } else {
-                IERC20(currency).safeTransfer(feeRecipient, protocolFee);
+            uint256 referrerFee = _collectReferrerFee(referrer, protocolFee, prize);
+            uint256 remainingFee = protocolFee - referrerFee;
+
+            if (remainingFee > 0) {
+                if (_isNative(currency)) {
+                    (bool feeSuccess,) = feeRecipient.call{value: remainingFee}("");
+                    if (!feeSuccess) revert FeeTransferFailed();
+                } else {
+                    IERC20(currency).safeTransfer(feeRecipient, remainingFee);
+                }
+            }
+
+            if (referrerFee > 0) {
+                _sendPayment(currency, referrer, referrerFee);
             }
         }
 
@@ -157,6 +166,56 @@ contract Rips is RipsVrf, ReentrancyGuard {
         _sendPayment(currency, recipient, userPrize);
 
         emit PrizesClaimed(roundId, recipient, referrer, ticketCount, userPrize);
+    }
+
+    function _collectReferrerFee(address referrer, uint256 protocolFee, uint256 claimVolume)
+        private
+        returns (uint256 referrerFee)
+    {
+        if (referrer == address(0)) return 0;
+
+        ReferrerStats storage stats = _referrerStats[referrer];
+
+        if (stats.customFeePercent > 0) {
+            return (protocolFee * stats.customFeePercent) / 10000;
+        }
+
+        if (_referralTiers.length == 0 && baseFeePercent == 0) return 0;
+
+        uint32 currentMonth = uint32(block.timestamp / 30 days);
+
+        if (stats.currentMonth < currentMonth) {
+            uint16 prevNextFeePercent = stats.nextFeePercent;
+
+            stats.activeFeePercent =
+                (currentMonth == stats.currentMonth + 1) ? prevNextFeePercent : 0;
+            stats.nextFeePercent = 0;
+            stats.currMonthVolume = 0;
+            stats.currentMonth = currentMonth;
+        }
+
+        stats.currMonthVolume += uint128(claimVolume);
+
+        uint16 newNextFeePercent = _resolveTierFeePercent(stats.currMonthVolume);
+
+        if (newNextFeePercent != stats.nextFeePercent) {
+            stats.nextFeePercent = newNextFeePercent;
+            emit ReferrerStatsUpdated(referrer, stats.activeFeePercent, newNextFeePercent);
+        }
+
+        uint16 effectiveFeePercent = stats.activeFeePercent > baseFeePercent
+            ? stats.activeFeePercent
+            : baseFeePercent;
+
+        referrerFee = (protocolFee * effectiveFeePercent) / 10000;
+    }
+
+    function _resolveTierFeePercent(uint128 volume) private view returns (uint16 feePercent) {
+        for (uint256 i = _referralTiers.length; i > 0; i--) {
+            if (volume >= _referralTiers[i - 1].minVolume) {
+                return _referralTiers[i - 1].feePercent;
+            }
+        }
     }
 
     function _receivePayment(StakeConfig storage config, uint256 toBuy, address from)

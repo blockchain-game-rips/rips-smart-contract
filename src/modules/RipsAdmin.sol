@@ -135,6 +135,35 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         emit StakeDeleted(stakeId);
     }
 
+    function setBaseFeePercent(uint16 newBaseFeePercent) external onlyOwner {
+        if (newBaseFeePercent > 10000) revert FeeTooHigh();
+        baseFeePercent = newBaseFeePercent;
+        emit BaseFeePercentUpdated(newBaseFeePercent);
+    }
+
+    function setReferrerCustomFee(address referrer, uint16 customFeePercent) external onlyOwner {
+        if (referrer == address(0)) revert ZeroAddress();
+        if (customFeePercent > 10000) revert FeeTooHigh();
+        _referrerStats[referrer].customFeePercent = customFeePercent;
+        emit ReferrerCustomFeeSet(referrer, customFeePercent);
+    }
+
+    function setReferralTiers(ReferralTier[] calldata tiers) external onlyOwner {
+        if (tiers.length == 0) revert ReferralTiersEmpty();
+
+        for (uint256 i = 1; i < tiers.length; i++) {
+            if (tiers[i].minVolume <= tiers[i - 1].minVolume) revert ReferralTiersNotSorted();
+        }
+
+        delete _referralTiers;
+
+        for (uint256 i = 0; i < tiers.length; i++) {
+            _referralTiers.push(tiers[i]);
+        }
+
+        emit ReferralTiersUpdated(tiers);
+    }
+
     function setFeeRecipient(address newRecipient) public onlyOwner {
         if (newRecipient == address(0)) revert ZeroAddress();
         feeRecipient = newRecipient;

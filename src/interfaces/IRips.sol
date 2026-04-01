@@ -39,6 +39,19 @@ interface IRips {
         bool claimed;
     }
 
+    struct ReferrerStats {
+        uint128 currMonthVolume;
+        uint16 activeFeePercent; // basis points, applied this month
+        uint16 nextFeePercent; // earned this month, applied next month
+        uint16 customFeePercent; // admin override, 0 = not set
+        uint32 currentMonth; // block.timestamp / 30 days
+    }
+
+    struct ReferralTier {
+        uint128 minVolume; // minimum volume to reach this tier (in currency units)
+        uint16 feePercent; // basis points
+    }
+
     error EthSentForERC20();
     error NativePaymentRequired();
     error ReturnExcessFailed();
@@ -61,6 +74,8 @@ interface IRips {
     error NoTicketsToRefund();
     error RefundFailed();
     error RoundNotExist();
+    error ReferralTiersEmpty();
+    error ReferralTiersNotSorted();
 
     event StakeCreated(uint256 indexed stakeId);
     event StakeUpdated(uint256 indexed stakeId);
@@ -81,6 +96,12 @@ interface IRips {
     event RefundIssued(uint256 indexed roundId, address indexed user, uint256 ticketCount);
     event FeeRecipientUpdated(address newRecipient);
     event CallbackGasLimitUpdated(uint32 newLimit);
+    event ReferralTiersUpdated(ReferralTier[] tiers);
+    event ReferrerStatsUpdated(
+        address indexed referrer, uint16 activeFeePercent, uint16 nextFeePercent
+    );
+    event BaseFeePercentUpdated(uint16 newBaseFeePercent);
+    event ReferrerCustomFeeSet(address indexed referrer, uint16 customFeePercent);
 
     function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient) external payable;
 
@@ -106,4 +127,10 @@ interface IRips {
         external
         view
         returns (TicketRange[] memory);
+
+    function setReferralTiers(ReferralTier[] calldata tiers) external;
+
+    function setBaseFeePercent(uint16 newBaseFeePercent) external;
+
+    function setReferrerCustomFee(address referrer, uint16 customFeePercent) external;
 }
