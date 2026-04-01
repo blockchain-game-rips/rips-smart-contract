@@ -159,6 +159,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
             if (referrerFee > 0) {
                 _sendPayment(currency, referrer, referrerFee);
+                emit ReferralFeePaid(roundId, referrer, referrerFee);
             }
         }
 
@@ -203,9 +204,8 @@ contract Rips is RipsVrf, ReentrancyGuard {
             emit ReferrerStatsUpdated(referrer, stats.activeFeePercent, newNextFeePercent);
         }
 
-        uint16 effectiveFeePercent = stats.activeFeePercent > baseFeePercent
-            ? stats.activeFeePercent
-            : baseFeePercent;
+        uint16 effectiveFeePercent =
+            stats.activeFeePercent > baseFeePercent ? stats.activeFeePercent : baseFeePercent;
 
         referrerFee = (protocolFee * effectiveFeePercent) / 10000;
     }

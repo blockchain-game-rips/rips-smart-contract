@@ -102,6 +102,7 @@ interface IRips {
     );
     event BaseFeePercentUpdated(uint16 newBaseFeePercent);
     event ReferrerCustomFeeSet(address indexed referrer, uint16 customFeePercent);
+    event ReferralFeePaid(uint256 indexed roundId, address indexed referrer, uint256 amount);
 
     function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient) external payable;
 

@@ -5,13 +5,15 @@ Rips_ClaimPrizes_Referrer
 │   ├── it should apply customFeePercent directly to the protocol fee.
 │   ├── it should send the referrer fee to the referrer.
 │   ├── it should send the remaining protocol fee to the fee recipient.
+│   ├── it should emit a {ReferralFeePaid} event.
 │   └── it should not update tier stats or emit {ReferrerStatsUpdated}.
 ├── given no referral tiers are configured and base fee is zero
 │   └── it should send the full protocol fee to the fee recipient.
 ├── given base fee is set and referrer has no prior activity
 │   ├── it should apply baseFeePercent to the protocol fee.
 │   ├── it should send the referrer fee to the referrer.
-│   └── it should send the remaining protocol fee to the fee recipient.
+│   ├── it should send the remaining protocol fee to the fee recipient.
+│   └── it should emit a {ReferralFeePaid} event.
 └── given referral tiers are configured and referrer has no custom fee
     ├── when referrer has no prior activity
     │   ├── it should accumulate currMonthVolume.
@@ -19,7 +21,8 @@ Rips_ClaimPrizes_Referrer
     ├── when referrer's previous month volume reached a tier threshold
     │   ├── it should apply activeFeePercent to the protocol fee.
     │   ├── it should send the referrer fee to the referrer.
-    │   └── it should send the remaining protocol fee to the fee recipient.
+    │   ├── it should send the remaining protocol fee to the fee recipient.
+    │   └── it should emit a {ReferralFeePaid} event.
     ├── when activeFeePercent is below baseFeePercent
     │   └── it should apply baseFeePercent instead.
     ├── when referrer's current month volume crosses a tier threshold
