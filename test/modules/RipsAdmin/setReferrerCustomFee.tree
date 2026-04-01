@@ -1,0 +1,11 @@
+Rips_SetReferrerCustomFee
+├── when the caller is not the owner
+│   └── it should revert.
+└── when the caller is the owner
+    ├── when referrer is zero address
+    │   └── it should revert.
+    ├── when the fee is greater than 10000
+    │   └── it should revert.
+    └── when inputs are valid
+        ├── it should update the referrer's customFeePercent.
+        └── it should emit a {ReferrerCustomFeeSet} event.

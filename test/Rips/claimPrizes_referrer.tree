@@ -1,0 +1,35 @@
+Rips_ClaimPrizes_Referrer
+├── given referrer is zero address
+│   └── it should send the full protocol fee to the fee recipient.
+├── given referrer has a custom fee set
+│   ├── it should apply customFeePercent directly to the protocol fee.
+│   ├── it should send the referrer fee to the referrer.
+│   ├── it should send the remaining protocol fee to the fee recipient.
+│   └── it should not update tier stats or emit {ReferrerStatsUpdated}.
+├── given no referral tiers are configured and base fee is zero
+│   └── it should send the full protocol fee to the fee recipient.
+├── given base fee is set and referrer has no prior activity
+│   ├── it should apply baseFeePercent to the protocol fee.
+│   ├── it should send the referrer fee to the referrer.
+│   └── it should send the remaining protocol fee to the fee recipient.
+└── given referral tiers are configured and referrer has no custom fee
+    ├── when referrer has no prior activity
+    │   ├── it should accumulate currMonthVolume.
+    │   └── it should apply baseFeePercent as the floor for the active fee.
+    ├── when referrer's previous month volume reached a tier threshold
+    │   ├── it should apply activeFeePercent to the protocol fee.
+    │   ├── it should send the referrer fee to the referrer.
+    │   └── it should send the remaining protocol fee to the fee recipient.
+    ├── when activeFeePercent is below baseFeePercent
+    │   └── it should apply baseFeePercent instead.
+    ├── when referrer's current month volume crosses a tier threshold
+    │   ├── it should update nextFeePercent.
+    │   └── it should emit a {ReferrerStatsUpdated} event.
+    ├── when referrer's current month volume crosses multiple tier thresholds in one claim
+    │   └── it should apply the highest reached tier to nextFeePercent.
+    ├── when a new month starts after an inactive month gap
+    │   ├── it should reset activeFeePercent to zero.
+    │   └── it should reset currMonthVolume.
+    └── when a new month starts after a consecutive active month
+        ├── it should promote nextFeePercent to activeFeePercent.
+        └── it should reset currMonthVolume.
