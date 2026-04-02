@@ -76,6 +76,7 @@ interface IRips {
     error RoundNotExist();
     error ReferralTiersEmpty();
     error ReferralTiersNotSorted();
+    error NotRecipientOrOwner();
 
     event StakeCreated(uint256 indexed stakeId);
     event StakeUpdated(uint256 indexed stakeId);

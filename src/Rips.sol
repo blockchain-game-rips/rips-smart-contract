@@ -112,6 +112,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         address referrer
     ) external nonReentrant {
         if (recipient == address(0)) revert ZeroAddress();
+        if (msg.sender != recipient && msg.sender != owner()) revert NotRecipientOrOwner();
 
         //TODO: validation to separate function
         Round storage round = _rounds[roundId];
