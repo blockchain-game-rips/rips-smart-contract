@@ -15,15 +15,30 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
     }
 
     function createStake(Config calldata config) external onlyOwner returns (uint256 stakeId) {
-        _validateConfig(config);
-
         stakeId = _nextStakeId++;
 
-        _stakeIdToCurrentConfigId[stakeId] = _storeConfig(config);
+        _applyConfig(stakeId, config);
 
         _createRound(stakeId);
 
         emit StakeCreated(stakeId);
+    }
+
+    function updateStake(uint256 stakeId, Config calldata config) external onlyOwner {
+        if (_stakeDeleted[stakeId]) revert StakeNotExist();
+        if (_stakeIdToCurrentRoundId[stakeId] == 0) revert StakeNotExist();
+
+        _applyConfig(stakeId, config);
+
+        emit StakeUpdated(stakeId);
+    }
+
+    function _applyConfig(uint256 stakeId, Config calldata config) internal {
+        _validateConfig(config);
+
+        uint256 configId = _storeConfig(config);
+
+        _stakeIdToCurrentConfigId[stakeId] = configId;
     }
 
     function _validateConfig(Config calldata config) private pure {
@@ -70,17 +85,6 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
             cumulative += config.prizeDistribution[i].prizeCount;
             _configIdToTierBoundaries[configId].push(cumulative);
         }
-    }
-
-    function updateStake(uint256 stakeId, Config calldata config) external onlyOwner {
-        if (_stakeDeleted[stakeId]) revert StakeNotExist();
-        if (_stakeIdToCurrentRoundId[stakeId] == 0) revert StakeNotExist();
-
-        _validateConfig(config);
-
-        _stakeIdToCurrentConfigId[stakeId] = _storeConfig(config);
-
-        emit StakeUpdated(stakeId);
     }
 
     function deleteStake(uint256 stakeId) external onlyOwner {
