@@ -150,22 +150,17 @@ contract Rips is RipsVrf, ReentrancyGuard {
             uint256 remainingFee = protocolFee - referrerFee;
 
             if (remainingFee > 0) {
-                if (_isNative(currency)) {
-                    (bool feeSuccess,) = feeRecipient.call{value: remainingFee}("");
-                    if (!feeSuccess) revert FeeTransferFailed();
-                } else {
-                    IERC20(currency).safeTransfer(feeRecipient, remainingFee);
-                }
+                _transfer(currency, feeRecipient, remainingFee);
             }
 
             if (referrerFee > 0) {
-                _sendPayment(currency, referrer, referrerFee);
+                _transfer(currency, referrer, referrerFee);
                 emit ReferralFeePaid(roundId, referrer, referrerFee);
             }
         }
 
         //TODO: ensure that protocol fee < 100%
-        _sendPayment(currency, recipient, userPrize);
+        _transfer(currency, recipient, userPrize);
 
         emit PrizesClaimed(roundId, recipient, referrer, ticketCount, userPrize);
     }
@@ -237,11 +232,11 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function _sendPayment(address currency, address to, uint256 amount) private {
+    function _transfer(address currency, address to, uint256 amount) private {
         if (_isNative(currency)) {
             (bool success,) = to.call{value: amount}("");
 
-            if (!success) revert PrizeTransferFailed();
+            if (!success) revert TransferFailed();
         } else {
             IERC20(currency).safeTransfer(to, amount);
         }
@@ -379,12 +374,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 ticketCount,
         uint256 amount
     ) private {
-        if (_isNative(currency)) {
-            (bool success,) = to.call{value: amount}("");
-            if (!success) revert RefundFailed();
-        } else {
-            IERC20(currency).safeTransfer(to, amount);
-        }
+        _transfer(currency, to, amount);
 
         emit RefundIssued(roundId, to, ticketCount);
     }

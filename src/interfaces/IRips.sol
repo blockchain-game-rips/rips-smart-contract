@@ -67,12 +67,10 @@ interface IRips {
     error RoundNotSoldOut();
     error RoundNotFinalized();
     error InvalidStartIndex();
-    error FeeTransferFailed();
-    error PrizeTransferFailed();
+    error TransferFailed();
     error RoundNotExpired();
     error AlreadyRefunded();
     error NoTicketsToRefund();
-    error RefundFailed();
     error RoundNotExist();
     error ReferralTiersEmpty();
     error ReferralTiersNotSorted();
