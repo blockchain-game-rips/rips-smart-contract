@@ -14,16 +14,16 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
     uint256 internal _nextRoundId = 1;
     uint256 internal _nextConfigId = 1;
 
-    mapping(uint256 configId => Config config) internal _configIdToConfig;
-    mapping(uint256 configId => uint64[] boundaries) internal _configIdToTierBoundaries;
+    mapping(uint256 configId => Config config) public configIdToConfig;
+    mapping(uint256 configId => uint64[] boundaries) public configIdToTierBoundaries;
 
-    mapping(uint256 roundId => Round round) internal _roundIdToRound;
+    mapping(uint256 roundId => Round round) public roundIdToRound;
 
     // config that will be used when next round is created
-    mapping(uint256 stakeId => uint256 configId) internal _stakeIdToCurrentConfigId;
+    mapping(uint256 stakeId => uint256 configId) public stakeIdToCurrentConfigId;
 
-    mapping(uint256 stakeId => uint256 roundId) internal _stakeIdToCurrentRoundId;
-    mapping(uint256 stakeId => bool deleted) internal _stakeDeleted;
+    mapping(uint256 stakeId => uint256 roundId) public stakeIdToCurrentRoundId;
+    mapping(uint256 stakeId => bool deleted) public isStakeDeleted;
 
     mapping(uint256 roundId => mapping(address buyer => TicketRange[] ranges)) internal
         _userTickets;
@@ -31,6 +31,6 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
         _userTicketCount;
     mapping(uint256 roundId => mapping(address user => bool refunded)) internal _hasRefunded;
 
-    mapping(address referrer => ReferrerStats stats) internal _referrerToReferrerStats;
-    ReferralTier[] internal _referralTiers;
+    mapping(address referrer => ReferrerStats stats) public referrerToReferrerStats;
+    ReferralTier[] public referralTiers;
 }

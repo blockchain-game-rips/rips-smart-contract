@@ -218,6 +218,6 @@ contract Rips_CreateStake is RipsTestBase {
         assertEq(rips.exposed_config(stakeId).ticketCap, DEFAULT_TICKET_CAP);
         assertEq(rips.exposed_config(stakeId).ticketCost, DEFAULT_TICKET_COST);
         assertEq(rips.exposed_config(stakeId).feePercent, DEFAULT_FEE_PERCENT);
-        assertNotEq(rips.exposed_stakeIdToCurrentRoundId(stakeId), 0);
+        assertNotEq(rips.exposedstakeIdToCurrentRoundId(stakeId), 0);
     }
 }

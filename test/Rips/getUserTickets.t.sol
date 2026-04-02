@@ -11,7 +11,7 @@ contract Rips_GetUserTickets is RipsTestBase {
         super.setUp();
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
+        roundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
     }
 
     function test_WhenTheUserHasNoTicketsInTheRound() external view {

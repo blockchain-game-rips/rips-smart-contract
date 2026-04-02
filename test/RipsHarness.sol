@@ -37,7 +37,7 @@ contract RipsHarness is Rips {
         view
         returns (uint256)
     {
-        PrizeTier memory tier = _configIdToConfig[stakeId].prizeDistribution[tierIndex];
+        PrizeTier memory tier = configIdToConfig[stakeId].prizeDistribution[tierIndex];
 
         return RipsMath.prizeForRankInTier(tier, rank);
     }
@@ -47,8 +47,8 @@ contract RipsHarness is Rips {
         view
         returns (uint256)
     {
-        PrizeTier[] memory prizeDistribution = _configIdToConfig[stakeId].prizeDistribution;
-        uint64[] memory tierBoundaries = _configIdToTierBoundaries[stakeId];
+        PrizeTier[] memory prizeDistribution = configIdToConfig[stakeId].prizeDistribution;
+        uint64[] memory tierBoundaries = configIdToTierBoundaries[stakeId];
 
         return RipsMath.calculatePrizeAmount(prizeNumber, prizeDistribution, tierBoundaries);
     }
@@ -60,8 +60,8 @@ contract RipsHarness is Rips {
         uint256 n,
         uint256 stakeId
     ) external view returns (uint256) {
-        PrizeTier[] memory prizeDistribution = _configIdToConfig[stakeId].prizeDistribution;
-        uint64[] memory tierBoundaries = _configIdToTierBoundaries[stakeId];
+        PrizeTier[] memory prizeDistribution = configIdToConfig[stakeId].prizeDistribution;
+        uint64[] memory tierBoundaries = configIdToTierBoundaries[stakeId];
 
         return
             RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution, tierBoundaries);
@@ -76,34 +76,34 @@ contract RipsHarness is Rips {
     }
 
     function exposed_config(uint256 configId) external view returns (Config memory) {
-        return _configIdToConfig[configId];
+        return configIdToConfig[configId];
     }
 
-    function exposed_stakeIdToCurrentRoundId(uint256 stakeId) external view returns (uint256) {
-        return _stakeIdToCurrentRoundId[stakeId];
+    function exposedstakeIdToCurrentRoundId(uint256 stakeId) external view returns (uint256) {
+        return stakeIdToCurrentRoundId[stakeId];
     }
 
     function exposed_round(uint256 roundId) external view returns (Round memory) {
-        return _roundIdToRound[roundId];
+        return roundIdToRound[roundId];
     }
 
-    function exposed_stakeDeleted(uint256 stakeId) external view returns (bool) {
-        return _stakeDeleted[stakeId];
+    function exposedisStakeDeleted(uint256 stakeId) external view returns (bool) {
+        return isStakeDeleted[stakeId];
     }
 
     function exposed_hasRefunded(uint256 roundId, address user) external view returns (bool) {
         return _hasRefunded[roundId][user];
     }
 
-    function exposed_stakeIdToCurrentConfigId(uint256 stakeId) external view returns (uint256) {
+    function exposedstakeIdToCurrentConfigId(uint256 stakeId) external view returns (uint256) {
         return _activeStakeConfigId[stakeId];
     }
 
-    function exposed_referrerToReferrerStats(address referrer)
+    function exposedreferrerToReferrerStats(address referrer)
         external
         view
         returns (ReferrerStats memory)
     {
-        return _referrerToReferrerStats[referrer];
+        return referrerToReferrerStats[referrer];
     }
 }

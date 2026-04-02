@@ -47,7 +47,7 @@ contract Rips_SevenTiers is RipsTestBase {
             })
         );
 
-        roundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
+        roundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
 
         vm.deal(user, TICKET_CAP * TICKET_COST);
     }

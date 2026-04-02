@@ -23,8 +23,8 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
     }
 
     function updateStake(uint256 stakeId, Config calldata config) external onlyOwner {
-        if (_stakeDeleted[stakeId]) revert StakeNotExist();
-        if (_stakeIdToCurrentRoundId[stakeId] == 0) revert StakeNotExist();
+        if (isStakeDeleted[stakeId]) revert StakeNotExist();
+        if (stakeIdToCurrentRoundId[stakeId] == 0) revert StakeNotExist();
 
         _applyConfig(stakeId, config);
 
@@ -36,7 +36,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
 
         uint256 configId = _storeConfig(config);
 
-        _stakeIdToCurrentConfigId[stakeId] = configId;
+        stakeIdToCurrentConfigId[stakeId] = configId;
     }
 
     function _validateConfig(Config calldata config) private pure {
@@ -68,7 +68,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
     function _storeConfig(Config calldata config) private returns (uint256 configId) {
         configId = _nextConfigId++;
 
-        Config storage newConfig = _configIdToConfig[configId];
+        Config storage newConfig = configIdToConfig[configId];
         newConfig.currency = config.currency;
         newConfig.ticketCap = config.ticketCap;
         newConfig.duration = config.duration;
@@ -81,13 +81,13 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
             newConfig.prizeDistribution.push(config.prizeDistribution[i]);
 
             cumulative += config.prizeDistribution[i].prizeCount;
-            _configIdToTierBoundaries[configId].push(cumulative);
+            configIdToTierBoundaries[configId].push(cumulative);
         }
     }
 
     function deleteStake(uint256 stakeId) external onlyOwner {
-        if (_stakeDeleted[stakeId]) revert StakeNotExist();
-        _stakeDeleted[stakeId] = true;
+        if (isStakeDeleted[stakeId]) revert StakeNotExist();
+        isStakeDeleted[stakeId] = true;
         emit StakeDeleted(stakeId);
     }
 
@@ -100,7 +100,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
     function setReferrerCustomFee(address referrer, uint16 customFeePercent) external onlyOwner {
         if (referrer == address(0)) revert ZeroAddress();
         if (customFeePercent > 10000) revert FeeTooHigh();
-        _referrerToReferrerStats[referrer].customFeePercent = customFeePercent;
+        referrerToReferrerStats[referrer].customFeePercent = customFeePercent;
         emit ReferrerCustomFeeSet(referrer, customFeePercent);
     }
 
@@ -111,10 +111,10 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
             if (tiers[i].minVolume <= tiers[i - 1].minVolume) revert ReferralTiersNotSorted();
         }
 
-        delete _referralTiers;
+        delete referralTiers;
 
         for (uint256 i = 0; i < tiers.length; i++) {
-            _referralTiers.push(tiers[i]);
+            referralTiers.push(tiers[i]);
         }
 
         emit ReferralTiersUpdated(tiers);
@@ -131,17 +131,17 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         returns (uint256 roundId, Round storage round, Config storage config)
     {
         roundId = _nextRoundId++;
-        round = _roundIdToRound[roundId];
+        round = roundIdToRound[roundId];
 
-        uint256 configId = _stakeIdToCurrentConfigId[stakeId];
-        config = _configIdToConfig[configId];
+        uint256 configId = stakeIdToCurrentConfigId[stakeId];
+        config = configIdToConfig[configId];
 
         round.stakeId = uint64(stakeId);
         round.configId = uint64(configId);
         round.startTime = uint40(block.timestamp);
         round.status = RoundStatus.Active;
 
-        _stakeIdToCurrentRoundId[stakeId] = roundId;
+        stakeIdToCurrentRoundId[stakeId] = roundId;
 
         emit RoundCreated(roundId, stakeId);
     }

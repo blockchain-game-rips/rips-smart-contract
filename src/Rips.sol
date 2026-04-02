@@ -71,11 +71,11 @@ contract Rips is RipsVrf, ReentrancyGuard {
         private
         returns (uint256 roundId, Round storage round, Config storage config)
     {
-        roundId = _stakeIdToCurrentRoundId[stakeId];
+        roundId = stakeIdToCurrentRoundId[stakeId];
 
         if (roundId != 0) {
-            round = _roundIdToRound[roundId];
-            config = _configIdToConfig[round.configId];
+            round = roundIdToRound[roundId];
+            config = configIdToConfig[round.configId];
 
             bool expired = block.timestamp >= round.startTime + config.duration;
             bool soldOut = round.ticketsSold == config.ticketCap;
@@ -84,14 +84,14 @@ contract Rips is RipsVrf, ReentrancyGuard {
             if (!expired && !soldOut) return (roundId, round, config);
         }
 
-        if (_stakeDeleted[stakeId]) revert StakeNotExist();
+        if (isStakeDeleted[stakeId]) revert StakeNotExist();
 
         // stake is fresh, no round yet
         if (roundId == 0) {
-            uint256 configId = _stakeIdToCurrentConfigId[stakeId];
+            uint256 configId = stakeIdToCurrentConfigId[stakeId];
 
             // ticketCap is guaranteed non-zero by isPowerOfTwo validation
-            if (_configIdToConfig[configId].ticketCap == 0) revert StakeNotExist();
+            if (configIdToConfig[configId].ticketCap == 0) revert StakeNotExist();
         }
 
         // round is sold out or expired
@@ -108,13 +108,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (recipient == address(0)) revert ZeroAddress();
         if (msg.sender != recipient && msg.sender != owner()) revert NotRecipientOrOwner();
 
-        Round storage round = _roundIdToRound[roundId];
+        Round storage round = roundIdToRound[roundId];
         if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();
 
         TicketRange[] storage ranges = _userTickets[roundId][recipient];
         if (startIndex >= ranges.length) revert InvalidStartIndex();
 
-        Config storage config = _configIdToConfig[round.configId];
+        Config storage config = configIdToConfig[round.configId];
 
         (uint256 ticketCount, uint256 totalPrize) =
             _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
@@ -132,7 +132,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 ticketCount,
         uint256 prize
     ) private {
-        Config storage config = _configIdToConfig[round.configId];
+        Config storage config = configIdToConfig[round.configId];
         address currency = config.currency;
 
         uint256 protocolFee = (prize * config.feePercent) / 10000;
@@ -164,13 +164,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
     {
         if (referrer == address(0)) return 0;
 
-        ReferrerStats storage stats = _referrerToReferrerStats[referrer];
+        ReferrerStats storage stats = referrerToReferrerStats[referrer];
 
         if (stats.customFeePercent > 0) {
             return (protocolFee * stats.customFeePercent) / 10000;
         }
 
-        if (_referralTiers.length == 0 && baseFeePercent == 0) return 0;
+        if (referralTiers.length == 0 && baseFeePercent == 0) return 0;
 
         uint32 currentMonth = uint32(block.timestamp / 30 days);
 
@@ -200,9 +200,9 @@ contract Rips is RipsVrf, ReentrancyGuard {
     }
 
     function _resolveTierFeePercent(uint128 volume) private view returns (uint16 feePercent) {
-        for (uint256 i = _referralTiers.length; i > 0; i--) {
-            if (volume >= _referralTiers[i - 1].minVolume) {
-                return _referralTiers[i - 1].feePercent;
+        for (uint256 i = referralTiers.length; i > 0; i--) {
+            if (volume >= referralTiers[i - 1].minVolume) {
+                return referralTiers[i - 1].feePercent;
             }
         }
     }
@@ -259,7 +259,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
             b: round.randomB,
             n: config.ticketCap,
             tiers: config.prizeDistribution,
-            bounds: _configIdToTierBoundaries[round.configId]
+            bounds: configIdToTierBoundaries[round.configId]
         });
 
         uint256 endIndex = startIndex + maxRanges;
@@ -307,16 +307,16 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (recipient == address(0)) revert ZeroAddress();
 
         //TODO: move validation to separate function
-        Round storage round = _roundIdToRound[roundId];
+        Round storage round = roundIdToRound[roundId];
 
         if (round.stakeId == 0) revert RoundNotExist();
 
-        Config storage config = _configIdToConfig[round.configId];
+        Config storage config = configIdToConfig[round.configId];
 
         if (!_isRoundExpired(round, config)) revert RoundNotExpired();
         if (_hasRefunded[roundId][recipient]) revert AlreadyRefunded();
 
-        uint256 ticketsToRefund = _getTicketAmountToRefund(roundId, recipient);
+        uint256 ticketsToRefund = _getTicketCountToRefund(roundId, recipient);
 
         _hasRefunded[roundId][recipient] = true;
         _refund(
@@ -328,7 +328,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         );
     }
 
-    function _getTicketAmountToRefund(uint256 roundId, address recipient)
+    function _getTicketCountToRefund(uint256 roundId, address recipient)
         internal
         view
         returns (uint256)
