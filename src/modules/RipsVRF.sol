@@ -49,7 +49,12 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     //TODO: if there is insufficient LINK balance on the subscription or chainlink stops to work account funds will be frozen
     function requestRandomness(uint256 roundId) external returns (uint256 requestId) {
         Round storage round = roundIdToRound[roundId];
-        // if (round.status != RoundStatus.SoldOut) revert RoundNotSoldOut();//TODO:
+        if (round.stakeId == 0) revert RoundNotExist();
+
+        if (round.status != RoundStatus.Active) revert VrfAlreadyRequested();
+
+        Config storage config = configIdToConfig[config];
+        if (!_isSoldOut(round, config)) revert RoundNotSoldOut();
 
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({

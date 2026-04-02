@@ -54,7 +54,6 @@ interface IRips {
 
     error ZeroAddress();
     error EthSentForERC20();
-    error NativePaymentRequired();
     error FeeTooHigh();
     error TicketCapNotPowerOfTwo();
     error EmptyPrizeDistribution();
@@ -75,6 +74,7 @@ interface IRips {
     error ReferralTiersEmpty();
     error ReferralTiersNotSorted();
     error NotRecipientOrOwner();
+    error VrfAlreadyRequested();
 
     event StakeCreated(uint256 indexed stakeId);
     event StakeUpdated(uint256 indexed stakeId);

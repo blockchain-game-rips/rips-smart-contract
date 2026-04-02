@@ -37,6 +37,7 @@ library RipsMath {
             }
         }
 
+        //unreached
         revert();
     }
 }
