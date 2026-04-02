@@ -132,10 +132,10 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 ticketCount,
         uint256 prize
     ) private {
-        Config storage stakeConfig = _configIdToConfig[round.configId];
-        address currency = stakeConfig.currency;
+        Config storage config = _configIdToConfig[round.configId];
+        address currency = config.currency;
 
-        uint256 protocolFee = (prize * stakeConfig.feePercent) / 10000;
+        uint256 protocolFee = (prize * config.feePercent) / 10000;
         uint256 userPrize = prize - protocolFee;
 
         if (protocolFee > 0) {

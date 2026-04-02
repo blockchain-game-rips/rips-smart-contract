@@ -75,7 +75,7 @@ contract RipsHarness is Rips {
         return _nextRoundId;
     }
 
-    function exposed_stakeConfig(uint256 configId) external view returns (Config memory) {
+    function exposed_config(uint256 configId) external view returns (Config memory) {
         return _configIdToConfig[configId];
     }
 

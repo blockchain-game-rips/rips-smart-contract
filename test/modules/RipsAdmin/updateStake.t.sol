@@ -218,7 +218,7 @@ contract Rips_UpdateStake is RipsTestBase {
         vm.prank(user);
         rips.buyTickets{value: newTicketCost}(stakeId, 1, user);
 
-        IRips.Config memory active = rips.exposed_stakeConfig(stakeId);
+        IRips.Config memory active = rips.exposed_config(stakeId);
         assertEq(active.ticketCap, config.ticketCap);
         assertEq(active.ticketCost, config.ticketCost);
         assertEq(active.currency, config.currency);
