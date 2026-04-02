@@ -19,7 +19,9 @@ abstract contract RipsStorage is IRips, VRFConsumerBaseV2Plus {
 
     mapping(uint256 roundId => Round round) internal _roundIdToRound;
 
+    // config that will be used when next round is created
     mapping(uint256 stakeId => uint256 configId) internal _stakeIdToCurrentConfigId;
+
     mapping(uint256 stakeId => uint256 roundId) internal _stakeIdToCurrentRoundId;
     mapping(uint256 stakeId => bool deleted) internal _stakeDeleted;
 

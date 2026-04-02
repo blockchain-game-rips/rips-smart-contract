@@ -29,7 +29,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (ticketCount == 0) revert ZeroTickets();
 
         (uint256 roundId, Round storage round, Config storage config) =
-            _resolveActiveRoundAndConfig(stakeId);
+            _resolveRoundAndConfig(stakeId);
 
         uint256 toBuy = _getTicketsToBuy(round, config, ticketCount);
 
@@ -69,31 +69,35 @@ contract Rips is RipsVrf, ReentrancyGuard {
         emit TicketsPurchased(roundId, recipient, ticketsToBuy, startTicket);
     }
 
-    function _resolveActiveRoundAndConfig(uint256 stakeId)
+    function _resolveRoundAndConfig(uint256 stakeId)
         private
-        returns (uint256 roundId, Round storage round, Config storage stakeConfig)
+        returns (uint256 roundId, Round storage round, Config storage config)
     {
         roundId = _stakeIdToCurrentRoundId[stakeId];
-        round = _roundIdToRound[roundId];
-        stakeConfig = _configIdToConfig[round.configId];
 
-        if (block.timestamp >= round.startTime + stakeConfig.duration) {
-            if (_stakeDeleted[stakeId]) revert StakeNotExist();
-
-            roundId = _createRound(stakeId);
+        if (roundId != 0) {
             round = _roundIdToRound[roundId];
-            stakeConfig = _configIdToConfig[round.configId];
+            config = _configIdToConfig[round.configId];
 
-            return (roundId, round, stakeConfig);
+            bool expired = block.timestamp >= round.startTime + config.duration;
+            bool soldOut = round.ticketsSold == config.ticketCap;
+
+            // round is filling
+            if (!expired && !soldOut) return (roundId, round, config);
         }
 
-        if (round.status == RoundStatus.SoldOut) {
-            roundId = _createRound(stakeId);
-            round = _roundIdToRound[roundId];
-            stakeConfig = _configIdToConfig[round.configId];
+        if (_stakeDeleted[stakeId]) revert StakeNotExist();
 
-            return (roundId, round, stakeConfig);
+        // stake is fresh, no round yet
+        if (roundId == 0) {
+            uint256 configId = _stakeIdToCurrentConfigId[stakeId];
+
+            // ticketCap is guaranteed non-zero by isPowerOfTwo validation
+            if (_configIdToConfig[configId].ticketCap == 0) revert StakeNotExist();
         }
+
+        // round is sold out or expired
+        return _createRound(stakeId);
     }
 
     function claimPrizes(
@@ -393,7 +397,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         _userTicketCount[roundId][buyer] += ticketCount;
     }
 
-    function _isNative(address currency) private returns (bool) {
+    function _isNative(address currency) private pure returns (bool) {
         return currency == address(0);
     }
 }

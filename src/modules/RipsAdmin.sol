@@ -19,8 +19,6 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
 
         _applyConfig(stakeId, config);
 
-        _createRound(stakeId);
-
         emit StakeCreated(stakeId);
     }
 
@@ -128,12 +126,18 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         emit FeeRecipientUpdated(newRecipient);
     }
 
-    function _createRound(uint256 stakeId) internal returns (uint256 roundId) {
+    function _createRound(uint256 stakeId)
+        internal
+        returns (uint256 roundId, Round storage round, Config storage config)
+    {
         roundId = _nextRoundId++;
+        round = _roundIdToRound[roundId];
 
-        Round storage round = _roundIdToRound[roundId];
+        uint256 configId = _stakeIdToCurrentConfigId[stakeId];
+        config = _configIdToConfig[configId];
+
         round.stakeId = uint64(stakeId);
-        round.configId = uint64(_stakeIdToCurrentConfigId[stakeId]);
+        round.configId = uint64(configId);
         round.startTime = uint40(block.timestamp);
         round.status = RoundStatus.Active;
 
