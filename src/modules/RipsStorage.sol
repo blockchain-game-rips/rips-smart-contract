@@ -4,8 +4,6 @@ pragma solidity ^0.8.13;
 import "../interfaces/IRips.sol";
 
 abstract contract RipsStorage is IRips {
-    uint256 public constant MAX_TICKETS_PER_RANGE = 1000;
-
     address public feeRecipient;
 
     uint256 internal _nextStakeId = 1;
@@ -26,5 +24,4 @@ abstract contract RipsStorage is IRips {
         _userTickets;
     mapping(uint256 roundId => mapping(address buyer => uint256 ticketCount)) internal
         _userTicketCount;
-    mapping(uint256 roundId => mapping(address user => bool refunded)) internal _hasRefunded;
 }
