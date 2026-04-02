@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./RipsStorage.sol";
+import "../common/RipsStorage.sol";
 import "../libraries/RipsMath.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
-abstract contract RipsAdmin is RipsStorage, Pausable, Ownable {
+abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
     function pause() external onlyOwner {
         _pause();
     }
@@ -53,12 +53,8 @@ abstract contract RipsAdmin is RipsStorage, Pausable, Ownable {
     }
 
     function _validateConfig(Config calldata config) private pure {
-        if (!RipsMath.isPowerOfTwo(config.ticketCap)) {
-            revert TicketCapNotPowerOfTwo();
-        }
-        if (config.prizeDistribution.length == 0) {
-            revert EmptyPrizeDistribution();
-        }
+        if (!RipsMath.isPowerOfTwo(config.ticketCap)) revert TicketCapNotPowerOfTwo();
+        if (config.prizeDistribution.length == 0) revert EmptyPrizeDistribution();
 
         uint256 totalPrizeCount = 0;
         uint256 totalPrizePool = 0;
@@ -72,9 +68,7 @@ abstract contract RipsAdmin is RipsStorage, Pausable, Ownable {
         }
 
         if (totalPrizeCount != config.ticketCap) revert PrizeCountMismatch();
-        if (totalPrizePool != config.ticketCap * config.ticketCost) {
-            revert PrizePoolMismatch();
-        }
+        if (totalPrizePool != config.ticketCap * config.ticketCost) revert PrizePoolMismatch();
         if (config.feePercent > 10000) revert FeeTooHigh();
     }
 

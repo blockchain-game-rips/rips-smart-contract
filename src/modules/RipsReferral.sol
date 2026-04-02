@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./RipsAdmin.sol";
+import "../common/RipsStorage.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-abstract contract RipsReferral is RipsAdmin {
+abstract contract RipsReferral is RipsStorage, Ownable {
     uint16 public baseFeePercent;
 
     mapping(address referrer => ReferrerStats stats) public referrerToReferrerStats;

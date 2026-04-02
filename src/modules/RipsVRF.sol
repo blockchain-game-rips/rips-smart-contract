@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./RipsUtils.sol";
+import "../common/RipsUtils.sol";
 import "../libraries/RipsMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 //TODO: refund if too much time has passed since vrf requested
-abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
+abstract contract RipsVrf is RipsUtils, Ownable, IVRFMigratableConsumerV2Plus {
     error OnlyCoordinatorCanFulfill(address have, address want);
 
     uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
@@ -34,7 +35,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         s_callbackGasLimit = callbackGasLimit;
     }
 
-    function setCoordinator(address vrfCoordinator) external onlyOwner {
+    function setCoordinator(address vrfCoordinator) external override onlyOwner {
         if (vrfCoordinator == address(0)) revert ZeroAddress();
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
         emit CoordinatorSet(vrfCoordinator);
@@ -53,7 +54,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
 
         if (round.status != RoundStatus.Active) revert VrfAlreadyRequested();
 
-        Config storage config = configIdToConfig[config];
+        Config storage config = configIdToConfig[round.configId];
         if (!_isSoldOut(round, config)) revert RoundNotSoldOut();
 
         requestId = s_vrfCoordinator.requestRandomWords(
@@ -86,7 +87,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal {
         uint256 roundId = _vrfRequestToRound[requestId];
         Round storage round = roundIdToRound[roundId];
-        Config storage config = configIdToConfig[round.stakeId];
+        Config storage config = configIdToConfig[round.configId];
 
         uint256 n = config.ticketCap;
         uint256 randomWord = randomWords[0];

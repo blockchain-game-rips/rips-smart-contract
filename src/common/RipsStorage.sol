@@ -13,7 +13,6 @@ abstract contract RipsStorage is IRips {
     mapping(uint256 configId => Config config) public configIdToConfig;
     mapping(uint256 configId => uint64[] boundaries) public configIdToTierBoundaries;
 
-    // config that will be used when next round is created
     mapping(uint256 roundId => Round round) public roundIdToRound;
 
     mapping(uint256 stakeId => uint256 configId) public stakeIdToCurrentConfigId;

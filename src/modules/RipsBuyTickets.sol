@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./RipsUtils.sol";
+import "../common/RipsUtils.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-abstract contract RipsBuyTickets is RipsUtils {
-    uint256 public constant MAX_TICKETS_PER_RANGE = 1000;
-
+abstract contract RipsBuyTickets is RipsUtils, Pausable {
     using SafeERC20 for IERC20;
+
+    uint256 public constant MAX_TICKETS_PER_RANGE = 1000;
 
     function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient)
         external
