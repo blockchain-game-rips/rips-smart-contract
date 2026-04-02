@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./RipsAdmin.sol";
+import "./RipsUtils.sol";
 import "../libraries/RipsMath.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 //TODO: refund if too much time has passed since vrf requested
-abstract contract RipsVrf is RipsAdmin, IVRFMigratableConsumerV2Plus {
+abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     error OnlyCoordinatorCanFulfill(address have, address want);
 
     uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
@@ -26,7 +26,7 @@ abstract contract RipsVrf is RipsAdmin, IVRFMigratableConsumerV2Plus {
         uint256 vrfSubscriptionId_,
         bytes32 vrfKeyHash_,
         uint32 callbackGasLimit
-    ) Ownable(msg.sender) {
+    ) {
         if (vrfCoordinator == address(0)) revert ZeroAddress();
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
         vrfSubscriptionId = vrfSubscriptionId_;
@@ -74,6 +74,7 @@ abstract contract RipsVrf is RipsAdmin, IVRFMigratableConsumerV2Plus {
         if (msg.sender != address(s_vrfCoordinator)) {
             revert OnlyCoordinatorCanFulfill(msg.sender, address(s_vrfCoordinator));
         }
+
         fulfillRandomWords(requestId, randomWords);
     }
 

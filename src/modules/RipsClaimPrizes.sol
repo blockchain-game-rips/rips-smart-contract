@@ -2,9 +2,10 @@
 pragma solidity ^0.8.13;
 
 import "./RipsUtils.sol";
+import "./RipsReferral.sol";
 import "../libraries/RipsMath.sol";
 
-abstract contract RipsClaimPrizes is RipsUtils {
+abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
     struct PrizeCalcParams {
         uint256 a;
         uint256 b;

@@ -2,11 +2,10 @@
 pragma solidity ^0.8.13;
 
 import "./RipsAdmin.sol";
-import "./RipsReferral.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-abstract contract RipsUtils is RipsReferral {
+abstract contract RipsUtils is RipsAdmin {
     using SafeERC20 for IERC20;
 
     function _isExpired(Round storage round, Config storage config) internal view returns (bool) {
