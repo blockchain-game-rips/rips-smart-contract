@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "./RipsStorage.sol";
-import "./RipsMath.sol";
+import "../libraries/RipsMath.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
 abstract contract RipsAdmin is RipsStorage, Pausable {

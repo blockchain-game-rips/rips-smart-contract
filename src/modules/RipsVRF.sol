@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "./RipsAdmin.sol";
-import "./RipsMath.sol";
+import "../libraries/RipsMath.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 //TODO: refund if too much time has passed since vrf requested

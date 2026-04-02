@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "./modules/RipsVrf.sol";
-import "./modules/RipsMath.sol";
+import "./libraries/RipsMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -77,11 +77,10 @@ contract Rips is RipsVrf, ReentrancyGuard {
             round = roundIdToRound[roundId];
             config = configIdToConfig[round.configId];
 
-            bool expired = block.timestamp >= round.startTime + config.duration;
-            bool soldOut = round.ticketsSold == config.ticketCap;
-
             // round is filling
-            if (!expired && !soldOut) return (roundId, round, config);
+            if (!_isExpired(round, config) && !_isSoldOut(round, config)) {
+                return (roundId, round, config);
+            }
         }
 
         if (isStakeDeleted[stakeId]) revert StakeNotExist();
@@ -272,7 +271,10 @@ contract Rips is RipsVrf, ReentrancyGuard {
             uint256 count = ranges[i].count;
 
             for (uint256 j = 0; j < count; j++) {
-                totalPrize += _calculateTicketPrize(rangeStart + j + 1, p);
+                //TODO: try to pass memory struct and see gas consumption diff
+                totalPrize += RipsMath.calculateTicketPrize(
+                    rangeStart + j + 1, p.a, p.b, p.n, p.tiers, p.bounds
+                );
             }
 
             ticketCount += count;
@@ -281,78 +283,32 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function _calculateTicketPrize(uint256 ticketNumber, PrizeCalcParams memory p)
-        private
-        pure
-        returns (uint256)
-    {
-        uint256 prizeNumber = (p.a * ticketNumber + p.b) % p.n + 1;
-
-        for (uint256 t = 0; t < p.bounds.length; t++) {
-            if (prizeNumber <= p.bounds[t]) {
-                PrizeTier memory tier = p.tiers[t];
-                uint256 rank = prizeNumber - (t == 0 ? 0 : p.bounds[t - 1]);
-
-                if (tier.prizeCount == 1) return tier.minPrize;
-
-                return tier.minPrize + ((tier.maxPrize - tier.minPrize) * (rank - 1))
-                    / (tier.prizeCount - 1);
-            }
-        }
-
-        revert();
-    }
-
     function refund(uint256 roundId, address recipient) external nonReentrant {
         if (recipient == address(0)) revert ZeroAddress();
 
-        //TODO: move validation to separate function
         Round storage round = roundIdToRound[roundId];
-
         if (round.stakeId == 0) revert RoundNotExist();
 
         Config storage config = configIdToConfig[round.configId];
 
-        if (!_isRoundExpired(round, config)) revert RoundNotExpired();
+        if (!_isExpired(round, config) && !_isSoldOut(round, config)) revert RoundNotExpired();
         if (_hasRefunded[roundId][recipient]) revert AlreadyRefunded();
 
-        uint256 ticketsToRefund = _getTicketCountToRefund(roundId, recipient);
+        uint256 ticketCount = _userTicketCount[roundId][recipient];
+        if (ticketCount == 0) revert NoTicketsToRefund();
 
         _hasRefunded[roundId][recipient] = true;
-        _refund(
-            roundId,
-            config.currency,
-            recipient,
-            ticketsToRefund,
-            ticketsToRefund * config.ticketCost
-        );
+        _transfer(config.currency, recipient, ticketCount * config.ticketCost);
+
+        emit RefundIssued(roundId, recipient, ticketCount);
     }
 
-    function _getTicketCountToRefund(uint256 roundId, address recipient)
-        internal
-        view
-        returns (uint256)
-    {
-        uint256 totalTickets = _userTicketCount[roundId][recipient];
-
-        if (totalTickets == 0) revert NoTicketsToRefund();
-
-        return totalTickets;
+    function _isExpired(Round storage round, Config storage config) internal view returns (bool) {
+        return block.timestamp > round.startTime + config.duration;
     }
 
-    function _isRoundExpired(Round storage round, Config storage config)
-        internal
-        view
-        returns (bool)
-    {
-        if (
-            (round.status == RoundStatus.Active)
-                && (block.timestamp > round.startTime + config.duration)
-        ) {
-            return true;
-        }
-
-        return false;
+    function _isSoldOut(Round storage round, Config storage config) internal view returns (bool) {
+        return round.ticketsSold == config.ticketCap;
     }
 
     function getUserTickets(uint256 roundId, address user)
@@ -361,18 +317,6 @@ contract Rips is RipsVrf, ReentrancyGuard {
         returns (TicketRange[] memory)
     {
         return _userTickets[roundId][user];
-    }
-
-    function _refund(
-        uint256 roundId,
-        address currency,
-        address to,
-        uint256 ticketCount,
-        uint256 amount
-    ) private {
-        _transfer(currency, to, amount);
-
-        emit RefundIssued(roundId, to, ticketCount);
     }
 
     function _storeTicketRanges(
