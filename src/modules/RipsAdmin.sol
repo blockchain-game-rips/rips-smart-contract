@@ -4,8 +4,9 @@ pragma solidity ^0.8.13;
 import "./RipsStorage.sol";
 import "../libraries/RipsMath.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-abstract contract RipsAdmin is RipsStorage, Pausable {
+abstract contract RipsAdmin is RipsStorage, Pausable, Ownable {
     function pause() external onlyOwner {
         _pause();
     }
@@ -29,6 +30,18 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
         _applyConfig(stakeId, config);
 
         emit StakeUpdated(stakeId);
+    }
+
+    function deleteStake(uint256 stakeId) external onlyOwner {
+        if (isStakeDeleted[stakeId]) revert StakeNotExist();
+        isStakeDeleted[stakeId] = true;
+        emit StakeDeleted(stakeId);
+    }
+
+    function setFeeRecipient(address newRecipient) public onlyOwner {
+        if (newRecipient == address(0)) revert ZeroAddress();
+        feeRecipient = newRecipient;
+        emit FeeRecipientUpdated(newRecipient);
     }
 
     function _applyConfig(uint256 stakeId, Config calldata config) internal {
@@ -83,66 +96,5 @@ abstract contract RipsAdmin is RipsStorage, Pausable {
             cumulative += config.prizeDistribution[i].prizeCount;
             configIdToTierBoundaries[configId].push(cumulative);
         }
-    }
-
-    function deleteStake(uint256 stakeId) external onlyOwner {
-        if (isStakeDeleted[stakeId]) revert StakeNotExist();
-        isStakeDeleted[stakeId] = true;
-        emit StakeDeleted(stakeId);
-    }
-
-    function setBaseFeePercent(uint16 newBaseFeePercent) external onlyOwner {
-        if (newBaseFeePercent > 10000) revert FeeTooHigh();
-        baseFeePercent = newBaseFeePercent;
-        emit BaseFeePercentUpdated(newBaseFeePercent);
-    }
-
-    function setReferrerCustomFee(address referrer, uint16 customFeePercent) external onlyOwner {
-        if (referrer == address(0)) revert ZeroAddress();
-        if (customFeePercent > 10000) revert FeeTooHigh();
-        referrerToReferrerStats[referrer].customFeePercent = customFeePercent;
-        emit ReferrerCustomFeeSet(referrer, customFeePercent);
-    }
-
-    function setReferralTiers(ReferralTier[] calldata tiers) external onlyOwner {
-        if (tiers.length == 0) revert ReferralTiersEmpty();
-
-        for (uint256 i = 1; i < tiers.length; i++) {
-            if (tiers[i].minVolume <= tiers[i - 1].minVolume) revert ReferralTiersNotSorted();
-        }
-
-        delete referralTiers;
-
-        for (uint256 i = 0; i < tiers.length; i++) {
-            referralTiers.push(tiers[i]);
-        }
-
-        emit ReferralTiersUpdated(tiers);
-    }
-
-    function setFeeRecipient(address newRecipient) public onlyOwner {
-        if (newRecipient == address(0)) revert ZeroAddress();
-        feeRecipient = newRecipient;
-        emit FeeRecipientUpdated(newRecipient);
-    }
-
-    function _createRound(uint256 stakeId)
-        internal
-        returns (uint256 roundId, Round storage round, Config storage config)
-    {
-        roundId = _nextRoundId++;
-        round = roundIdToRound[roundId];
-
-        uint256 configId = stakeIdToCurrentConfigId[stakeId];
-        config = configIdToConfig[configId];
-
-        round.stakeId = uint64(stakeId);
-        round.configId = uint64(configId);
-        round.startTime = uint40(block.timestamp);
-        round.status = RoundStatus.Active;
-
-        stakeIdToCurrentRoundId[stakeId] = roundId;
-
-        emit RoundCreated(roundId, stakeId);
     }
 }

@@ -2,12 +2,13 @@
 pragma solidity ^0.8.13;
 
 import "./modules/RipsVrf.sol";
+import "./modules/RipsReferral.sol";
 import "./libraries/RipsMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract Rips is RipsVrf, ReentrancyGuard {
+contract Rips is RipsVrf, RipsReferral, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     constructor(
@@ -97,6 +98,26 @@ contract Rips is RipsVrf, ReentrancyGuard {
         return _createRound(stakeId);
     }
 
+    function _createRound(uint256 stakeId)
+        internal
+        returns (uint256 roundId, Round storage round, Config storage config)
+    {
+        roundId = _nextRoundId++;
+        round = roundIdToRound[roundId];
+
+        uint256 configId = stakeIdToCurrentConfigId[stakeId];
+        config = configIdToConfig[configId];
+
+        round.stakeId = uint64(stakeId);
+        round.configId = uint64(configId);
+        round.startTime = uint40(block.timestamp);
+        round.status = RoundStatus.Active;
+
+        stakeIdToCurrentRoundId[stakeId] = roundId;
+
+        emit RoundCreated(roundId, stakeId);
+    }
+
     function claimPrizes(
         uint256 roundId,
         uint256 startIndex,
@@ -155,55 +176,6 @@ contract Rips is RipsVrf, ReentrancyGuard {
         _transfer(currency, recipient, userPrize);
 
         emit PrizesClaimed(roundId, recipient, referrer, ticketCount, userPrize);
-    }
-
-    function _collectReferrerFee(address referrer, uint256 protocolFee, uint256 claimVolume)
-        private
-        returns (uint256 referrerFee)
-    {
-        if (referrer == address(0)) return 0;
-
-        ReferrerStats storage stats = referrerToReferrerStats[referrer];
-
-        if (stats.customFeePercent > 0) {
-            return (protocolFee * stats.customFeePercent) / 10000;
-        }
-
-        if (referralTiers.length == 0 && baseFeePercent == 0) return 0;
-
-        uint32 currentMonth = uint32(block.timestamp / 30 days);
-
-        if (stats.currentMonth < currentMonth) {
-            uint16 prevNextFeePercent = stats.nextFeePercent;
-
-            stats.activeFeePercent =
-                (currentMonth == stats.currentMonth + 1) ? prevNextFeePercent : 0;
-            stats.nextFeePercent = 0;
-            stats.currMonthVolume = 0;
-            stats.currentMonth = currentMonth;
-        }
-
-        stats.currMonthVolume += uint128(claimVolume);
-
-        uint16 newNextFeePercent = _resolveTierFeePercent(stats.currMonthVolume);
-
-        if (newNextFeePercent != stats.nextFeePercent) {
-            stats.nextFeePercent = newNextFeePercent;
-            emit ReferrerStatsUpdated(referrer, stats.activeFeePercent, newNextFeePercent);
-        }
-
-        uint16 effectiveFeePercent =
-            stats.activeFeePercent > baseFeePercent ? stats.activeFeePercent : baseFeePercent;
-
-        referrerFee = (protocolFee * effectiveFeePercent) / 10000;
-    }
-
-    function _resolveTierFeePercent(uint128 volume) private view returns (uint16 feePercent) {
-        for (uint256 i = referralTiers.length; i > 0; i--) {
-            if (volume >= referralTiers[i - 1].minVolume) {
-                return referralTiers[i - 1].feePercent;
-            }
-        }
     }
 
     function _receivePayment(Config storage config, uint256 toBuy, address from)

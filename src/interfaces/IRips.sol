@@ -52,6 +52,7 @@ interface IRips {
         uint16 feePercent; // basis points
     }
 
+    error ZeroAddress();
     error EthSentForERC20();
     error NativePaymentRequired();
     error FeeTooHigh();

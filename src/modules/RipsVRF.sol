@@ -3,13 +3,18 @@ pragma solidity ^0.8.13;
 
 import "./RipsAdmin.sol";
 import "../libraries/RipsMath.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 //TODO: refund if too much time has passed since vrf requested
-abstract contract RipsVrf is RipsAdmin {
+abstract contract RipsVrf is RipsAdmin, IVRFMigratableConsumerV2Plus {
+    error OnlyCoordinatorCanFulfill(address have, address want);
+
     uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
     uint32 public constant VRF_NUM_WORDS = 1;
 
+    IVRFCoordinatorV2Plus public s_vrfCoordinator;
     uint256 public immutable vrfSubscriptionId;
     bytes32 public immutable vrfKeyHash;
     uint32 private s_callbackGasLimit;
@@ -21,10 +26,18 @@ abstract contract RipsVrf is RipsAdmin {
         uint256 vrfSubscriptionId_,
         bytes32 vrfKeyHash_,
         uint32 callbackGasLimit
-    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    ) Ownable(msg.sender) {
+        if (vrfCoordinator == address(0)) revert ZeroAddress();
+        s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
         vrfSubscriptionId = vrfSubscriptionId_;
         vrfKeyHash = vrfKeyHash_;
         s_callbackGasLimit = callbackGasLimit;
+    }
+
+    function setCoordinator(address vrfCoordinator) external onlyOwner {
+        if (vrfCoordinator == address(0)) revert ZeroAddress();
+        s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
+        emit CoordinatorSet(vrfCoordinator);
     }
 
     function updateCallbackGasLimit(uint32 newLimit) external onlyOwner {
@@ -57,10 +70,14 @@ abstract contract RipsVrf is RipsAdmin {
         emit RandomnessRequested(roundId, requestId);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
-        internal
-        override
-    {
+    function rawFulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) external {
+        if (msg.sender != address(s_vrfCoordinator)) {
+            revert OnlyCoordinatorCanFulfill(msg.sender, address(s_vrfCoordinator));
+        }
+        fulfillRandomWords(requestId, randomWords);
+    }
+
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal {
         uint256 roundId = _vrfRequestToRound[requestId];
         Round storage round = roundIdToRound[roundId];
         Config storage config = configIdToConfig[round.stakeId];
