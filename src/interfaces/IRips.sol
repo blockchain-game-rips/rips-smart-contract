@@ -54,7 +54,6 @@ interface IRips {
 
     error EthSentForERC20();
     error NativePaymentRequired();
-    error ReturnExcessFailed();
     error FeeTooHigh();
     error TicketCapNotPowerOfTwo();
     error EmptyPrizeDistribution();

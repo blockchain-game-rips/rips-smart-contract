@@ -38,9 +38,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 nativeExcess = _receivePayment(config, toBuy, msg.sender);
 
         if (nativeExcess > 0) {
-            (bool success,) = msg.sender.call{value: nativeExcess}("");
-
-            if (!success) revert ReturnExcessFailed();
+            _sendNative(msg.sender, nativeExcess);
         }
     }
 
@@ -110,7 +108,6 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (recipient == address(0)) revert ZeroAddress();
         if (msg.sender != recipient && msg.sender != owner()) revert NotRecipientOrOwner();
 
-        //TODO: validation to separate function
         Round storage round = _roundIdToRound[roundId];
         if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();
 
@@ -230,12 +227,16 @@ contract Rips is RipsVrf, ReentrancyGuard {
 
     function _transfer(address currency, address to, uint256 amount) private {
         if (_isNative(currency)) {
-            (bool success,) = to.call{value: amount}("");
-
-            if (!success) revert TransferFailed();
+            _sendNative(to, amount);
         } else {
             IERC20(currency).safeTransfer(to, amount);
         }
+    }
+
+    function _sendNative(address to, uint256 amount) private {
+        (bool success,) = to.call{value: amount}("");
+
+        if (!success) revert TransferFailed();
     }
 
     struct PrizeCalcParams {
