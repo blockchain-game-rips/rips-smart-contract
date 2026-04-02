@@ -16,7 +16,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposed_stakeToActiveRound(stakeId);
+        roundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
 
         vm.deal(user, 100 ether);
         vm.prank(user);
@@ -146,7 +146,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         vm.prank(owner);
         uint256 zeroFeeStakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -156,7 +156,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
             })
         );
 
-        zeroFeeRoundId = rips.exposed_stakeToActiveRound(zeroFeeStakeId);
+        zeroFeeRoundId = rips.exposed_stakeIdToCurrentRoundId(zeroFeeStakeId);
 
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
@@ -211,7 +211,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         _mintAndApprove(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
 
         uint256 erc20StakeId = _createDefaultERC20Stake();
-        roundId = rips.exposed_stakeToActiveRound(erc20StakeId);
+        roundId = rips.exposed_stakeIdToCurrentRoundId(erc20StakeId);
 
         vm.prank(user);
         rips.buyTickets(erc20StakeId, DEFAULT_TICKET_CAP, user);
@@ -233,7 +233,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         vm.prank(owner);
         uint256 zeroFeeStakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(erc20),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -243,7 +243,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
             })
         );
 
-        uint256 zeroFeeRoundId = rips.exposed_stakeToActiveRound(zeroFeeStakeId);
+        uint256 zeroFeeRoundId = rips.exposed_stakeIdToCurrentRoundId(zeroFeeStakeId);
 
         vm.prank(user);
         rips.buyTickets(zeroFeeStakeId, DEFAULT_TICKET_CAP, user);

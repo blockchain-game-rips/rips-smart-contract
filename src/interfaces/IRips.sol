@@ -11,6 +11,7 @@ interface IRips {
 
     struct Round {
         uint64 stakeId;
+        uint64 configId;
         uint40 startTime;
         uint32 ticketsSold;
         RoundStatus status;
@@ -24,7 +25,7 @@ interface IRips {
         uint128 maxPrize;
     }
 
-    struct StakeConfig {
+    struct Config {
         PrizeTier[] prizeDistribution;
         address currency;
         uint256 ticketCap;
@@ -115,9 +116,9 @@ interface IRips {
 
     function refund(uint256 roundId, address recipient) external;
 
-    function createStake(StakeConfig calldata config) external returns (uint256 stakeId);
+    function createStake(Config calldata config) external returns (uint256 stakeId);
 
-    function updateStake(uint256 stakeId, StakeConfig calldata config) external;
+    function updateStake(uint256 stakeId, Config calldata config) external;
 
     function deleteStake(uint256 stakeId) external;
 

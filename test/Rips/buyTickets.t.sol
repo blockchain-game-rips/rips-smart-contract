@@ -12,7 +12,7 @@ contract Rips_BuyTickets is RipsTestBase {
         super.setUp();
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposed_stakeToActiveRound(stakeId);
+        roundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
 
         vm.deal(user, 100 ether);
     }
@@ -62,7 +62,7 @@ contract Rips_BuyTickets is RipsTestBase {
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
 
-        uint256 newRoundId = rips.exposed_stakeToActiveRound(stakeId);
+        uint256 newRoundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
         assertNotEq(newRoundId, roundId);
     }
 
@@ -147,7 +147,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
         vm.prank(owner);
         uint256 largeStakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: largeTicketCap,
@@ -156,7 +156,7 @@ contract Rips_BuyTickets is RipsTestBase {
                 feePercent: 0
             })
         );
-        uint256 largeRoundId = rips.exposed_stakeToActiveRound(largeStakeId);
+        uint256 largeRoundId = rips.exposed_stakeIdToCurrentRoundId(largeStakeId);
 
         ticketsToBuy = 1500;
 
@@ -195,7 +195,7 @@ contract Rips_BuyTickets is RipsTestBase {
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
 
-        uint256 newActiveRound = rips.exposed_stakeToActiveRound(stakeId);
+        uint256 newActiveRound = rips.exposed_stakeIdToCurrentRoundId(stakeId);
         assertEq(newActiveRound, expectedNewRoundId);
         assertNotEq(newActiveRound, roundId);
     }
@@ -211,7 +211,7 @@ contract Rips_BuyTickets is RipsTestBase {
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
 
-        uint256 activeRound = rips.exposed_stakeToActiveRound(stakeId);
+        uint256 activeRound = rips.exposed_stakeIdToCurrentRoundId(stakeId);
         assertEq(activeRound, 0);
     }
 
@@ -245,7 +245,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
     modifier givenTheStakeCurrencyIsAnERC20Token() {
         stakeId = _createDefaultERC20Stake();
-        roundId = rips.exposed_stakeToActiveRound(stakeId);
+        roundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
         _mintAndApprove(user, 100 ether);
         _;
     }
@@ -315,7 +315,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
         vm.prank(owner);
         uint256 largeStakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(erc20),
                 prizeDistribution: tiers,
                 ticketCap: largeTicketCap,
@@ -324,7 +324,7 @@ contract Rips_BuyTickets is RipsTestBase {
                 feePercent: 0
             })
         );
-        uint256 largeRoundId = rips.exposed_stakeToActiveRound(largeStakeId);
+        uint256 largeRoundId = rips.exposed_stakeIdToCurrentRoundId(largeStakeId);
 
         ticketsToBuy = 1500;
 

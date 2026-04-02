@@ -35,7 +35,7 @@ abstract contract RipsVrf is RipsAdmin {
 
     //TODO: if there is insufficient LINK balance on the subscription or chainlink stops to work account funds will be frozen
     function requestRandomness(uint256 roundId) external returns (uint256 requestId) {
-        Round storage round = _rounds[roundId];
+        Round storage round = _roundIdToRound[roundId];
         if (round.status != RoundStatus.SoldOut) revert RoundNotSoldOut();
 
         requestId = s_vrfCoordinator.requestRandomWords(
@@ -62,8 +62,8 @@ abstract contract RipsVrf is RipsAdmin {
         override
     {
         uint256 roundId = _vrfRequestToRound[requestId];
-        Round storage round = _rounds[roundId];
-        StakeConfig storage config = _stakeConfigs[round.stakeId];
+        Round storage round = _roundIdToRound[roundId];
+        Config storage config = _configIdToConfig[round.stakeId];
 
         uint256 n = config.ticketCap;
         uint256 randomWord = randomWords[0];

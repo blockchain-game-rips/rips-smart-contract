@@ -28,16 +28,12 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (recipient == address(0)) revert ZeroAddress();
         if (ticketCount == 0) revert ZeroTickets();
 
-        (uint256 roundId, Round storage round, StakeConfig storage config) =
-            _resolveActiveRoundAndStake(stakeId);
+        (uint256 roundId, Round storage round, Config storage config) =
+            _resolveActiveRoundAndConfig(stakeId);
 
         uint256 toBuy = _getTicketsToBuy(round, config, ticketCount);
 
         _purchaseTickets(roundId, round, recipient, toBuy);
-
-        if (round.ticketsSold == config.ticketCap) {
-            _handleSoldOut(stakeId, round);
-        }
 
         uint256 nativeExcess = _receivePayment(config, toBuy, msg.sender);
 
@@ -48,7 +44,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function _getTicketsToBuy(Round storage round, StakeConfig storage config, uint256 ticketCount)
+    function _getTicketsToBuy(Round storage round, Config storage config, uint256 ticketCount)
         internal
         view
         returns (uint256)
@@ -56,16 +52,6 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 available = config.ticketCap - round.ticketsSold;
 
         return ticketCount > available ? available : ticketCount;
-    }
-
-    function _handleSoldOut(uint256 stakeId, Round storage round) private {
-        round.status = RoundStatus.SoldOut;
-
-        if (_stakeDeleted[stakeId]) {
-            _stakeToActiveRound[stakeId] = 0;
-        } else {
-            _createRound(stakeId);
-        }
     }
 
     function _purchaseTickets(
@@ -83,24 +69,30 @@ contract Rips is RipsVrf, ReentrancyGuard {
         emit TicketsPurchased(roundId, recipient, ticketsToBuy, startTicket);
     }
 
-    function _resolveActiveRoundAndStake(uint256 stakeId)
+    function _resolveActiveRoundAndConfig(uint256 stakeId)
         private
-        returns (uint256 roundId, Round storage round, StakeConfig storage stakeConfig)
+        returns (uint256 roundId, Round storage round, Config storage stakeConfig)
     {
-        roundId = _stakeToActiveRound[stakeId];
-
-        if (roundId == 0) revert StakeNotExist();
-
-        round = _rounds[roundId];
-        // TODO: consider is it safe to not check stakeConfig
-        stakeConfig = _stakeConfigs[stakeId];
+        roundId = _stakeIdToCurrentRoundId[stakeId];
+        round = _roundIdToRound[roundId];
+        stakeConfig = _configIdToConfig[round.configId];
 
         if (block.timestamp >= round.startTime + stakeConfig.duration) {
             if (_stakeDeleted[stakeId]) revert StakeNotExist();
 
             roundId = _createRound(stakeId);
+            round = _roundIdToRound[roundId];
+            stakeConfig = _configIdToConfig[round.configId];
 
-            round = _rounds[roundId];
+            return (roundId, round, stakeConfig);
+        }
+
+        if (round.status == RoundStatus.SoldOut) {
+            roundId = _createRound(stakeId);
+            round = _roundIdToRound[roundId];
+            stakeConfig = _configIdToConfig[round.configId];
+
+            return (roundId, round, stakeConfig);
         }
     }
 
@@ -115,13 +107,13 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (msg.sender != recipient && msg.sender != owner()) revert NotRecipientOrOwner();
 
         //TODO: validation to separate function
-        Round storage round = _rounds[roundId];
+        Round storage round = _roundIdToRound[roundId];
         if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();
 
         TicketRange[] storage ranges = _userTickets[roundId][recipient];
         if (startIndex >= ranges.length) revert InvalidStartIndex();
 
-        StakeConfig storage config = _stakeConfigs[round.stakeId];
+        Config storage config = _configIdToConfig[round.configId];
 
         (uint256 ticketCount, uint256 totalPrize) =
             _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
@@ -139,7 +131,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 ticketCount,
         uint256 prize
     ) private {
-        StakeConfig storage stakeConfig = _stakeConfigs[round.stakeId];
+        Config storage stakeConfig = _configIdToConfig[round.configId];
         address currency = stakeConfig.currency;
 
         uint256 protocolFee = (prize * stakeConfig.feePercent) / 10000;
@@ -171,7 +163,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
     {
         if (referrer == address(0)) return 0;
 
-        ReferrerStats storage stats = _referrerStats[referrer];
+        ReferrerStats storage stats = _referrerToReferrerStats[referrer];
 
         if (stats.customFeePercent > 0) {
             return (protocolFee * stats.customFeePercent) / 10000;
@@ -214,7 +206,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         }
     }
 
-    function _receivePayment(StakeConfig storage config, uint256 toBuy, address from)
+    function _receivePayment(Config storage config, uint256 toBuy, address from)
         private
         returns (uint256 nativeExcess)
     {
@@ -255,14 +247,14 @@ contract Rips is RipsVrf, ReentrancyGuard {
         uint256 startIndex,
         uint256 maxRanges,
         Round storage round,
-        StakeConfig storage config
+        Config storage config
     ) private returns (uint256 ticketCount, uint256 totalPrize) {
         PrizeCalcParams memory p = PrizeCalcParams({
             a: round.randomA,
             b: round.randomB,
             n: config.ticketCap,
             tiers: config.prizeDistribution,
-            bounds: _tierBoundaries[round.stakeId]
+            bounds: _configIdToTierBoundaries[round.configId]
         });
 
         uint256 endIndex = startIndex + maxRanges;
@@ -310,12 +302,11 @@ contract Rips is RipsVrf, ReentrancyGuard {
         if (recipient == address(0)) revert ZeroAddress();
 
         //TODO: move validation to separate function
-        Round storage round = _rounds[roundId];
+        Round storage round = _roundIdToRound[roundId];
 
-        uint256 stakeId = round.stakeId;
-        if (stakeId == 0) revert RoundNotExist();
+        if (round.stakeId == 0) revert RoundNotExist();
 
-        StakeConfig storage config = _stakeConfigs[stakeId];
+        Config storage config = _configIdToConfig[round.configId];
 
         if (!_isRoundExpired(round, config)) revert RoundNotExpired();
         if (_hasRefunded[roundId][recipient]) revert AlreadyRefunded();
@@ -344,7 +335,7 @@ contract Rips is RipsVrf, ReentrancyGuard {
         return totalTickets;
     }
 
-    function _isRoundExpired(Round storage round, StakeConfig storage config)
+    function _isRoundExpired(Round storage round, Config storage config)
         internal
         view
         returns (bool)

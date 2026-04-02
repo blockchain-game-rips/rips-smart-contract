@@ -12,7 +12,7 @@ contract Rips_UpdateStake is RipsTestBase {
         stakeId = _createDefaultStake();
     }
 
-    function _updatedConfig() private pure returns (IRips.StakeConfig memory) {
+    function _updatedConfig() private pure returns (IRips.Config memory) {
         uint256 newTicketCap = DEFAULT_TICKET_CAP * 2;
         uint256 newTicketCost = DEFAULT_TICKET_COST * 2;
 
@@ -23,7 +23,7 @@ contract Rips_UpdateStake is RipsTestBase {
             maxPrize: uint128(newTicketCost)
         });
 
-        return IRips.StakeConfig({
+        return IRips.Config({
             currency: address(0),
             prizeDistribution: tiers,
             ticketCap: newTicketCap,
@@ -66,7 +66,7 @@ contract Rips_UpdateStake is RipsTestBase {
         vm.expectRevert(IRips.TicketCapNotPowerOfTwo.selector);
         rips.updateStake(
             stakeId,
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: 3,
@@ -84,7 +84,7 @@ contract Rips_UpdateStake is RipsTestBase {
         vm.expectRevert(IRips.EmptyPrizeDistribution.selector);
         rips.updateStake(
             stakeId,
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: emptyTiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -108,7 +108,7 @@ contract Rips_UpdateStake is RipsTestBase {
         vm.expectRevert(IRips.InvalidPrizeRange.selector);
         rips.updateStake(
             stakeId,
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -134,7 +134,7 @@ contract Rips_UpdateStake is RipsTestBase {
         vm.expectRevert(IRips.PrizeCountMismatch.selector);
         rips.updateStake(
             stakeId,
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -160,7 +160,7 @@ contract Rips_UpdateStake is RipsTestBase {
         vm.expectRevert(IRips.PrizePoolMismatch.selector);
         rips.updateStake(
             stakeId,
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -173,7 +173,7 @@ contract Rips_UpdateStake is RipsTestBase {
 
     function test_RevertWhen_FeePercentExceeds10000() external whenTheCallerIsTheOwner {
         // it should revert.
-        IRips.StakeConfig memory config = _updatedConfig();
+        IRips.Config memory config = _updatedConfig();
         config.feePercent = 10001;
 
         vm.expectRevert(IRips.FeeTooHigh.selector);
@@ -183,7 +183,7 @@ contract Rips_UpdateStake is RipsTestBase {
     function test_WhenTheConfigIsValid() external whenTheCallerIsTheOwner {
         // it should store the config as pending.
         // it should emit a {StakeUpdated} event.
-        IRips.StakeConfig memory config = _updatedConfig();
+        IRips.Config memory config = _updatedConfig();
 
         vm.expectEmit();
         emit IRips.StakeUpdated(stakeId);
@@ -192,7 +192,7 @@ contract Rips_UpdateStake is RipsTestBase {
 
         assertTrue(rips.exposed_hasPendingConfig(stakeId));
 
-        IRips.StakeConfig memory pending = rips.exposed_pendingConfig(stakeId);
+        IRips.Config memory pending = rips.exposed_pendingConfig(stakeId);
         assertEq(pending.ticketCap, config.ticketCap);
         assertEq(pending.ticketCost, config.ticketCost);
         assertEq(pending.currency, config.currency);
@@ -204,7 +204,7 @@ contract Rips_UpdateStake is RipsTestBase {
     function test_WhenTheNextRoundIsCreatedAfterAnUpdate() external whenTheCallerIsTheOwner {
         // it should apply the pending config to the active stake.
         // it should clear the pending config.
-        IRips.StakeConfig memory config = _updatedConfig();
+        IRips.Config memory config = _updatedConfig();
 
         rips.updateStake(stakeId, config);
 
@@ -218,7 +218,7 @@ contract Rips_UpdateStake is RipsTestBase {
         vm.prank(user);
         rips.buyTickets{value: newTicketCost}(stakeId, 1, user);
 
-        IRips.StakeConfig memory active = rips.exposed_stakeConfig(stakeId);
+        IRips.Config memory active = rips.exposed_stakeConfig(stakeId);
         assertEq(active.ticketCap, config.ticketCap);
         assertEq(active.ticketCost, config.ticketCost);
         assertEq(active.currency, config.currency);

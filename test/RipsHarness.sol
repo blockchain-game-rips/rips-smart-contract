@@ -37,7 +37,7 @@ contract RipsHarness is Rips {
         view
         returns (uint256)
     {
-        PrizeTier memory tier = _stakeConfigs[stakeId].prizeDistribution[tierIndex];
+        PrizeTier memory tier = _configIdToConfig[stakeId].prizeDistribution[tierIndex];
 
         return RipsMath.prizeForRankInTier(tier, rank);
     }
@@ -47,8 +47,8 @@ contract RipsHarness is Rips {
         view
         returns (uint256)
     {
-        PrizeTier[] memory prizeDistribution = _stakeConfigs[stakeId].prizeDistribution;
-        uint64[] memory tierBoundaries = _tierBoundaries[stakeId];
+        PrizeTier[] memory prizeDistribution = _configIdToConfig[stakeId].prizeDistribution;
+        uint64[] memory tierBoundaries = _configIdToTierBoundaries[stakeId];
 
         return RipsMath.calculatePrizeAmount(prizeNumber, prizeDistribution, tierBoundaries);
     }
@@ -60,8 +60,8 @@ contract RipsHarness is Rips {
         uint256 n,
         uint256 stakeId
     ) external view returns (uint256) {
-        PrizeTier[] memory prizeDistribution = _stakeConfigs[stakeId].prizeDistribution;
-        uint64[] memory tierBoundaries = _tierBoundaries[stakeId];
+        PrizeTier[] memory prizeDistribution = _configIdToConfig[stakeId].prizeDistribution;
+        uint64[] memory tierBoundaries = _configIdToTierBoundaries[stakeId];
 
         return
             RipsMath.calculateTotalPrize(ticketNumber, a, b, n, prizeDistribution, tierBoundaries);
@@ -75,16 +75,16 @@ contract RipsHarness is Rips {
         return _nextRoundId;
     }
 
-    function exposed_stakeConfig(uint256 stakeId) external view returns (StakeConfig memory) {
-        return _stakeConfigs[stakeId];
+    function exposed_stakeConfig(uint256 configId) external view returns (Config memory) {
+        return _configIdToConfig[configId];
     }
 
-    function exposed_stakeToActiveRound(uint256 stakeId) external view returns (uint256) {
-        return _stakeToActiveRound[stakeId];
+    function exposed_stakeIdToCurrentRoundId(uint256 stakeId) external view returns (uint256) {
+        return _stakeIdToCurrentRoundId[stakeId];
     }
 
     function exposed_round(uint256 roundId) external view returns (Round memory) {
-        return _rounds[roundId];
+        return _roundIdToRound[roundId];
     }
 
     function exposed_stakeDeleted(uint256 stakeId) external view returns (bool) {
@@ -95,15 +95,15 @@ contract RipsHarness is Rips {
         return _hasRefunded[roundId][user];
     }
 
-    function exposed_hasPendingConfig(uint256 stakeId) external view returns (bool) {
-        return _hasPendingConfig[stakeId];
+    function exposed_stakeIdToCurrentConfigId(uint256 stakeId) external view returns (uint256) {
+        return _activeStakeConfigId[stakeId];
     }
 
-    function exposed_pendingConfig(uint256 stakeId) external view returns (StakeConfig memory) {
-        return _pendingConfigs[stakeId];
-    }
-
-    function exposed_referrerStats(address referrer) external view returns (ReferrerStats memory) {
-        return _referrerStats[referrer];
+    function exposed_referrerToReferrerStats(address referrer)
+        external
+        view
+        returns (ReferrerStats memory)
+    {
+        return _referrerToReferrerStats[referrer];
     }
 }

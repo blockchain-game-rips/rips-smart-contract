@@ -49,7 +49,7 @@ contract RipsTestBase is Test {
 
         vm.prank(owner);
         stakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -76,7 +76,7 @@ contract RipsTestBase is Test {
 
         vm.prank(owner);
         stakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(erc20),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,

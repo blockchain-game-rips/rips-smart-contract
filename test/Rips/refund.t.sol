@@ -13,7 +13,7 @@ contract Rips_Refund is RipsTestBase {
         super.setUp();
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposed_stakeToActiveRound(stakeId);
+        roundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
 
         vm.deal(user, 100 ether);
         vm.prank(user);
@@ -112,7 +112,7 @@ contract Rips_Refund is RipsTestBase {
         _mintAndApprove(user, TICKETS_BOUGHT * DEFAULT_TICKET_COST);
 
         uint256 erc20StakeId = _createDefaultERC20Stake();
-        roundId = rips.exposed_stakeToActiveRound(erc20StakeId);
+        roundId = rips.exposed_stakeIdToCurrentRoundId(erc20StakeId);
 
         vm.prank(user);
         rips.buyTickets(erc20StakeId, TICKETS_BOUGHT, user);

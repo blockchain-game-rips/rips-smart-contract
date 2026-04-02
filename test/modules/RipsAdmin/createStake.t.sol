@@ -14,8 +14,8 @@ contract Rips_CreateStake is RipsTestBase {
         });
     }
 
-    function _validConfig() private pure returns (IRips.StakeConfig memory) {
-        return IRips.StakeConfig({
+    function _validConfig() private pure returns (IRips.Config memory) {
+        return IRips.Config({
             currency: address(0),
             prizeDistribution: _validTiers(),
             ticketCap: DEFAULT_TICKET_CAP,
@@ -47,7 +47,7 @@ contract Rips_CreateStake is RipsTestBase {
 
         vm.expectRevert(IRips.TicketCapNotPowerOfTwo.selector);
         rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: 3,
@@ -71,7 +71,7 @@ contract Rips_CreateStake is RipsTestBase {
 
         vm.expectRevert(IRips.EmptyPrizeDistribution.selector);
         rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: emptyTiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -99,7 +99,7 @@ contract Rips_CreateStake is RipsTestBase {
 
         vm.expectRevert(IRips.InvalidPrizeRange.selector);
         rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -130,7 +130,7 @@ contract Rips_CreateStake is RipsTestBase {
 
         vm.expectRevert(IRips.PrizeCountMismatch.selector);
         rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -163,7 +163,7 @@ contract Rips_CreateStake is RipsTestBase {
 
         vm.expectRevert(IRips.PrizePoolMismatch.selector);
         rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
@@ -187,7 +187,7 @@ contract Rips_CreateStake is RipsTestBase {
         whenTotalPrizeCountEqualsTicketCap
         whenTotalPrizePoolEqualsTicketCapTimesTicketCost
     {
-        IRips.StakeConfig memory config = _validConfig();
+        IRips.Config memory config = _validConfig();
         config.feePercent = 10001;
 
         vm.expectRevert(IRips.FeeTooHigh.selector);
@@ -218,6 +218,6 @@ contract Rips_CreateStake is RipsTestBase {
         assertEq(rips.exposed_stakeConfig(stakeId).ticketCap, DEFAULT_TICKET_CAP);
         assertEq(rips.exposed_stakeConfig(stakeId).ticketCost, DEFAULT_TICKET_COST);
         assertEq(rips.exposed_stakeConfig(stakeId).feePercent, DEFAULT_FEE_PERCENT);
-        assertNotEq(rips.exposed_stakeToActiveRound(stakeId), 0);
+        assertNotEq(rips.exposed_stakeIdToCurrentRoundId(stakeId), 0);
     }
 }

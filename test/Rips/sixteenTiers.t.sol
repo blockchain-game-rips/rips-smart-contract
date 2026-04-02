@@ -35,7 +35,7 @@ contract Rips_SixteenTiers is RipsTestBase {
 
         vm.prank(owner);
         stakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: TICKET_CAP,
@@ -45,7 +45,7 @@ contract Rips_SixteenTiers is RipsTestBase {
             })
         );
 
-        roundId = rips.exposed_stakeToActiveRound(stakeId);
+        roundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
 
         vm.deal(user, TICKET_CAP * TICKET_COST);
     }

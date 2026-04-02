@@ -22,7 +22,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposed_stakeToActiveRound(stakeId);
+        roundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
 
         vm.deal(user, 100 ether);
         vm.prank(user);
@@ -72,7 +72,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
     function _finalizeNewRound() private returns (uint256 newRoundId) {
         vm.deal(user, 100 ether);
         stakeId = _createDefaultStake();
-        newRoundId = rips.exposed_stakeToActiveRound(stakeId);
+        newRoundId = rips.exposed_stakeIdToCurrentRoundId(stakeId);
 
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
@@ -123,7 +123,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
             assertNotEq(logs[i].topics[0], statsUpdatedSig);
         }
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        IRips.ReferrerStats memory stats = rips.exposed_referrerToReferrerStats(referrer);
         assertEq(stats.currMonthVolume, 0);
     }
 
@@ -176,7 +176,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
         _claimAsUser();
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        IRips.ReferrerStats memory stats = rips.exposed_referrerToReferrerStats(referrer);
         assertEq(stats.currMonthVolume, _totalPrize());
         assertEq(referrer.balance, referrerBefore + expectedReferrerFee);
     }
@@ -193,7 +193,8 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         // First month: accumulate enough volume to reach tier 1
         _claimAsUser();
 
-        IRips.ReferrerStats memory statsAfterFirstClaim = rips.exposed_referrerStats(referrer);
+        IRips.ReferrerStats memory statsAfterFirstClaim =
+            rips.exposed_referrerToReferrerStats(referrer);
         assertEq(statsAfterFirstClaim.nextFeePercent, TIER_1_FEE_PERCENT);
 
         // Advance to next month and claim again — activeFeePercent should now be TIER_1_FEE_PERCENT
@@ -248,7 +249,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         _claimAsUser();
         Vm.Log[] memory logs = vm.getRecordedLogs();
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        IRips.ReferrerStats memory stats = rips.exposed_referrerToReferrerStats(referrer);
         assertEq(stats.nextFeePercent, TIER_1_FEE_PERCENT);
 
         bytes32 statsUpdatedSig = keccak256("ReferrerStatsUpdated(address,uint16,uint16)");
@@ -281,7 +282,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
         vm.prank(owner);
         uint256 largeStakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: largeTicketCap,
@@ -291,7 +292,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
             })
         );
 
-        uint256 largeRoundId = rips.exposed_stakeToActiveRound(largeStakeId);
+        uint256 largeRoundId = rips.exposed_stakeIdToCurrentRoundId(largeStakeId);
 
         vm.deal(user, largeTicketCap * largeTicketCost);
         vm.prank(user);
@@ -303,7 +304,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         vm.prank(user);
         rips.claimPrizes(largeRoundId, START_INDEX, MAX_RANGES, user, referrer);
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        IRips.ReferrerStats memory stats = rips.exposed_referrerToReferrerStats(referrer);
         assertEq(stats.nextFeePercent, TIER_2_FEE_PERCENT);
     }
 
@@ -325,7 +326,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         vm.prank(user);
         rips.claimPrizes(newRoundId, START_INDEX, MAX_RANGES, user, referrer);
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        IRips.ReferrerStats memory stats = rips.exposed_referrerToReferrerStats(referrer);
         assertEq(stats.activeFeePercent, 0);
         assertEq(stats.currMonthVolume, _totalPrize());
     }
@@ -348,7 +349,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         vm.prank(user);
         rips.claimPrizes(newRoundId, START_INDEX, MAX_RANGES, user, referrer);
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        IRips.ReferrerStats memory stats = rips.exposed_referrerToReferrerStats(referrer);
         assertEq(stats.activeFeePercent, TIER_1_FEE_PERCENT);
         assertEq(stats.currMonthVolume, _totalPrize());
     }
