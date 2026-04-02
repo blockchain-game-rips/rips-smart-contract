@@ -102,4 +102,8 @@ contract RipsHarness is Rips {
     function exposed_pendingConfig(uint256 stakeId) external view returns (StakeConfig memory) {
         return _pendingConfigs[stakeId];
     }
+
+    function exposed_referrerStats(address referrer) external view returns (ReferrerStats memory) {
+        return _referrerStats[referrer];
+    }
 }

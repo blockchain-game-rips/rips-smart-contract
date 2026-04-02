@@ -111,17 +111,29 @@ contract Rips_ClaimPrizes is RipsTestBase {
         assertEq(user.balance, balanceBefore + _userPrize());
     }
 
-    function test_WhenRecipientIsDifferentFromTheCaller() external whenThereAreUnclaimedRanges {
+    function test_RevertWhen_CallerIsNotTheRecipientAndNotTheOwner()
+        external
+        whenThereAreUnclaimedRanges
+    {
         address caller = makeAddr("caller");
 
-        uint256 recipientBalanceBefore = user.balance;
-        uint256 callerBalanceBefore = caller.balance;
-
         vm.prank(caller);
+        vm.expectRevert(IRips.NotRecipientOrOwner.selector);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+    }
+
+    function test_WhenCallerIsTheOwnerAndRecipientIsADifferentAddress()
+        external
+        whenThereAreUnclaimedRanges
+    {
+        uint256 recipientBalanceBefore = user.balance;
+        uint256 ownerBalanceBefore = owner.balance;
+
+        vm.prank(owner);
         rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, recipientBalanceBefore + _userPrize());
-        assertEq(caller.balance, callerBalanceBefore);
+        assertEq(owner.balance, ownerBalanceBefore + _protocolFee());
     }
 
     function _createZeroFeeNativeStake() private returns (uint256 zeroFeeRoundId) {
