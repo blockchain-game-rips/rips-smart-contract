@@ -15,7 +15,7 @@ import "../RipsTestBase.sol";
 //   Tier 7:  1 prize  @ 10 ether        avg 10.0 = 10 ether
 //                                            total = 128 ether
 contract Rips_SevenTiers is RipsTestBase {
-    uint256 private constant TICKET_CAP = 128;
+    uint64 private constant TICKET_CAP = 128;
     uint256 private constant TICKET_COST = 1 ether;
 
     uint256 private stakeId;

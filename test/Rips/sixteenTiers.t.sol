@@ -7,7 +7,7 @@ import "../RipsTestBase.sol";
 // Equal 64 tickets per tier, linearly increasing prizes.
 // avg_i = (2i+1)/16 ether, spread ±30%, totalPool = 1024 ether
 contract Rips_SixteenTiers is RipsTestBase {
-    uint256 private constant TICKET_CAP = 1024;
+    uint64 private constant TICKET_CAP = 1024;
     uint256 private constant TICKET_COST = 1 ether;
     uint256 private constant TIER_COUNT = 16;
     uint256 private constant TICKETS_PER_TIER = TICKET_CAP / TIER_COUNT;

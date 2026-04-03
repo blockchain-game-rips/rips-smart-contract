@@ -120,6 +120,6 @@ contract StakeValidationSetup is RipsTestBase {
 
     function configWithFeeTooHigh() internal pure returns (IRips.Config memory config) {
         config = validConfig();
-        config.feePercent = 10001;
+        config.feePercent = uint16(10001);
     }
 }

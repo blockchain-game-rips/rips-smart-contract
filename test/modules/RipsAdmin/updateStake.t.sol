@@ -13,12 +13,12 @@ contract Rips_UpdateStake is StakeValidationSetup {
     }
 
     function _updatedConfig() private pure returns (IRips.Config memory) {
-        uint256 newTicketCap = DEFAULT_TICKET_CAP * 2;
+        uint64 newTicketCap = DEFAULT_TICKET_CAP * 2;
         uint256 newTicketCost = DEFAULT_TICKET_COST * 2;
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(newTicketCap),
+            prizeCount: newTicketCap,
             minPrize: uint128(newTicketCost),
             maxPrize: uint128(newTicketCost)
         });

@@ -16,11 +16,7 @@ contract RipsHarness is Rips {
         return RipsMath.isPowerOfTwo(n);
     }
 
-    function exposed_deriveCoprimeA(uint256 randomValue, uint256 n)
-        external
-        pure
-        returns (uint256)
-    {
+    function exposed_deriveCoprimeA(uint256 randomValue, uint64 n) external pure returns (uint64) {
         return RipsMath.deriveCoprimeA(randomValue, n);
     }
 
@@ -46,9 +42,9 @@ contract RipsHarness is Rips {
 
     function exposed_calculateTicketPrize(
         uint256 ticketNumber,
-        uint256 a,
-        uint256 b,
-        uint256 n,
+        uint64 a,
+        uint64 b,
+        uint64 n,
         IRips.PrizeTier[] memory tiers,
         uint64[] memory tierBoundaries
     ) external pure returns (uint256) {

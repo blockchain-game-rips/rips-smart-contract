@@ -11,10 +11,10 @@ contract RipsTestBase is Test {
     bytes32 internal constant VRF_KEY_HASH = bytes32(uint256(1));
     uint32 internal constant VRF_CALLBACK_GAS_LIMIT = 100_000;
 
-    uint256 internal constant DEFAULT_FEE_PERCENT = 500;
-    uint256 internal constant DEFAULT_TICKET_CAP = 4;
+    uint16 internal constant DEFAULT_FEE_PERCENT = 500;
+    uint64 internal constant DEFAULT_TICKET_CAP = 4;
     uint256 internal constant DEFAULT_TICKET_COST = 1 ether;
-    uint256 internal constant DEFAULT_DURATION = 1 days;
+    uint32 internal constant DEFAULT_DURATION = 1 days;
 
     VRFCoordinatorV2_5Mock internal vrfCoordinator;
     RipsHarness internal rips;

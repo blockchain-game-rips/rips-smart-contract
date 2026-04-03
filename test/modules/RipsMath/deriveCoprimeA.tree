@@ -3,5 +3,11 @@ RipsMath_DeriveCoprimeA
 │   └── it should return one.
 ├── when the random value mod n is even
 │   └── it should return the value plus one.
-└── when the random value mod n is odd
-    └── it should return the value unchanged.
+├── when the random value mod n is odd
+│   └── it should return the value unchanged.
+├── when the random value is zero
+│   └── it should return one.
+├── when the random value is type(uint256).max
+│   └── it should return an odd number.
+└── when the random value is type(uint256).max minus one
+    └── it should return an odd number.

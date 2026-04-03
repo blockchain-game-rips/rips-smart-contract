@@ -19,7 +19,7 @@ contract Rips_RequestRandomness is RipsTestBase {
         address indexed sender
     );
 
-    uint256 private constant TICKET_CAP = 2;
+    uint64 private constant TICKET_CAP = 2;
     uint256 private constant TICKET_COST = 1 ether;
     uint256 private constant EXPECTED_FIRST_REQUEST_ID = 1;
 

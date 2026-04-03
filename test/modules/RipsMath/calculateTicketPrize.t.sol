@@ -71,7 +71,7 @@ contract RipsMath_CalculateTicketPrize is RipsTestBase {
         returns (uint256)
     {
         uint256 n = bounds[bounds.length - 1];
-        return rips.exposed_calculateTicketPrize(prizeNumber - 1, 1, 0, n, tiers, bounds);
+        return rips.exposed_calculateTicketPrize(prizeNumber - 1, 1, 0, uint64(n), tiers, bounds);
     }
 
     // ── Prize number properties ──────────────────────────────────────────────
@@ -96,7 +96,10 @@ contract RipsMath_CalculateTicketPrize is RipsTestBase {
 
         // All prizes are equal so the result must equal 1 ether regardless of prizeNumber.
         assertEq(
-            rips.exposed_calculateTicketPrize(ticketNumber, a, b, n, tiers, boundaries), 1 ether
+            rips.exposed_calculateTicketPrize(
+                ticketNumber, uint64(a), uint64(b), uint64(n), tiers, boundaries
+            ),
+            1 ether
         );
     }
 
@@ -122,8 +125,10 @@ contract RipsMath_CalculateTicketPrize is RipsTestBase {
         uint64[] memory boundaries = new uint64[](1);
         boundaries[0] = uint64(n);
 
-        uint256 prizeA = rips.exposed_calculateTicketPrize(ticketA, a, 0, n, tiers, boundaries);
-        uint256 prizeB = rips.exposed_calculateTicketPrize(ticketB, a, 0, n, tiers, boundaries);
+        uint256 prizeA =
+            rips.exposed_calculateTicketPrize(ticketA, uint64(a), 0, uint64(n), tiers, boundaries);
+        uint256 prizeB =
+            rips.exposed_calculateTicketPrize(ticketB, uint64(a), 0, uint64(n), tiers, boundaries);
 
         assertNotEq(prizeA, prizeB);
     }
@@ -156,7 +161,9 @@ contract RipsMath_CalculateTicketPrize is RipsTestBase {
             boundaries[i] = cumulative;
         }
 
-        rips.exposed_calculateTicketPrize(bound(ticketNumber, 0, n - 1), 1, 0, n, tiers, boundaries);
+        rips.exposed_calculateTicketPrize(
+            bound(ticketNumber, 0, n - 1), 1, 0, uint64(n), tiers, boundaries
+        );
     }
 
     // ── Tier lookup ──────────────────────────────────────────────────────────

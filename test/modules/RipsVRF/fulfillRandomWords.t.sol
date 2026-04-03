@@ -8,7 +8,7 @@ import "../../../src/modules/RipsVrf.sol";
 contract Rips_FulfillRandomWords is RipsTestBase {
     event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
 
-    uint256 private constant TICKET_CAP = 2;
+    uint64 private constant TICKET_CAP = 2;
     uint256 private constant TICKET_COST = 1 ether;
 
     uint256 private stakeId;

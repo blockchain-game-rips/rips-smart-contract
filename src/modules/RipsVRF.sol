@@ -89,10 +89,10 @@ abstract contract RipsVrf is RipsUtils, Ownable, IVRFMigratableConsumerV2Plus {
         Round storage round = roundIdToRound[roundId];
         Config storage config = configIdToConfig[round.configId];
 
-        uint256 n = config.ticketCap;
+        uint64 n = config.ticketCap;
         uint256 randomWord = randomWords[0];
         round.randomA = RipsMath.deriveCoprimeA(randomWord, n);
-        round.randomB = uint256(keccak256(abi.encode(randomWord))) % n;
+        round.randomB = uint64(uint256(keccak256(abi.encode(randomWord))) % n);
         round.status = RoundStatus.Finalized;
 
         emit RoundFinalized(roundId, round.randomA, round.randomB);

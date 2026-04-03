@@ -18,7 +18,7 @@ import "../src/Rips.sol";
 ///   forge script script/Deploy.s.sol --rpc-url $RPC_URL --broadcast --verify
 contract Deploy is Script {
     uint32 private constant DEFAULT_CALLBACK_GAS = 200_000;
-    uint256 private constant DEFAULT_FEE_PERCENT = 500; // 5%
+    uint16 private constant DEFAULT_FEE_PERCENT = 500; // 5%
 
     function run() external returns (address rips) {
         address vrfCoordinator = vm.envAddress("VRF_COORDINATOR");

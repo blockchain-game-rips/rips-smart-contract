@@ -7,9 +7,9 @@ import "../libraries/RipsMath.sol";
 
 abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
     struct PrizeCalcParams {
-        uint256 a;
-        uint256 b;
-        uint256 n;
+        uint64 a;
+        uint64 b;
+        uint64 n;
         PrizeTier[] tiers;
         uint64[] bounds;
     }

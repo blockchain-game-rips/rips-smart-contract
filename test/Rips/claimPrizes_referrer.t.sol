@@ -269,12 +269,12 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         // it should apply the highest reached tier to nextFeePercent.
 
         // Create a stake with enough ticket cap to exceed TIER_2_MIN_VOLUME in one round
-        uint256 largeTicketCap = 64;
+        uint64 largeTicketCap = 64;
         uint256 largeTicketCost = 1 ether;
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(largeTicketCap),
+            prizeCount: largeTicketCap,
             minPrize: uint128(largeTicketCost),
             maxPrize: uint128(largeTicketCost)
         });

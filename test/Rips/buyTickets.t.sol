@@ -140,14 +140,12 @@ contract Rips_BuyTickets is RipsTestBase {
         givenTheStakeCurrencyIsNative
         whenRequestedTicketsAreFewerThanAvailable
     {
-        uint256 largeTicketCap = 2048;
+        uint64 largeTicketCap = 2048;
         uint256 ticketCost = 0.01 ether;
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(largeTicketCap),
-            minPrize: uint128(ticketCost),
-            maxPrize: uint128(ticketCost)
+            prizeCount: largeTicketCap, minPrize: uint128(ticketCost), maxPrize: uint128(ticketCost)
         });
 
         vm.prank(owner);
@@ -322,14 +320,12 @@ contract Rips_BuyTickets is RipsTestBase {
         givenTheStakeCurrencyIsAnERC20Token
         whenRequestedTicketsAreFewerThanAvailable
     {
-        uint256 largeTicketCap = 2048;
+        uint64 largeTicketCap = 2048;
         uint256 ticketCost = 0.01 ether;
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(largeTicketCap),
-            minPrize: uint128(ticketCost),
-            maxPrize: uint128(ticketCost)
+            prizeCount: largeTicketCap, minPrize: uint128(ticketCost), maxPrize: uint128(ticketCost)
         });
 
         vm.prank(owner);

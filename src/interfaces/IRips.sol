@@ -14,8 +14,8 @@ interface IRips {
         uint40 startTime;
         uint32 ticketsSold;
         RoundStatus status;
-        uint256 randomA;
-        uint256 randomB;
+        uint64 randomA;
+        uint64 randomB;
     }
 
     struct PrizeTier {
@@ -27,10 +27,10 @@ interface IRips {
     struct Config {
         PrizeTier[] tiers;
         address currency;
-        uint256 ticketCap;
-        uint256 duration;
+        uint64 ticketCap;
+        uint32 duration;
         uint256 ticketCost;
-        uint256 feePercent;
+        uint16 feePercent;
     }
 
     struct TicketRange {

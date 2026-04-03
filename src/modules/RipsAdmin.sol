@@ -76,7 +76,9 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
         }
 
         if (totalPrizeCount != config.ticketCap) revert PrizeCountMismatch();
-        if (totalPrizePool != config.ticketCap * config.ticketCost) revert PrizePoolMismatch();
+        if (totalPrizePool != uint256(config.ticketCap) * config.ticketCost) {
+            revert PrizePoolMismatch();
+        }
         if (config.feePercent > 10000) revert FeeTooHigh();
     }
 
