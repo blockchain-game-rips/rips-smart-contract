@@ -40,6 +40,19 @@ abstract contract RipsFees is RipsUtils, Ownable {
         emit ReferrerFreezeUpdated(referrer, frozen);
     }
 
+    function seizeReferrerFee(address referrer, address currency) external onlyOwner {
+        if (referrer == address(0)) revert ZeroAddress();
+
+        uint256 amount = referrerFeeAccrued[referrer][currency];
+        if (amount == 0) revert NothingToWithdraw();
+
+        referrerFeeAccrued[referrer][currency] = 0;
+
+        _transfer(currency, feeRecipient, amount);
+
+        emit ReferrerFeeSeized(referrer, currency, amount);
+    }
+
     function withdrawReferrerFee(address referrer, address currency) external {
         if (referrer == address(0)) revert ZeroAddress();
         if (isReferrerFrozen[referrer]) revert ReferrerFrozen();

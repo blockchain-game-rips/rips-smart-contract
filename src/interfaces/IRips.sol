@@ -101,6 +101,7 @@ interface IRips {
     event FeeRecipientUpdated(address newRecipient);
     event ProtocolFeeWithdrawn(address indexed recipient, address indexed currency, uint256 amount);
     event ReferrerFeeWithdrawn(address indexed referrer, address indexed currency, uint256 amount);
+    event ReferrerFeeSeized(address indexed referrer, address indexed currency, uint256 amount);
     event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
     event CallbackGasLimitUpdated(uint32 newLimit);
     event VrfSubscriptionIdUpdated(uint256 newSubscriptionId);
@@ -149,4 +150,6 @@ interface IRips {
     function withdrawReferrerFee(address referrer, address currency) external;
 
     function setReferrerFrozen(address referrer, bool frozen) external;
+
+    function seizeReferrerFee(address referrer, address currency) external;
 }
