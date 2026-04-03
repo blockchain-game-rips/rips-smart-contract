@@ -73,6 +73,7 @@ interface IRips {
     error RoundNotExist();
     error ReferralTiersEmpty();
     error ReferralTiersNotSorted();
+    error ReferralTierCountExceeded();
     error NotRecipientOrOwner();
     error VrfAlreadyRequested();
 

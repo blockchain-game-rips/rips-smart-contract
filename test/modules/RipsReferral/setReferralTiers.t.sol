@@ -31,6 +31,21 @@ contract Rips_SetReferralTiers is RipsTestBase {
         rips.setReferralTiers(emptyTiers);
     }
 
+    function test_RevertWhen_TiersCountExceedsMaxReferralTierCount()
+        external
+        whenTheCallerIsTheOwner
+    {
+        uint256 maxCount = rips.MAX_REFERRAL_TIER_COUNT();
+        IRips.ReferralTier[] memory tiers = new IRips.ReferralTier[](maxCount + 1);
+
+        for (uint256 i = 0; i < tiers.length; i++) {
+            tiers[i] = IRips.ReferralTier({minVolume: uint128(i + 1) * 1 ether, feePercent: 100});
+        }
+
+        vm.expectRevert(IRips.ReferralTierCountExceeded.selector);
+        rips.setReferralTiers(tiers);
+    }
+
     function test_RevertWhen_TiersAreNotSortedByMinVolumeAscending()
         external
         whenTheCallerIsTheOwner

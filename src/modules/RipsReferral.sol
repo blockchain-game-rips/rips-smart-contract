@@ -5,6 +5,8 @@ import "../common/RipsStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract RipsReferral is RipsStorage, Ownable {
+    uint256 public constant MAX_REFERRAL_TIER_COUNT = 10;
+
     uint16 public baseFeePercent;
 
     mapping(address referrer => ReferrerStats stats) public referrerToReferrerStats;
@@ -29,6 +31,7 @@ abstract contract RipsReferral is RipsStorage, Ownable {
 
     function setReferralTiers(ReferralTier[] calldata tiers) external onlyOwner {
         if (tiers.length == 0) revert ReferralTiersEmpty();
+        if (tiers.length > MAX_REFERRAL_TIER_COUNT) revert ReferralTierCountExceeded();
 
         for (uint256 i = 1; i < tiers.length; i++) {
             if (tiers[i].minVolume <= tiers[i - 1].minVolume) revert ReferralTiersNotSorted();
