@@ -51,11 +51,11 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         Config storage config = configIdToConfig[round.configId];
         address currency = config.currency;
 
-        uint256 protocolFee = (prize * config.feePercent) / 10000;
-        uint256 userPrize = prize - protocolFee;
+        uint256 ticketRevenue = ticketCount * config.ticketCost;
+        uint256 protocolFee = (ticketRevenue * config.feePercent) / 10000;
 
         if (protocolFee > 0) {
-            uint256 referrerFee = _collectReferrerFee(referrer, protocolFee, prize);
+            uint256 referrerFee = _collectReferrerFee(referrer, protocolFee, ticketRevenue);
             uint256 remainingFee = protocolFee - referrerFee;
 
             if (remainingFee > 0) {
@@ -68,10 +68,9 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
             }
         }
 
-        //TODO: ensure that protocol fee < 100%
-        _transfer(currency, recipient, userPrize);
+        _transfer(currency, recipient, prize);
 
-        emit PrizesClaimed(roundId, recipient, referrer, ticketCount, userPrize);
+        emit PrizesClaimed(roundId, recipient, referrer, ticketCount, prize);
     }
 
     function _accumulateClaimedPrizes(

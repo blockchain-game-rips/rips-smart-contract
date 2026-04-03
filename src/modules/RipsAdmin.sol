@@ -78,11 +78,11 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
                     * (uint256(tier.minPrize) + uint256(tier.maxPrize))) / 2;
         }
 
-        if (totalPrizeCount != config.ticketCap) revert PrizeCountMismatch();
-        if (totalPrizePool != uint256(config.ticketCap) * config.ticketCost) {
-            revert PrizePoolMismatch();
-        }
         if (config.feePercent > 10000) revert FeeTooHigh();
+        if (totalPrizeCount != config.ticketCap) revert PrizeCountMismatch();
+        uint256 totalRevenue = uint256(config.ticketCap) * config.ticketCost;
+        uint256 protocolFee = (totalRevenue * config.feePercent) / 10000;
+        if (totalPrizePool != totalRevenue - protocolFee) revert PrizePoolMismatch();
     }
 
     function _storeConfig(Config calldata config) private returns (uint256 configId) {

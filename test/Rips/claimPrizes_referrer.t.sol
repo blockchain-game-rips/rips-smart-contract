@@ -6,12 +6,15 @@ import "../RipsTestBase.sol";
 contract Rips_ClaimPrizes_Referrer is RipsTestBase {
     uint256 private constant START_INDEX = 0;
     uint256 private constant MAX_RANGES = 10;
+    uint16 private constant PROTOCOL_FEE_PERCENT = 500; // 5%
     uint256 private constant BASE_FEE_PERCENT = 300; // 3%
     uint256 private constant TIER_1_FEE_PERCENT = 800; // 8%
     uint256 private constant TIER_2_FEE_PERCENT = 1500; // 15%
     uint256 private constant CUSTOM_FEE_PERCENT = 2000; // 20%
     uint128 private constant TIER_1_MIN_VOLUME = 1 ether; // reachable: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST = 4 ether
     uint128 private constant TIER_2_MIN_VOLUME = 10 ether; // not reachable in a single default round
+    uint256 private constant PRIZE_PER_TICKET =
+        DEFAULT_TICKET_COST * (10000 - PROTOCOL_FEE_PERCENT) / 10000;
 
     uint256 private stakeId;
     uint256 private roundId;
@@ -21,7 +24,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
-        stakeId = _createDefaultStake();
+        stakeId = _createFeeStake(address(0));
 
         vm.deal(user, 100 ether);
         vm.prank(user);
@@ -34,12 +37,37 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
 
-    function _totalPrize() private pure returns (uint256) {
+    function _createFeeStake(address currency) private returns (uint256) {
+        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: uint64(DEFAULT_TICKET_CAP),
+            minPrize: uint128(PRIZE_PER_TICKET),
+            maxPrize: uint128(PRIZE_PER_TICKET)
+        });
+
+        vm.prank(owner);
+        return rips.createStake(
+            IRips.Config({
+                currency: currency,
+                tiers: tiers,
+                ticketCap: DEFAULT_TICKET_CAP,
+                duration: DEFAULT_DURATION,
+                ticketCost: DEFAULT_TICKET_COST,
+                feePercent: PROTOCOL_FEE_PERCENT
+            })
+        );
+    }
+
+    function _ticketRevenue() private pure returns (uint256) {
         return DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST;
     }
 
+    function _totalPrize() private pure returns (uint256) {
+        return DEFAULT_TICKET_CAP * PRIZE_PER_TICKET;
+    }
+
     function _protocolFee() private pure returns (uint256) {
-        return (_totalPrize() * DEFAULT_FEE_PERCENT) / 10_000;
+        return _ticketRevenue() * PROTOCOL_FEE_PERCENT / 10_000;
     }
 
     function _referrerFeeFrom(uint256 feePercent) private pure returns (uint256) {
@@ -71,7 +99,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
     function _finalizeNewRound() private returns (uint256 newRoundId) {
         vm.deal(user, 100 ether);
-        stakeId = _createDefaultStake();
+        stakeId = _createFeeStake(address(0));
 
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
@@ -177,7 +205,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         _claimAsUser();
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
-        assertEq(stats.currMonthVolume, _totalPrize());
+        assertEq(stats.currMonthVolume, _ticketRevenue());
         assertEq(referrer.balance, referrerBefore + expectedReferrerFee);
     }
 
@@ -271,12 +299,13 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         // Create a stake with enough ticket cap to exceed TIER_2_MIN_VOLUME in one round
         uint64 largeTicketCap = 64;
         uint256 largeTicketCost = 1 ether;
+        uint256 largePrizePerTicket = largeTicketCost * (10000 - PROTOCOL_FEE_PERCENT) / 10000;
 
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
             prizeCount: largeTicketCap,
-            minPrize: uint128(largeTicketCost),
-            maxPrize: uint128(largeTicketCost)
+            minPrize: uint128(largePrizePerTicket),
+            maxPrize: uint128(largePrizePerTicket)
         });
 
         vm.prank(owner);
@@ -287,7 +316,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
                 ticketCap: largeTicketCap,
                 duration: DEFAULT_DURATION,
                 ticketCost: largeTicketCost,
-                feePercent: DEFAULT_FEE_PERCENT
+                feePercent: PROTOCOL_FEE_PERCENT
             })
         );
 
@@ -326,7 +355,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
         assertEq(stats.activeFeePercent, 0);
-        assertEq(stats.currMonthVolume, _totalPrize());
+        assertEq(stats.currMonthVolume, _ticketRevenue());
     }
 
     function test_WhenANewMonthStartsAfterAConsecutiveActiveMonth()
@@ -349,6 +378,6 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
         assertEq(stats.activeFeePercent, TIER_1_FEE_PERCENT);
-        assertEq(stats.currMonthVolume, _totalPrize());
+        assertEq(stats.currMonthVolume, _ticketRevenue());
     }
 }
