@@ -46,7 +46,7 @@ abstract contract RipsReferral is RipsStorage, Ownable {
         emit ReferralTiersUpdated(tiers);
     }
 
-    function _collectReferrerFee(address referrer, uint256 protocolFee, uint256 claimVolume)
+    function _collectReferrerFee(address referrer, uint256 protocolFee, uint256 ticketRevenue)
         internal
         returns (uint256 referrerFee)
     {
@@ -72,7 +72,7 @@ abstract contract RipsReferral is RipsStorage, Ownable {
             stats.currentMonth = currentMonth;
         }
 
-        stats.currMonthVolume += uint128(claimVolume);
+        stats.currMonthVolume += uint128(ticketRevenue);
 
         uint16 newNextFeePercent = _resolveTierFeePercent(stats.currMonthVolume);
 
