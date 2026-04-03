@@ -3,6 +3,8 @@ Rips_UpdateStake
 │   └── it should revert.
 ├── when the stake does not exist
 │   └── it should revert.
+├── when the stake is deleted
+│   └── it should revert.
 ├── when ticket cap is not a power of two
 │   └── it should revert.
 ├── when prize distribution is empty
@@ -16,8 +18,7 @@ Rips_UpdateStake
 ├── when fee percent exceeds 10000
 │   └── it should revert.
 ├── when the config is valid
-│   ├── it should store the config as pending.
+│   ├── it should update the config immediately.
 │   └── it should emit a {StakeUpdated} event.
 └── when the next round is created after an update
-    ├── it should apply the pending config to the active stake.
-    └── it should clear the pending config.
+    └── it should use the new config for the new round.

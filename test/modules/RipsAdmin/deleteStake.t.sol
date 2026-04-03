@@ -24,6 +24,13 @@ contract Rips_DeleteStake is RipsTestBase {
         vm.stopPrank();
     }
 
+    function test_RevertWhen_TheStakeDoesNotExist() external whenTheCallerIsTheOwner {
+        uint256 nonExistentStakeId = 999;
+
+        vm.expectRevert(IRips.StakeNotExist.selector);
+        rips.deleteStake(nonExistentStakeId);
+    }
+
     function test_RevertWhen_TheStakeIsAlreadyDeleted() external whenTheCallerIsTheOwner {
         rips.deleteStake(stakeId);
 

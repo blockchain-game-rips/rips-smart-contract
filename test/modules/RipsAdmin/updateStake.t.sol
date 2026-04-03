@@ -54,6 +54,14 @@ contract Rips_UpdateStake is RipsTestBase {
         rips.updateStake(nonExistentStakeId, _updatedConfig());
     }
 
+    function test_RevertWhen_TheStakeIsDeleted() external whenTheCallerIsTheOwner {
+        // it should revert.
+        rips.deleteStake(stakeId);
+
+        vm.expectRevert(IRips.StakeNotExist.selector);
+        rips.updateStake(stakeId, _updatedConfig());
+    }
+
     function test_RevertWhen_TicketCapIsNotAPowerOfTwo() external whenTheCallerIsTheOwner {
         // it should revert.
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
@@ -181,7 +189,7 @@ contract Rips_UpdateStake is RipsTestBase {
     }
 
     function test_WhenTheConfigIsValid() external whenTheCallerIsTheOwner {
-        // it should store the config as pending.
+        // it should update the config immediately.
         // it should emit a {StakeUpdated} event.
         IRips.Config memory config = _updatedConfig();
 
@@ -201,8 +209,7 @@ contract Rips_UpdateStake is RipsTestBase {
     }
 
     function test_WhenTheNextRoundIsCreatedAfterAnUpdate() external whenTheCallerIsTheOwner {
-        // it should apply the pending config to the active stake.
-        // it should clear the pending config.
+        // it should use the new config for the new round.
         IRips.Config memory config = _updatedConfig();
 
         rips.updateStake(stakeId, config);

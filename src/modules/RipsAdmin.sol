@@ -34,7 +34,10 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
 
     function deleteStake(uint256 stakeId) external onlyOwner {
         if (isStakeDeleted[stakeId]) revert StakeNotExist();
+        if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
+
         isStakeDeleted[stakeId] = true;
+
         emit StakeDeleted(stakeId);
     }
 
@@ -52,6 +55,7 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
         stakeIdToCurrentConfigId[stakeId] = configId;
     }
 
+    //TODO: add limitations
     function _validateConfig(Config calldata config) private pure {
         if (!RipsMath.isPowerOfTwo(config.ticketCap)) revert TicketCapNotPowerOfTwo();
         if (config.prizeDistribution.length == 0) revert EmptyPrizeDistribution();
