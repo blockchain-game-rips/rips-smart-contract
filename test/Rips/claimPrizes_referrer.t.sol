@@ -71,22 +71,18 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
     }
 
     function test_GivenReferrerIsZeroAddress() external {
-        uint256 feeRecipientBefore = owner.balance;
-
         vm.prank(user);
         rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, address(0));
 
-        assertEq(owner.balance, feeRecipientBefore + _protocolFee());
-        assertEq(referrer.balance, 0);
+        assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee());
+        assertEq(rips.referrerFeeAccrued(referrer, address(0)), 0);
     }
 
     function test_GivenNoReferralTiersAreConfiguredAndBaseFeeIsZero() external {
-        uint256 feeRecipientBefore = owner.balance;
-
         _claim();
 
-        assertEq(owner.balance, feeRecipientBefore + _protocolFee());
-        assertEq(referrer.balance, 0);
+        assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee());
+        assertEq(rips.referrerFeeAccrued(referrer, address(0)), 0);
     }
 
     function test_GivenReferrerHasACustomFeeSet() external {
@@ -95,16 +91,13 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
         uint256 expectedReferrerFee = _referrerFeeFrom(CUSTOM_FEE_PERCENT);
 
-        uint256 referrerBefore = referrer.balance;
-        uint256 feeRecipientBefore = owner.balance;
-
         vm.expectEmit();
         emit IRips.ReferralFeePaid(roundId, referrer, expectedReferrerFee);
 
         _claim();
 
-        assertEq(referrer.balance, referrerBefore + expectedReferrerFee);
-        assertEq(owner.balance, feeRecipientBefore + _protocolFee() - expectedReferrerFee);
+        assertEq(rips.referrerFeeAccrued(referrer, address(0)), expectedReferrerFee);
+        assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee() - expectedReferrerFee);
     }
 
     function test_GivenBaseFeeIsSetAndReferrerHasNoPriorActivity() external {
@@ -113,15 +106,12 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
         uint256 expectedReferrerFee = _referrerFeeFrom(DEFAULT_REFERRAL_FEE);
 
-        uint256 referrerBefore = referrer.balance;
-        uint256 feeRecipientBefore = owner.balance;
-
         vm.expectEmit();
         emit IRips.ReferralFeePaid(roundId, referrer, expectedReferrerFee);
 
         _claim();
 
-        assertEq(referrer.balance, referrerBefore + expectedReferrerFee);
-        assertEq(owner.balance, feeRecipientBefore + _protocolFee() - expectedReferrerFee);
+        assertEq(rips.referrerFeeAccrued(referrer, address(0)), expectedReferrerFee);
+        assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee() - expectedReferrerFee);
     }
 }

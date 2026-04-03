@@ -197,7 +197,6 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 feeRoundId = _createFeeNativeStake();
 
         uint256 userBalanceBefore = user.balance;
-        uint256 feeRecipientBalanceBefore = owner.balance;
 
         vm.expectEmit();
         emit IRips.PrizesClaimed(feeRoundId, user, referrer, DEFAULT_TICKET_CAP, _feePrizePool());
@@ -206,7 +205,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         rips.claimPrizes(feeRoundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, userBalanceBefore + _feePrizePool());
-        assertEq(owner.balance, feeRecipientBalanceBefore + _protocolFee());
+        assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee());
     }
 
     function test_WhenProtocolFeeIsZero_GivenTheStakeCurrencyIsAnERC20Token() external {
@@ -262,7 +261,6 @@ contract Rips_ClaimPrizes is RipsTestBase {
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         uint256 userBalanceBefore = erc20.balanceOf(user);
-        uint256 feeRecipientBalanceBefore = erc20.balanceOf(owner);
 
         vm.expectEmit();
         emit IRips.PrizesClaimed(feeRoundId, user, referrer, DEFAULT_TICKET_CAP, _feePrizePool());
@@ -271,6 +269,6 @@ contract Rips_ClaimPrizes is RipsTestBase {
         rips.claimPrizes(feeRoundId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(erc20.balanceOf(user), userBalanceBefore + _feePrizePool());
-        assertEq(erc20.balanceOf(owner), feeRecipientBalanceBefore + _protocolFee());
+        assertEq(rips.protocolFeeAccrued(address(erc20)), _protocolFee());
     }
 }
