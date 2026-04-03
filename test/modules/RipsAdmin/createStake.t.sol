@@ -39,10 +39,7 @@ contract Rips_CreateStake is StakeValidationSetup {
         rips.createStake(configWithMinPrizeGreaterThanMaxPrize());
     }
 
-    function test_RevertWhen_TiersAreNotSortedByCountDescending()
-        external
-        whenTheCallerIsTheOwner
-    {
+    function test_RevertWhen_TiersAreNotSortedByCountDescending() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.TiersNotSortedByCount.selector);
         rips.createStake(configWithTiersNotSortedByCount());
     }

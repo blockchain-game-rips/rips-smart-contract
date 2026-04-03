@@ -16,8 +16,8 @@ abstract contract RipsVrf is RipsUtils, Ownable, IVRFMigratableConsumerV2Plus {
     uint32 public constant VRF_NUM_WORDS = 1;
 
     IVRFCoordinatorV2Plus public s_vrfCoordinator;
-    uint256 public immutable vrfSubscriptionId;
-    bytes32 public immutable vrfKeyHash;
+    uint256 public vrfSubscriptionId;
+    bytes32 public vrfKeyHash;
     uint32 private s_callbackGasLimit;
 
     mapping(uint256 requestId => uint256 roundId) internal _vrfRequestToRound;
@@ -30,8 +30,8 @@ abstract contract RipsVrf is RipsUtils, Ownable, IVRFMigratableConsumerV2Plus {
     ) {
         if (vrfCoordinator == address(0)) revert ZeroAddress();
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
-        vrfSubscriptionId = vrfSubscriptionId_;
-        vrfKeyHash = vrfKeyHash_;
+        updateVrfSubscriptionId(vrfSubscriptionId_);
+        updateVrfKeyHash(vrfKeyHash_);
         s_callbackGasLimit = callbackGasLimit;
     }
 
@@ -39,6 +39,17 @@ abstract contract RipsVrf is RipsUtils, Ownable, IVRFMigratableConsumerV2Plus {
         if (vrfCoordinator == address(0)) revert ZeroAddress();
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
         emit CoordinatorSet(vrfCoordinator);
+    }
+
+    function updateVrfSubscriptionId(uint256 newSubscriptionId) public onlyOwner {
+        if (newSubscriptionId == 0) revert ZeroSubscriptionId();
+        vrfSubscriptionId = newSubscriptionId;
+        emit VrfSubscriptionIdUpdated(newSubscriptionId);
+    }
+
+    function updateVrfKeyHash(bytes32 newKeyHash) public onlyOwner {
+        vrfKeyHash = newKeyHash;
+        emit VrfKeyHashUpdated(newKeyHash);
     }
 
     function updateCallbackGasLimit(uint32 newLimit) external onlyOwner {

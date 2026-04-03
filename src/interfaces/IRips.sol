@@ -77,6 +77,7 @@ interface IRips {
     error ReferralTierCountExceeded();
     error NotRecipientOrOwner();
     error VrfAlreadyRequested();
+    error ZeroSubscriptionId();
 
     event StakeCreated(uint256 indexed stakeId);
     event StakeUpdated(uint256 indexed stakeId);
@@ -97,6 +98,8 @@ interface IRips {
     event RefundIssued(uint256 indexed roundId, address indexed user, uint256 ticketCount);
     event FeeRecipientUpdated(address newRecipient);
     event CallbackGasLimitUpdated(uint32 newLimit);
+    event VrfSubscriptionIdUpdated(uint256 newSubscriptionId);
+    event VrfKeyHashUpdated(bytes32 newKeyHash);
     event ReferralTiersUpdated(ReferralTier[] tiers);
     event ReferrerStatsUpdated(
         address indexed referrer, uint16 activeFeePercent, uint16 nextFeePercent

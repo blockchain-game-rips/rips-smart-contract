@@ -1,0 +1,8 @@
+Rips_UpdateVrfSubscriptionId
+├── when the caller is not the owner
+│   └── it should revert.
+├── when the new subscription id is zero
+│   └── it should revert.
+└── when the new subscription id is non-zero
+    ├── it should update the subscription id.
+    └── it should emit a {VrfSubscriptionIdUpdated} event.
