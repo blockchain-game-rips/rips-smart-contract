@@ -28,16 +28,17 @@ library RipsMath {
         for (uint256 t = 0; t < tierBoundaries.length; t++) {
             if (prizeNumber <= tierBoundaries[t]) {
                 IRips.PrizeTier memory tier = tiers[t];
-                uint256 rank = prizeNumber - (t == 0 ? 0 : tierBoundaries[t - 1]);
 
                 if (tier.prizeCount == 1) return tier.minPrize;
+
+                uint256 rank = prizeNumber - (t == 0 ? 0 : tierBoundaries[t - 1]);
 
                 return tier.minPrize + ((tier.maxPrize - tier.minPrize) * (rank - 1))
                     / (tier.prizeCount - 1);
             }
         }
 
-        //unreached
+        //unreachable
         revert();
     }
 }
