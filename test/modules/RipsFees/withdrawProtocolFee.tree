@@ -1,0 +1,9 @@
+Rips_WithdrawProtocolFee
+├── when the caller is not the owner
+│   └── it should revert.
+├── when there is no accrued fee for the currency
+│   └── it should revert.
+└── when there is accrued fee for the currency
+    ├── it should reset the accrued fee to zero.
+    ├── it should transfer the fee to the fee recipient.
+    └── it should emit a {ProtocolFeeWithdrawn} event.
