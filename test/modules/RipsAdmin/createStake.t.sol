@@ -21,9 +21,9 @@ contract Rips_CreateStake is StakeValidationSetup {
         rips.createStake(configWithNonPowerOfTwoTicketCap());
     }
 
-    function test_RevertWhen_PrizeDistributionIsEmpty() external whenTheCallerIsTheOwner {
-        vm.expectRevert(IRips.EmptyPrizeDistribution.selector);
-        rips.createStake(configWithEmptyPrizeDistribution());
+    function test_RevertWhen_TiersIsEmpty() external whenTheCallerIsTheOwner {
+        vm.expectRevert(IRips.EmptyTiers.selector);
+        rips.createStake(configWithEmptyTiers());
     }
 
     function test_RevertWhen_ATierHasMinPrizeGreaterThanMaxPrize()

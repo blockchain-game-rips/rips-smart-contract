@@ -5,7 +5,7 @@ import "../RipsTestBase.sol";
 
 // 7-tier stake, ticketCap = 128, ticketCost = 1 ether
 // Tiers ordered by highest prizeCount first to minimise linear search depth.
-// Prize distribution (interpolated tiers, totalPool = 128 ether):
+// Prize tiers (interpolated tiers, totalPool = 128 ether):
 //   Tier 1: 50 prizes @ 0.1–0.5 ether   avg 0.3  = 15 ether
 //   Tier 2: 34 prizes @ 0.3–0.7 ether   avg 0.5  = 17 ether
 //   Tier 3: 20 prizes @ 0.5–1.5 ether   avg 1.0  = 20 ether
@@ -39,7 +39,7 @@ contract Rips_SevenTiers is RipsTestBase {
         stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: TICKET_CAP,
                 duration: DEFAULT_DURATION,
                 ticketCost: TICKET_COST,

@@ -41,7 +41,7 @@ contract Rips_RequestRandomness is RipsTestBase {
         stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: TICKET_CAP,
                 duration: 1 days,
                 ticketCost: TICKET_COST,
@@ -61,7 +61,7 @@ contract Rips_RequestRandomness is RipsTestBase {
         uint256 stakeId2 = rips.createStake(
             IRips.Config({
                 currency: address(0),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: TICKET_CAP,
                 duration: 1 days,
                 ticketCost: TICKET_COST,

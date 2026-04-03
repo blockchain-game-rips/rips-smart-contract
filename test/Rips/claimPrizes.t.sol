@@ -149,7 +149,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 zeroFeeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
                 ticketCost: DEFAULT_TICKET_COST,
@@ -235,7 +235,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 zeroFeeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(erc20),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: DEFAULT_TICKET_CAP,
                 duration: DEFAULT_DURATION,
                 ticketCost: DEFAULT_TICKET_COST,

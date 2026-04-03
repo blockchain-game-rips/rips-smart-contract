@@ -85,7 +85,7 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
             a: round.randomA,
             b: round.randomB,
             n: config.ticketCap,
-            tiers: config.prizeDistribution,
+            tiers: config.tiers,
             bounds: configIdToTierBoundaries[round.configId]
         });
 

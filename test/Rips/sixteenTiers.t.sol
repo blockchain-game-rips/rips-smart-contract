@@ -37,7 +37,7 @@ contract Rips_SixteenTiers is RipsTestBase {
         stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: TICKET_CAP,
                 duration: DEFAULT_DURATION,
                 ticketCost: TICKET_COST,

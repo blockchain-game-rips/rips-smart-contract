@@ -154,7 +154,7 @@ contract Rips_BuyTickets is RipsTestBase {
         uint256 largeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: largeTicketCap,
                 duration: DEFAULT_DURATION,
                 ticketCost: ticketCost,
@@ -336,7 +336,7 @@ contract Rips_BuyTickets is RipsTestBase {
         uint256 largeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(erc20),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: largeTicketCap,
                 duration: DEFAULT_DURATION,
                 ticketCost: ticketCost,

@@ -25,7 +25,7 @@ interface IRips {
     }
 
     struct Config {
-        PrizeTier[] prizeDistribution;
+        PrizeTier[] tiers;
         address currency;
         uint256 ticketCap;
         uint256 duration;
@@ -56,7 +56,7 @@ interface IRips {
     error EthSentForERC20();
     error FeeTooHigh();
     error TicketCapNotPowerOfTwo();
-    error EmptyPrizeDistribution();
+    error EmptyTiers();
     error InvalidPrizeRange();
     error PrizeCountMismatch();
     error PrizePoolMismatch();

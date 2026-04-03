@@ -283,7 +283,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         uint256 largeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: largeTicketCap,
                 duration: DEFAULT_DURATION,
                 ticketCost: largeTicketCost,

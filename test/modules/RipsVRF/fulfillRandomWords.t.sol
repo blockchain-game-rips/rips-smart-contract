@@ -31,7 +31,7 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
-                prizeDistribution: tiers,
+                tiers: tiers,
                 ticketCap: TICKET_CAP,
                 duration: 1 days,
                 ticketCost: TICKET_COST,

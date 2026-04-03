@@ -58,13 +58,13 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
     //TODO: add limitations
     function _validateConfig(Config calldata config) private pure {
         if (!RipsMath.isPowerOfTwo(config.ticketCap)) revert TicketCapNotPowerOfTwo();
-        if (config.prizeDistribution.length == 0) revert EmptyPrizeDistribution();
+        if (config.tiers.length == 0) revert EmptyTiers();
 
         uint256 totalPrizeCount = 0;
         uint256 totalPrizePool = 0;
 
-        for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
-            PrizeTier calldata tier = config.prizeDistribution[i];
+        for (uint256 i = 0; i < config.tiers.length; i++) {
+            PrizeTier calldata tier = config.tiers[i];
 
             if (tier.minPrize > tier.maxPrize) revert InvalidPrizeRange();
 
@@ -90,10 +90,10 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
 
         uint64 cumulative = 0;
 
-        for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
-            newConfig.prizeDistribution.push(config.prizeDistribution[i]);
+        for (uint256 i = 0; i < config.tiers.length; i++) {
+            newConfig.tiers.push(config.tiers[i]);
 
-            cumulative += config.prizeDistribution[i].prizeCount;
+            cumulative += config.tiers[i].prizeCount;
             configIdToTierBoundaries[configId].push(cumulative);
         }
     }

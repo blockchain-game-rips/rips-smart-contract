@@ -25,7 +25,7 @@ contract Rips_UpdateStake is StakeValidationSetup {
 
         return IRips.Config({
             currency: address(0),
-            prizeDistribution: tiers,
+            tiers: tiers,
             ticketCap: newTicketCap,
             duration: DEFAULT_DURATION,
             ticketCost: newTicketCost,
@@ -66,10 +66,10 @@ contract Rips_UpdateStake is StakeValidationSetup {
         rips.updateStake(stakeId, configWithNonPowerOfTwoTicketCap());
     }
 
-    function test_RevertWhen_PrizeDistributionIsEmpty() external whenTheCallerIsTheOwner {
+    function test_RevertWhen_TiersIsEmpty() external whenTheCallerIsTheOwner {
         // it should revert.
-        vm.expectRevert(IRips.EmptyPrizeDistribution.selector);
-        rips.updateStake(stakeId, configWithEmptyPrizeDistribution());
+        vm.expectRevert(IRips.EmptyTiers.selector);
+        rips.updateStake(stakeId, configWithEmptyTiers());
     }
 
     function test_RevertWhen_ATierHasMinPrizeGreaterThanMaxPrize()
@@ -121,7 +121,7 @@ contract Rips_UpdateStake is StakeValidationSetup {
         assertEq(stored.ticketCost, config.ticketCost);
         assertEq(stored.currency, config.currency);
         assertEq(stored.duration, config.duration);
-        assertEq(stored.prizeDistribution.length, config.prizeDistribution.length);
+        assertEq(stored.tiers.length, config.tiers.length);
         assertEq(stored.feePercent, config.feePercent);
     }
 

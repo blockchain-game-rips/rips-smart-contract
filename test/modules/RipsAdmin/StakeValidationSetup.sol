@@ -14,7 +14,7 @@ contract StakeValidationSetup is RipsTestBase {
 
         return IRips.Config({
             currency: address(0),
-            prizeDistribution: tiers,
+            tiers: tiers,
             ticketCap: DEFAULT_TICKET_CAP,
             duration: DEFAULT_DURATION,
             ticketCost: DEFAULT_TICKET_COST,
@@ -32,7 +32,7 @@ contract StakeValidationSetup is RipsTestBase {
 
         return IRips.Config({
             currency: address(0),
-            prizeDistribution: tiers,
+            tiers: tiers,
             ticketCap: 3,
             duration: DEFAULT_DURATION,
             ticketCost: DEFAULT_TICKET_COST,
@@ -40,10 +40,10 @@ contract StakeValidationSetup is RipsTestBase {
         });
     }
 
-    function configWithEmptyPrizeDistribution() internal pure returns (IRips.Config memory) {
+    function configWithEmptyTiers() internal pure returns (IRips.Config memory) {
         return IRips.Config({
             currency: address(0),
-            prizeDistribution: new IRips.PrizeTier[](0),
+            tiers: new IRips.PrizeTier[](0),
             ticketCap: DEFAULT_TICKET_CAP,
             duration: DEFAULT_DURATION,
             ticketCost: DEFAULT_TICKET_COST,
@@ -59,7 +59,7 @@ contract StakeValidationSetup is RipsTestBase {
 
         return IRips.Config({
             currency: address(0),
-            prizeDistribution: tiers,
+            tiers: tiers,
             ticketCap: DEFAULT_TICKET_CAP,
             duration: DEFAULT_DURATION,
             ticketCost: DEFAULT_TICKET_COST,
@@ -77,7 +77,7 @@ contract StakeValidationSetup is RipsTestBase {
 
         return IRips.Config({
             currency: address(0),
-            prizeDistribution: tiers,
+            tiers: tiers,
             ticketCap: DEFAULT_TICKET_CAP,
             duration: DEFAULT_DURATION,
             ticketCost: DEFAULT_TICKET_COST,
@@ -97,7 +97,7 @@ contract StakeValidationSetup is RipsTestBase {
 
         return IRips.Config({
             currency: address(0),
-            prizeDistribution: tiers,
+            tiers: tiers,
             ticketCap: DEFAULT_TICKET_CAP,
             duration: DEFAULT_DURATION,
             ticketCost: DEFAULT_TICKET_COST,
