@@ -22,8 +22,13 @@ contract Rips_CreateStake is StakeValidationSetup {
     }
 
     function test_RevertWhen_TiersIsEmpty() external whenTheCallerIsTheOwner {
-        vm.expectRevert(IRips.EmptyTiers.selector);
-        rips.createStake(configWithEmptyTiers());
+        vm.expectRevert(IRips.InvalidTierCount.selector);
+        rips.createStake(configWithInvalidTierCount());
+    }
+
+    function test_RevertWhen_TiersExceedsMaxTierCount() external whenTheCallerIsTheOwner {
+        vm.expectRevert(IRips.InvalidTierCount.selector);
+        rips.createStake(configWithTierCountExceedsMax());
     }
 
     function test_RevertWhen_ATierHasMinPrizeGreaterThanMaxPrize()

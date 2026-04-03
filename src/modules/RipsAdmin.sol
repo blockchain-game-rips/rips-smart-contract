@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
 abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
+    uint256 public constant MAX_TIER_COUNT = 20;
+
     function pause() external onlyOwner {
         _pause();
     }
@@ -55,10 +57,10 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
         stakeIdToCurrentConfigId[stakeId] = configId;
     }
 
-    //TODO: add limitations
     function _validateConfig(Config calldata config) private pure {
         if (!RipsMath.isPowerOfTwo(config.ticketCap)) revert TicketCapNotPowerOfTwo();
-        if (config.tiers.length == 0) revert EmptyTiers();
+        if (config.tiers.length == 0) revert InvalidTierCount();
+        if (config.tiers.length > MAX_TIER_COUNT) revert InvalidTierCount();
 
         uint256 totalPrizeCount = 0;
         uint256 totalPrizePool = 0;

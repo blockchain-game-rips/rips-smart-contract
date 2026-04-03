@@ -40,7 +40,7 @@ contract StakeValidationSetup is RipsTestBase {
         });
     }
 
-    function configWithEmptyTiers() internal pure returns (IRips.Config memory) {
+    function configWithInvalidTierCount() internal pure returns (IRips.Config memory) {
         return IRips.Config({
             currency: address(0),
             tiers: new IRips.PrizeTier[](0),
@@ -98,6 +98,19 @@ contract StakeValidationSetup is RipsTestBase {
         return IRips.Config({
             currency: address(0),
             tiers: tiers,
+            ticketCap: DEFAULT_TICKET_CAP,
+            duration: DEFAULT_DURATION,
+            ticketCost: DEFAULT_TICKET_COST,
+            feePercent: DEFAULT_FEE_PERCENT
+        });
+    }
+
+    function configWithTierCountExceedsMax() internal pure returns (IRips.Config memory) {
+        uint256 tierCount = 21;
+
+        return IRips.Config({
+            currency: address(0),
+            tiers: new IRips.PrizeTier[](tierCount),
             ticketCap: DEFAULT_TICKET_CAP,
             duration: DEFAULT_DURATION,
             ticketCost: DEFAULT_TICKET_COST,

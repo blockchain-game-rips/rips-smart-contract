@@ -68,8 +68,14 @@ contract Rips_UpdateStake is StakeValidationSetup {
 
     function test_RevertWhen_TiersIsEmpty() external whenTheCallerIsTheOwner {
         // it should revert.
-        vm.expectRevert(IRips.EmptyTiers.selector);
-        rips.updateStake(stakeId, configWithEmptyTiers());
+        vm.expectRevert(IRips.InvalidTierCount.selector);
+        rips.updateStake(stakeId, configWithInvalidTierCount());
+    }
+
+    function test_RevertWhen_TiersExceedsMaxTierCount() external whenTheCallerIsTheOwner {
+        // it should revert.
+        vm.expectRevert(IRips.InvalidTierCount.selector);
+        rips.updateStake(stakeId, configWithTierCountExceedsMax());
     }
 
     function test_RevertWhen_ATierHasMinPrizeGreaterThanMaxPrize()

@@ -3,7 +3,9 @@ Rips_CreateStake
 │   └── it should revert.
 ├── when ticket cap is not a power of two
 │   └── it should revert.
-├── when prize distribution is empty
+├── when tiers is empty
+│   └── it should revert.
+├── when tiers exceeds max tier count
 │   └── it should revert.
 ├── when a tier has min prize greater than max prize
 │   └── it should revert.

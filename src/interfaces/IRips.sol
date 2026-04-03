@@ -56,7 +56,7 @@ interface IRips {
     error EthSentForERC20();
     error FeeTooHigh();
     error TicketCapNotPowerOfTwo();
-    error EmptyTiers();
+    error InvalidTierCount();
     error InvalidPrizeRange();
     error PrizeCountMismatch();
     error PrizePoolMismatch();
