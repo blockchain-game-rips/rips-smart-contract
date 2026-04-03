@@ -9,8 +9,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
     uint16 private constant PROTOCOL_FEE_PERCENT = 500; // 5%
     uint256 private constant BASE_FEE_PERCENT = 300; // 3%
     uint256 private constant CUSTOM_FEE_PERCENT = 2000; // 20%
-    uint256 private constant PRIZE_PER_TICKET =
-        DEFAULT_TICKET_COST * (10000 - PROTOCOL_FEE_PERCENT) / 10000;
+    uint256 private constant PRIZE_PER_TICKET = 0.95 ether;
 
     uint256 private stakeId;
     uint256 private roundId;

@@ -3,8 +3,9 @@ pragma solidity ^0.8.13;
 
 import "../common/RipsStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../common/RipsUtils.sol";
 
-abstract contract RipsReferral is RipsStorage, Ownable {
+abstract contract RipsReferral is RipsStorage, RipsUtils, Ownable {
     uint256 public constant MAX_REFERRAL_TIER_COUNT = 10;
 
     uint16 public baseFeePercent;
@@ -13,7 +14,7 @@ abstract contract RipsReferral is RipsStorage, Ownable {
     ReferralTier[] public referralTiers;
 
     function setBaseFeePercent(uint16 newBaseFeePercent) external onlyOwner {
-        if (newBaseFeePercent > 10000) revert FeeTooHigh();
+        if (newBaseFeePercent > FEE_BASE) revert FeeTooHigh();
 
         baseFeePercent = newBaseFeePercent;
 
@@ -22,7 +23,7 @@ abstract contract RipsReferral is RipsStorage, Ownable {
 
     function setReferrerCustomFee(address referrer, uint16 customFeePercent) external onlyOwner {
         if (referrer == address(0)) revert ZeroAddress();
-        if (customFeePercent > 10000) revert FeeTooHigh();
+        if (customFeePercent > FEE_BASE) revert FeeTooHigh();
 
         referrerToReferrerStats[referrer].customFeePercent = customFeePercent;
 
@@ -55,7 +56,7 @@ abstract contract RipsReferral is RipsStorage, Ownable {
         ReferrerStats storage stats = referrerToReferrerStats[referrer];
 
         if (stats.customFeePercent > 0) {
-            return (protocolFee * stats.customFeePercent) / 10000;
+            return (protocolFee * stats.customFeePercent) / FEE_BASE;
         }
 
         if (referralTiers.length == 0 && baseFeePercent == 0) return 0;
@@ -84,7 +85,7 @@ abstract contract RipsReferral is RipsStorage, Ownable {
         uint16 effectiveFeePercent =
             stats.activeFeePercent > baseFeePercent ? stats.activeFeePercent : baseFeePercent;
 
-        referrerFee = (protocolFee * effectiveFeePercent) / 10000;
+        referrerFee = (protocolFee * effectiveFeePercent) / FEE_BASE;
     }
 
     function _resolveTierFeePercent(uint128 volume) private view returns (uint16 feePercent) {

@@ -111,7 +111,7 @@ contract Rips_UpdateStake is StakeValidationSetup {
         rips.updateStake(stakeId, configWithPrizePoolMismatch());
     }
 
-    function test_RevertWhen_FeePercentExceeds10000() external whenTheCallerIsTheOwner {
+    function test_RevertWhen_FeePercentExceedsFEE_BASE() external whenTheCallerIsTheOwner {
         // it should revert.
         vm.expectRevert(IRips.FeeTooHigh.selector);
         rips.updateStake(stakeId, configWithFeeTooHigh());

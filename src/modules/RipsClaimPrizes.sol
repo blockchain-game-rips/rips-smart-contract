@@ -52,7 +52,7 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         address currency = config.currency;
 
         uint256 ticketRevenue = ticketCount * config.ticketCost;
-        uint256 protocolFee = (ticketRevenue * config.feePercent) / 10000;
+        uint256 protocolFee = (ticketRevenue * config.feePercent) / FEE_BASE;
 
         if (protocolFee > 0) {
             uint256 referrerFee = _collectReferrerFee(referrer, protocolFee, ticketRevenue);

@@ -60,12 +60,12 @@ contract Rips_CreateStake is StakeValidationSetup {
         rips.createStake(configWithPrizePoolMismatch());
     }
 
-    function test_RevertWhen_FeePercentExceeds10000() external whenTheCallerIsTheOwner {
+    function test_RevertWhen_FeePercentExceedsFEE_BASE() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.FeeTooHigh.selector);
         rips.createStake(configWithFeeTooHigh());
     }
 
-    function test_WhenFeePercentIsAtMost10000() external whenTheCallerIsTheOwner {
+    function test_WhenFeePercentIsAtMostFEE_BASE() external whenTheCallerIsTheOwner {
         // it should store the stake configuration.
         // it should increment the next stake ID.
         // it should emit a {StakeCreated} event.

@@ -23,7 +23,7 @@ contract Rips_SetReferrerCustomFee is RipsTestBase {
         rips.setReferrerCustomFee(address(0), 500);
     }
 
-    function test_RevertWhen_TheFeeIsGreaterThan10000() external whenTheCallerIsTheOwner {
+    function test_RevertWhen_TheFeeIsGreaterThanFEE_BASE() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.FeeTooHigh.selector);
         rips.setReferrerCustomFee(referrer, 10001);
     }

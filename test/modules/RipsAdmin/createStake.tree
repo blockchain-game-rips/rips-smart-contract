@@ -15,9 +15,9 @@ Rips_CreateStake
 │   └── it should revert.
 ├── when total prize pool does not equal ticket cap times ticket cost
 │   └── it should revert.
-├── when fee percent exceeds 10000
+├── when fee percent exceeds FEE_BASE
 │   └── it should revert.
-└── when fee percent is at most 10000
+└── when fee percent is at most FEE_BASE
     ├── it should store the stake configuration.
     ├── it should increment the next stake ID.
     └── it should emit a {StakeCreated} event.

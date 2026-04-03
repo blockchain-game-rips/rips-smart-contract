@@ -2,7 +2,7 @@ Rips_SetBaseFeePercent
 ├── when the caller is not the owner
 │   └── it should revert.
 └── when the caller is the owner
-    ├── when the fee is greater than 10000
+    ├── when the fee is greater than FEE_BASE
     │   └── it should revert.
     └── when the fee is valid
         ├── it should update baseFeePercent.

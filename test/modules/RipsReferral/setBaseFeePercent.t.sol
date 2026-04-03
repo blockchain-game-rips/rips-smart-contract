@@ -18,7 +18,7 @@ contract Rips_SetBaseFeePercent is RipsTestBase {
         vm.stopPrank();
     }
 
-    function test_RevertWhen_TheFeeIsGreaterThan10000() external whenTheCallerIsTheOwner {
+    function test_RevertWhen_TheFeeIsGreaterThanFEE_BASE() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.FeeTooHigh.selector);
         rips.setBaseFeePercent(10001);
     }

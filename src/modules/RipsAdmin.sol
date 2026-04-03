@@ -5,8 +5,9 @@ import "../common/RipsStorage.sol";
 import "../libraries/RipsMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "../common/RipsUtils.sol";
 
-abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
+abstract contract RipsAdmin is RipsStorage, RipsUtils, Ownable, Pausable {
     uint256 public constant MAX_TIER_COUNT = 20;
 
     function pause() external onlyOwner {
@@ -78,10 +79,10 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
                     * (uint256(tier.minPrize) + uint256(tier.maxPrize))) / 2;
         }
 
-        if (config.feePercent > 10000) revert FeeTooHigh();
+        if (config.feePercent > FEE_BASE) revert FeeTooHigh();
         if (totalPrizeCount != config.ticketCap) revert PrizeCountMismatch();
         uint256 totalRevenue = uint256(config.ticketCap) * config.ticketCost;
-        uint256 protocolFee = (totalRevenue * config.feePercent) / 10000;
+        uint256 protocolFee = (totalRevenue * config.feePercent) / FEE_BASE;
         if (totalPrizePool != totalRevenue - protocolFee) revert PrizePoolMismatch();
     }
 

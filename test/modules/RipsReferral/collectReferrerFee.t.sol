@@ -44,7 +44,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
-        assertEq(fee, PROTOCOL_FEE * CUSTOM_FEE_PERCENT / 10000);
+        assertEq(fee, 0.2 ether);
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
         assertEq(stats.currMonthVolume, 0);
@@ -60,7 +60,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
-        assertEq(fee, PROTOCOL_FEE * BASE_FEE_PERCENT / 10000);
+        assertEq(fee, 0.03 ether);
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
         assertEq(stats.currMonthVolume, TICKET_REVENUE);
@@ -99,7 +99,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
-        assertEq(fee, PROTOCOL_FEE * TIER_1_FEE_PERCENT / 10000);
+        assertEq(fee, 0.08 ether);
     }
 
     function test_WhenActiveFeePercentIsBelowBaseFeePercent() external {
@@ -110,7 +110,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
-        assertEq(fee, PROTOCOL_FEE * BASE_FEE_PERCENT / 10000);
+        assertEq(fee, 0.03 ether);
     }
 
     function test_WhenANewMonthStartsAfterAConsecutiveActiveMonth() external {
