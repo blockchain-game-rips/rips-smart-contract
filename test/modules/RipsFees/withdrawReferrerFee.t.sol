@@ -64,6 +64,15 @@ contract Rips_WithdrawReferrerFee is RipsTestBase {
         rips.withdrawReferrerFee(address(0), address(0));
     }
 
+    function test_RevertWhen_TheReferrerIsFrozen() external {
+        // it should revert.
+        vm.prank(owner);
+        rips.setReferrerFrozen(referrer, true);
+
+        vm.expectRevert(IRips.ReferrerFrozen.selector);
+        rips.withdrawReferrerFee(referrer, address(0));
+    }
+
     function test_RevertWhen_ThereIsNoAccruedFeeForTheReferrerAndCurrency() external {
         // it should revert.
         address otherReferrer = makeAddr("otherReferrer");

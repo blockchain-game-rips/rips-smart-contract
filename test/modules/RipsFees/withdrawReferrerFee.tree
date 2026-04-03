@@ -1,6 +1,8 @@
 Rips_WithdrawReferrerFee
 ├── when the referrer is the zero address
 │   └── it should revert.
+├── when the referrer is frozen
+│   └── it should revert.
 ├── when there is no accrued fee for the referrer and currency
 │   └── it should revert.
 └── when there is accrued fee for the referrer and currency

@@ -1,0 +1,8 @@
+Rips_SetReferrerFrozen
+├── when the caller is not the owner
+│   └── it should revert.
+├── when the referrer is the zero address
+│   └── it should revert.
+└── when the caller is the owner and referrer is not the zero address
+    ├── it should update the frozen status.
+    └── it should emit a {ReferrerFreezeUpdated} event.
