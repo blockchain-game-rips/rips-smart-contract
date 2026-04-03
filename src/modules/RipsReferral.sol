@@ -8,17 +8,17 @@ import "../common/RipsUtils.sol";
 abstract contract RipsReferral is RipsStorage, RipsUtils, Ownable {
     uint256 public constant MAX_REFERRAL_TIER_COUNT = 10;
 
-    uint16 public baseFeePercent;
+    uint16 public defaultReferralFee;
 
     mapping(address referrer => ReferrerStats stats) public referrerToReferrerStats;
     ReferralTier[] public referralTiers;
 
-    function setBaseFeePercent(uint16 newBaseFeePercent) external onlyOwner {
-        if (newBaseFeePercent > FEE_BASE) revert FeeTooHigh();
+    function setDefaultReferralFee(uint16 newDefaultReferralFee) external onlyOwner {
+        if (newDefaultReferralFee > FEE_BASE) revert FeeTooHigh();
 
-        baseFeePercent = newBaseFeePercent;
+        defaultReferralFee = newDefaultReferralFee;
 
-        emit BaseFeePercentUpdated(newBaseFeePercent);
+        emit DefaultReferralFeeUpdated(newDefaultReferralFee);
     }
 
     function setReferrerCustomFee(address referrer, uint16 customFeePercent) external onlyOwner {
@@ -59,7 +59,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils, Ownable {
             return (protocolFee * stats.customFeePercent) / FEE_BASE;
         }
 
-        if (referralTiers.length == 0 && baseFeePercent == 0) return 0;
+        if (referralTiers.length == 0 && defaultReferralFee == 0) return 0;
 
         uint32 currentMonth = uint32(block.timestamp / 30 days);
 
@@ -82,8 +82,9 @@ abstract contract RipsReferral is RipsStorage, RipsUtils, Ownable {
             emit ReferrerStatsUpdated(referrer, stats.activeFeePercent, newNextFeePercent);
         }
 
-        uint16 effectiveFeePercent =
-            stats.activeFeePercent > baseFeePercent ? stats.activeFeePercent : baseFeePercent;
+        uint16 effectiveFeePercent = stats.activeFeePercent > defaultReferralFee
+            ? stats.activeFeePercent
+            : defaultReferralFee;
 
         referrerFee = (protocolFee * effectiveFeePercent) / FEE_BASE;
     }

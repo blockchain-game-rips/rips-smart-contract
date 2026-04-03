@@ -3,13 +3,13 @@ pragma solidity ^0.8.13;
 
 import "../../RipsTestBase.sol";
 
-contract Rips_SetBaseFeePercent is RipsTestBase {
-    event BaseFeePercentUpdated(uint16 newBaseFeePercent);
+contract Rips_SetDefaultReferralFee is RipsTestBase {
+    event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
 
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
         vm.prank(user);
         vm.expectRevert();
-        rips.setBaseFeePercent(100);
+        rips.setDefaultReferralFee(100);
     }
 
     modifier whenTheCallerIsTheOwner() {
@@ -20,17 +20,17 @@ contract Rips_SetBaseFeePercent is RipsTestBase {
 
     function test_RevertWhen_TheFeeIsGreaterThanFEE_BASE() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.FeeTooHigh.selector);
-        rips.setBaseFeePercent(10001);
+        rips.setDefaultReferralFee(10001);
     }
 
     function test_WhenTheFeeIsValid() external whenTheCallerIsTheOwner {
         uint16 newFee = 500;
 
         vm.expectEmit();
-        emit BaseFeePercentUpdated(newFee);
+        emit DefaultReferralFeeUpdated(newFee);
 
-        rips.setBaseFeePercent(newFee);
+        rips.setDefaultReferralFee(newFee);
 
-        assertEq(rips.baseFeePercent(), newFee);
+        assertEq(rips.defaultReferralFee(), newFee);
     }
 }

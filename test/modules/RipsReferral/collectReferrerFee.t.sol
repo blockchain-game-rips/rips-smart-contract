@@ -6,16 +6,16 @@ import "../../RipsTestBase.sol";
 contract RipsReferral_CollectReferrerFee is RipsTestBase {
     uint256 private constant PROTOCOL_FEE = 1 ether;
     uint256 private constant TICKET_REVENUE = 10 ether;
-    uint16 private constant BASE_FEE_PERCENT = 300;
+    uint16 private constant DEFAULT_REFERRAL_FEE = 300;
     uint16 private constant TIER_1_FEE_PERCENT = 800;
     uint16 private constant TIER_2_FEE_PERCENT = 1500;
     uint16 private constant CUSTOM_FEE_PERCENT = 2000;
     uint128 private constant TIER_1_MIN_VOLUME = 5 ether;
     uint128 private constant TIER_2_MIN_VOLUME = 20 ether;
 
-    function _setBaseFee() private {
+    function _setDefaultReferralFee() private {
         vm.prank(owner);
-        rips.setBaseFeePercent(BASE_FEE_PERCENT);
+        rips.setDefaultReferralFee(DEFAULT_REFERRAL_FEE);
     }
 
     function _setTiers() private {
@@ -56,7 +56,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
     }
 
     function test_WhenBaseFeeIsSetAndReferrerHasNoPriorActivity() external {
-        _setBaseFee();
+        _setDefaultReferralFee();
 
         uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
@@ -67,7 +67,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
     }
 
     function test_WhenReferrerCurrentMonthVolumeCrossesATierThreshold() external {
-        _setBaseFee();
+        _setDefaultReferralFee();
         _setTiers();
 
         vm.expectEmit();
@@ -80,7 +80,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
     }
 
     function test_WhenReferrerCurrentMonthVolumeCrossesMultipleTierThresholds() external {
-        _setBaseFee();
+        _setDefaultReferralFee();
         _setTiers();
 
         _collect(referrer, PROTOCOL_FEE, TIER_2_MIN_VOLUME);
@@ -90,7 +90,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
     }
 
     function test_WhenReferrersPreviousMonthVolumeReachedATierThreshold() external {
-        _setBaseFee();
+        _setDefaultReferralFee();
         _setTiers();
 
         _collect(referrer, PROTOCOL_FEE, TIER_1_MIN_VOLUME);
@@ -102,8 +102,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(fee, 0.08 ether);
     }
 
-    function test_WhenActiveFeePercentIsBelowBaseFeePercent() external {
-        _setBaseFee();
+    function test_WhenActiveFeePercentIsBelowDefaultReferralFee() external {
+        _setDefaultReferralFee();
         _setTiers();
 
         vm.warp(block.timestamp + 31 days);
@@ -114,7 +114,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
     }
 
     function test_WhenANewMonthStartsAfterAConsecutiveActiveMonth() external {
-        _setBaseFee();
+        _setDefaultReferralFee();
         _setTiers();
 
         _collect(referrer, PROTOCOL_FEE, TIER_1_MIN_VOLUME);
@@ -129,7 +129,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
     }
 
     function test_WhenANewMonthStartsAfterAnInactiveMonthGap() external {
-        _setBaseFee();
+        _setDefaultReferralFee();
         _setTiers();
 
         _collect(referrer, PROTOCOL_FEE, TIER_1_MIN_VOLUME);

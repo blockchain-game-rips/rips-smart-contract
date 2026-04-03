@@ -7,7 +7,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
     uint256 private constant START_INDEX = 0;
     uint256 private constant MAX_RANGES = 10;
     uint16 private constant PROTOCOL_FEE_PERCENT = 500; // 5%
-    uint256 private constant BASE_FEE_PERCENT = 300; // 3%
+    uint256 private constant DEFAULT_REFERRAL_FEE = 300; // 3%
     uint256 private constant CUSTOM_FEE_PERCENT = 2000; // 20%
     uint256 private constant PRIZE_PER_TICKET = 0.95 ether;
 
@@ -109,9 +109,9 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
     function test_GivenBaseFeeIsSetAndReferrerHasNoPriorActivity() external {
         vm.prank(owner);
-        rips.setBaseFeePercent(uint16(BASE_FEE_PERCENT));
+        rips.setDefaultReferralFee(uint16(DEFAULT_REFERRAL_FEE));
 
-        uint256 expectedReferrerFee = _referrerFeeFrom(BASE_FEE_PERCENT);
+        uint256 expectedReferrerFee = _referrerFeeFrom(DEFAULT_REFERRAL_FEE);
 
         uint256 referrerBefore = referrer.balance;
         uint256 feeRecipientBefore = owner.balance;

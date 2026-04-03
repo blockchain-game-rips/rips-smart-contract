@@ -1,9 +1,9 @@
-Rips_SetBaseFeePercent
+Rips_SetDefaultReferralFee
 ├── when the caller is not the owner
 │   └── it should revert.
 └── when the caller is the owner
     ├── when the fee is greater than FEE_BASE
     │   └── it should revert.
     └── when the fee is valid
-        ├── it should update baseFeePercent.
-        └── it should emit a {BaseFeePercentUpdated} event.
+        ├── it should update defaultReferralFee.
+        └── it should emit a {DefaultReferralFeeUpdated} event.

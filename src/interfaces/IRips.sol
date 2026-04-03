@@ -104,7 +104,7 @@ interface IRips {
     event ReferrerStatsUpdated(
         address indexed referrer, uint16 activeFeePercent, uint16 nextFeePercent
     );
-    event BaseFeePercentUpdated(uint16 newBaseFeePercent);
+    event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
     event ReferrerCustomFeeSet(address indexed referrer, uint16 customFeePercent);
     event ReferralFeePaid(uint256 indexed roundId, address indexed referrer, uint256 amount);
 
@@ -135,7 +135,7 @@ interface IRips {
 
     function setReferralTiers(ReferralTier[] calldata tiers) external;
 
-    function setBaseFeePercent(uint16 newBaseFeePercent) external;
+    function setDefaultReferralFee(uint16 newDefaultReferralFee) external;
 
     function setReferrerCustomFee(address referrer, uint16 customFeePercent) external;
 }
