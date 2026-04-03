@@ -93,12 +93,15 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
         newConfig.feePercent = config.feePercent;
 
         uint64 cumulative = 0;
+        uint64[] storage boundaries = configIdToTierBoundaries[configId];
 
         for (uint256 i = 0; i < config.tiers.length; i++) {
-            newConfig.tiers.push(config.tiers[i]);
+            PrizeTier calldata tier = config.tiers[i];
 
-            cumulative += config.tiers[i].prizeCount;
-            configIdToTierBoundaries[configId].push(cumulative);
+            newConfig.tiers.push(tier);
+
+            cumulative += tier.prizeCount;
+            boundaries.push(cumulative);
         }
     }
 }
