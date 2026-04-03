@@ -122,4 +122,27 @@ contract StakeValidationSetup is RipsTestBase {
         config = validConfig();
         config.feePercent = uint16(10001);
     }
+
+    function configWithTiersNotSortedByCount() internal pure returns (IRips.Config memory) {
+        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](2);
+        tiers[0] = IRips.PrizeTier({
+            prizeCount: 1,
+            minPrize: uint128(DEFAULT_TICKET_COST * 3),
+            maxPrize: uint128(DEFAULT_TICKET_COST * 3)
+        });
+        tiers[1] = IRips.PrizeTier({
+            prizeCount: uint64(DEFAULT_TICKET_CAP - 1),
+            minPrize: uint128(DEFAULT_TICKET_COST),
+            maxPrize: uint128(DEFAULT_TICKET_COST)
+        });
+
+        return IRips.Config({
+            currency: address(0),
+            tiers: tiers,
+            ticketCap: DEFAULT_TICKET_CAP,
+            duration: DEFAULT_DURATION,
+            ticketCost: DEFAULT_TICKET_COST,
+            feePercent: DEFAULT_FEE_PERCENT
+        });
+    }
 }

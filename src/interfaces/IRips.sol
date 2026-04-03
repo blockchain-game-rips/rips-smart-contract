@@ -58,6 +58,7 @@ interface IRips {
     error TicketCapNotPowerOfTwo();
     error InvalidTierCount();
     error InvalidPrizeRange();
+    error TiersNotSortedByCount();
     error PrizeCountMismatch();
     error PrizePoolMismatch();
     error StakeNotExist();

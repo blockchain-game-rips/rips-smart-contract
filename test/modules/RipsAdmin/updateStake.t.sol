@@ -87,6 +87,15 @@ contract Rips_UpdateStake is StakeValidationSetup {
         rips.updateStake(stakeId, configWithMinPrizeGreaterThanMaxPrize());
     }
 
+    function test_RevertWhen_TiersAreNotSortedByCountDescending()
+        external
+        whenTheCallerIsTheOwner
+    {
+        // it should revert.
+        vm.expectRevert(IRips.TiersNotSortedByCount.selector);
+        rips.updateStake(stakeId, configWithTiersNotSortedByCount());
+    }
+
     function test_RevertWhen_TotalPrizeCountDoesNotEqualTicketCap()
         external
         whenTheCallerIsTheOwner
