@@ -26,10 +26,11 @@ contract Rips is
         bytes32 vrfKeyHash,
         uint32 callbackGasLimit
     )
-        Ownable(msg.sender)
         RipsFees(msg.sender)
         RipsVrf(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit)
-    {}
+    {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
 
     function getUserTickets(uint256 roundId, address user)
         external

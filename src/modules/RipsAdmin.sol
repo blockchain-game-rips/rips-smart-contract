@@ -3,22 +3,26 @@ pragma solidity ^0.8.13;
 
 import "../common/RipsStorage.sol";
 import "../libraries/RipsMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "../common/RipsUtils.sol";
 
-abstract contract RipsAdmin is RipsStorage, RipsUtils, Ownable, Pausable {
+abstract contract RipsAdmin is RipsStorage, RipsUtils, AccessControl, Pausable {
     uint256 public constant MAX_TIER_COUNT = 20;
 
-    function pause() external onlyOwner {
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();
     }
 
-    function unpause() external onlyOwner {
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _unpause();
     }
 
-    function createStake(Config calldata config) external onlyOwner returns (uint256 stakeId) {
+    function createStake(Config calldata config)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+        returns (uint256 stakeId)
+    {
         stakeId = _nextStakeId++;
 
         _applyConfig(stakeId, config);
@@ -26,7 +30,10 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Ownable, Pausable {
         emit StakeCreated(stakeId);
     }
 
-    function updateStake(uint256 stakeId, Config calldata config) external onlyOwner {
+    function updateStake(uint256 stakeId, Config calldata config)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         if (isStakeDeleted[stakeId]) revert StakeNotExist();
         if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
 
@@ -35,7 +42,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Ownable, Pausable {
         emit StakeUpdated(stakeId);
     }
 
-    function deleteStake(uint256 stakeId) external onlyOwner {
+    function deleteStake(uint256 stakeId) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (isStakeDeleted[stakeId]) revert StakeNotExist();
         if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
 

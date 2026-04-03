@@ -2,18 +2,22 @@
 pragma solidity ^0.8.13;
 
 import "../common/RipsUtils.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
-abstract contract RipsFees is RipsUtils, Ownable {
+abstract contract RipsFees is RipsUtils, AccessControl {
     address public feeRecipient;
 
     mapping(address referrer => bool frozen) public isReferrerFrozen;
 
     constructor(address initialFeeRecipient) {
-        setFeeRecipient(initialFeeRecipient);
+        if (initialFeeRecipient == address(0)) revert ZeroAddress();
+
+        feeRecipient = initialFeeRecipient;
+
+        emit FeeRecipientUpdated(initialFeeRecipient);
     }
 
-    function setFeeRecipient(address newRecipient) public onlyOwner {
+    function setFeeRecipient(address newRecipient) public onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newRecipient == address(0)) revert ZeroAddress();
 
         feeRecipient = newRecipient;
@@ -21,7 +25,7 @@ abstract contract RipsFees is RipsUtils, Ownable {
         emit FeeRecipientUpdated(newRecipient);
     }
 
-    function withdrawProtocolFee(address currency) external onlyOwner {
+    function withdrawProtocolFee(address currency) external {
         uint256 amount = protocolFeeAccrued[currency];
         if (amount == 0) revert NothingToWithdraw();
 
@@ -32,7 +36,10 @@ abstract contract RipsFees is RipsUtils, Ownable {
         emit ProtocolFeeWithdrawn(feeRecipient, currency, amount);
     }
 
-    function setReferrerFrozen(address referrer, bool frozen) external onlyOwner {
+    function setReferrerFrozen(address referrer, bool frozen)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         if (referrer == address(0)) revert ZeroAddress();
 
         isReferrerFrozen[referrer] = frozen;
@@ -40,7 +47,10 @@ abstract contract RipsFees is RipsUtils, Ownable {
         emit ReferrerFreezeUpdated(referrer, frozen);
     }
 
-    function seizeReferrerFee(address referrer, address currency) external onlyOwner {
+    function seizeReferrerFee(address referrer, address currency)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         if (referrer == address(0)) revert ZeroAddress();
 
         uint256 amount = referrerFeeAccrued[referrer][currency];

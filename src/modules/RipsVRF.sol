@@ -3,13 +3,13 @@ pragma solidity ^0.8.13;
 
 import "../common/RipsUtils.sol";
 import "../libraries/RipsMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 //TODO: refund if too much time has passed since vrf requested
-abstract contract RipsVrf is RipsUtils, Ownable, IVRFMigratableConsumerV2Plus {
+abstract contract RipsVrf is RipsUtils, AccessControl, IVRFMigratableConsumerV2Plus {
     error OnlyCoordinatorCanFulfill(address have, address want);
 
     uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
@@ -29,30 +29,35 @@ abstract contract RipsVrf is RipsUtils, Ownable, IVRFMigratableConsumerV2Plus {
         uint32 callbackGasLimit
     ) {
         if (vrfCoordinator == address(0)) revert ZeroAddress();
+        if (vrfSubscriptionId_ == 0) revert ZeroSubscriptionId();
+
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
-        updateVrfSubscriptionId(vrfSubscriptionId_);
-        updateVrfKeyHash(vrfKeyHash_);
+        vrfSubscriptionId = vrfSubscriptionId_;
+        vrfKeyHash = vrfKeyHash_;
         s_callbackGasLimit = callbackGasLimit;
     }
 
-    function setCoordinator(address vrfCoordinator) external override onlyOwner {
+    function setCoordinator(address vrfCoordinator) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         if (vrfCoordinator == address(0)) revert ZeroAddress();
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
         emit CoordinatorSet(vrfCoordinator);
     }
 
-    function updateVrfSubscriptionId(uint256 newSubscriptionId) public onlyOwner {
+    function updateVrfSubscriptionId(uint256 newSubscriptionId)
+        public
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         if (newSubscriptionId == 0) revert ZeroSubscriptionId();
         vrfSubscriptionId = newSubscriptionId;
         emit VrfSubscriptionIdUpdated(newSubscriptionId);
     }
 
-    function updateVrfKeyHash(bytes32 newKeyHash) public onlyOwner {
+    function updateVrfKeyHash(bytes32 newKeyHash) public onlyRole(DEFAULT_ADMIN_ROLE) {
         vrfKeyHash = newKeyHash;
         emit VrfKeyHashUpdated(newKeyHash);
     }
 
-    function updateCallbackGasLimit(uint32 newLimit) external onlyOwner {
+    function updateCallbackGasLimit(uint32 newLimit) external onlyRole(DEFAULT_ADMIN_ROLE) {
         //TODO: consider case when admin set insufficient gas limit and callback is reverted
         s_callbackGasLimit = newLimit;
         emit CallbackGasLimitUpdated(newLimit);

@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import "../common/RipsStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../common/RipsUtils.sol";
 
-abstract contract RipsReferral is RipsStorage, RipsUtils, Ownable {
+abstract contract RipsReferral is RipsStorage, RipsUtils, AccessControl {
     uint256 public constant MAX_REFERRAL_TIER_COUNT = 10;
 
     uint16 public defaultReferralFee;
@@ -13,7 +13,10 @@ abstract contract RipsReferral is RipsStorage, RipsUtils, Ownable {
     mapping(address referrer => ReferrerStats stats) public referrerToReferrerStats;
     ReferralTier[] public referralTiers;
 
-    function setDefaultReferralFee(uint16 newDefaultReferralFee) external onlyOwner {
+    function setDefaultReferralFee(uint16 newDefaultReferralFee)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         if (newDefaultReferralFee > FEE_BASE) revert FeeTooHigh();
 
         defaultReferralFee = newDefaultReferralFee;
@@ -21,7 +24,10 @@ abstract contract RipsReferral is RipsStorage, RipsUtils, Ownable {
         emit DefaultReferralFeeUpdated(newDefaultReferralFee);
     }
 
-    function setReferrerCustomFee(address referrer, uint16 customFeePercent) external onlyOwner {
+    function setReferrerCustomFee(address referrer, uint16 customFeePercent)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         if (referrer == address(0)) revert ZeroAddress();
         if (customFeePercent > FEE_BASE) revert FeeTooHigh();
 
@@ -30,7 +36,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils, Ownable {
         emit ReferrerCustomFeeSet(referrer, customFeePercent);
     }
 
-    function setReferralTiers(ReferralTier[] calldata tiers) external onlyOwner {
+    function setReferralTiers(ReferralTier[] calldata tiers) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (tiers.length == 0) revert ReferralTiersEmpty();
         if (tiers.length > MAX_REFERRAL_TIER_COUNT) revert ReferralTierCountExceeded();
 
