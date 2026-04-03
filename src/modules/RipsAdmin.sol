@@ -44,12 +44,6 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Ownable, Pausable {
         emit StakeDeleted(stakeId);
     }
 
-    function setFeeRecipient(address newRecipient) public onlyOwner {
-        if (newRecipient == address(0)) revert ZeroAddress();
-        feeRecipient = newRecipient;
-        emit FeeRecipientUpdated(newRecipient);
-    }
-
     function _applyConfig(uint256 stakeId, Config calldata config) internal {
         _validateConfig(config);
 

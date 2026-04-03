@@ -4,7 +4,9 @@ pragma solidity ^0.8.13;
 import "../interfaces/IRips.sol";
 
 abstract contract RipsStorage is IRips {
-    address public feeRecipient;
+    mapping(address currency => uint256 amount) public protocolFeeAccrued;
+    mapping(address referrer => mapping(address currency => uint256 amount)) public
+        referrerFeeAccrued;
 
     uint256 internal _nextStakeId = 1;
     uint256 internal _nextRoundId = 1;

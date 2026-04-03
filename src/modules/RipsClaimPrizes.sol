@@ -59,11 +59,11 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
             uint256 remainingFee = protocolFee - referrerFee;
 
             if (remainingFee > 0) {
-                _transfer(currency, feeRecipient, remainingFee);
+                protocolFeeAccrued[currency] += remainingFee;
             }
 
             if (referrerFee > 0) {
-                _transfer(currency, referrer, referrerFee);
+                referrerFeeAccrued[referrer][currency] += referrerFee;
                 emit ReferralFeePaid(roundId, referrer, referrerFee);
             }
         }

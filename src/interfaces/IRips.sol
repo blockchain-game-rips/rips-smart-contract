@@ -55,6 +55,7 @@ interface IRips {
     error ZeroAddress();
     error EthSentForERC20();
     error FeeTooHigh();
+    error NothingToWithdraw();
     error TicketCapNotPowerOfTwo();
     error InvalidTierCount();
     error InvalidPrizeRange();
@@ -97,6 +98,8 @@ interface IRips {
     );
     event RefundIssued(uint256 indexed roundId, address indexed user, uint256 ticketCount);
     event FeeRecipientUpdated(address newRecipient);
+    event ProtocolFeeWithdrawn(address indexed recipient, address indexed currency, uint256 amount);
+    event ReferrerFeeWithdrawn(address indexed referrer, address indexed currency, uint256 amount);
     event CallbackGasLimitUpdated(uint32 newLimit);
     event VrfSubscriptionIdUpdated(uint256 newSubscriptionId);
     event VrfKeyHashUpdated(bytes32 newKeyHash);
@@ -138,4 +141,8 @@ interface IRips {
     function setDefaultReferralFee(uint16 newDefaultReferralFee) external;
 
     function setReferrerCustomFee(address referrer, uint16 customFeePercent) external;
+
+    function withdrawProtocolFee(address currency) external;
+
+    function withdrawReferrerFee(address referrer, address currency) external;
 }
