@@ -45,14 +45,13 @@ contract Rips_SixteenTiers is RipsTestBase {
             })
         );
 
-        roundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
-
         vm.deal(user, TICKET_CAP * TICKET_COST);
     }
 
     function _buyAllTickets() private {
         vm.prank(user);
         rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP, user);
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
     }
 
     function _finalizeRound() private {
@@ -81,6 +80,7 @@ contract Rips_SixteenTiers is RipsTestBase {
 
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * TICKET_COST}(stakeId, ticketsToBuy, user);
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
 
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 

@@ -13,11 +13,12 @@ contract Rips_Refund is RipsTestBase {
         super.setUp();
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
 
         vm.deal(user, 100 ether);
         vm.prank(user);
         rips.buyTickets{value: TICKETS_BOUGHT * DEFAULT_TICKET_COST}(stakeId, TICKETS_BOUGHT, user);
+
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
     }
 
     function _expectedRefundAmount() private pure returns (uint256) {
@@ -88,7 +89,7 @@ contract Rips_Refund is RipsTestBase {
         rips.refund(roundId, user);
 
         assertEq(user.balance, balanceBefore + _expectedRefundAmount());
-        assertTrue(rips.exposed_hasRefunded(roundId, user));
+        assertTrue(rips.hasRefunded(roundId, user));
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller()
@@ -112,10 +113,11 @@ contract Rips_Refund is RipsTestBase {
         _mintAndApprove(user, TICKETS_BOUGHT * DEFAULT_TICKET_COST);
 
         uint256 erc20StakeId = _createDefaultERC20Stake();
-        roundId = rips.exposedstakeIdToCurrentRoundId(erc20StakeId);
 
         vm.prank(user);
         rips.buyTickets(erc20StakeId, TICKETS_BOUGHT, user);
+
+        roundId = rips.stakeIdToCurrentRoundId(erc20StakeId);
 
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
         _;
@@ -134,7 +136,7 @@ contract Rips_Refund is RipsTestBase {
         rips.refund(roundId, user);
 
         assertEq(erc20.balanceOf(user), balanceBefore + _expectedRefundAmount());
-        assertTrue(rips.exposed_hasRefunded(roundId, user));
+        assertTrue(rips.hasRefunded(roundId, user));
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20()

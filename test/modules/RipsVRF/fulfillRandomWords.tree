@@ -1,4 +1,6 @@
 Rips_FulfillRandomWords
+├── when called by an address that is not the VRF coordinator
+│   └── it should revert with {OnlyCoordinatorCanFulfill}.
 └── when called by the VRF coordinator
     ├── it should derive a coprime value from the random word.
     ├── it should set randomB from the hash of the random word modulo ticket cap.

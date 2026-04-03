@@ -1,3 +1,0 @@
-RipsMath_CalculatePrizeNumber
-├── it result is always between 1 and n inclusive.
-└── it different ticket numbers produce different prize numbers.

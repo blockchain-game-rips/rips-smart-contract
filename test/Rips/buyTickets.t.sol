@@ -12,7 +12,7 @@ contract Rips_BuyTickets is RipsTestBase {
         super.setUp();
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
+        roundId = rips.exposed_nextRoundId(); // round is created lazily on first buyTickets
 
         vm.deal(user, 100 ether);
     }
@@ -52,6 +52,11 @@ contract Rips_BuyTickets is RipsTestBase {
     }
 
     function test_WhenTheActiveRoundHasExpiredAndTheStakeIsNotDeleted() external {
+        // establish round 1
+        vm.prank(user);
+        rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
+
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         uint256 expectedNewRoundId = rips.exposed_nextRoundId();
@@ -62,7 +67,7 @@ contract Rips_BuyTickets is RipsTestBase {
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
 
-        uint256 newRoundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
+        uint256 newRoundId = rips.stakeIdToCurrentRoundId(stakeId);
         assertNotEq(newRoundId, roundId);
     }
 
@@ -156,13 +161,13 @@ contract Rips_BuyTickets is RipsTestBase {
                 feePercent: 0
             })
         );
-        uint256 largeRoundId = rips.exposedstakeIdToCurrentRoundId(largeStakeId);
 
         ticketsToBuy = 1500;
 
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * ticketCost}(largeStakeId, ticketsToBuy, user);
 
+        uint256 largeRoundId = rips.stakeIdToCurrentRoundId(largeStakeId);
         IRips.TicketRange[] memory ranges = rips.getUserTickets(largeRoundId, user);
         assertEq(ranges.length, 2);
         assertEq(ranges[0].count, 1000);
@@ -182,7 +187,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
+        assertEq(uint256(round.status), uint256(IRips.RoundStatus.Active));
     }
 
     function test_GivenTheStakeIsNotDeleted()
@@ -190,12 +195,18 @@ contract Rips_BuyTickets is RipsTestBase {
         givenTheStakeCurrencyIsNative
         whenRequestedTicketsEqualTheRemainingCapacity
     {
+        // fill round 1 completely
+        vm.prank(user);
+        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
+
+        // buying again triggers creation of round 2
         uint256 expectedNewRoundId = rips.exposed_nextRoundId();
 
         vm.prank(user);
-        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
+        rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
 
-        uint256 newActiveRound = rips.exposedstakeIdToCurrentRoundId(stakeId);
+        uint256 newActiveRound = rips.stakeIdToCurrentRoundId(stakeId);
         assertEq(newActiveRound, expectedNewRoundId);
         assertNotEq(newActiveRound, roundId);
     }
@@ -205,14 +216,21 @@ contract Rips_BuyTickets is RipsTestBase {
         givenTheStakeCurrencyIsNative
         whenRequestedTicketsEqualTheRemainingCapacity
     {
+        // fill round 1 completely
+        vm.prank(user);
+        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
+
         vm.prank(owner);
         rips.deleteStake(stakeId);
 
+        // buying again on a sold-out deleted stake should revert — no new round created
         vm.prank(user);
-        rips.buyTickets{value: ticketsToBuy * DEFAULT_TICKET_COST}(stakeId, ticketsToBuy, user);
+        vm.expectRevert(IRips.StakeNotExist.selector);
+        rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);
 
-        uint256 activeRound = rips.exposedstakeIdToCurrentRoundId(stakeId);
-        assertEq(activeRound, 0);
+        // mapping still points to the sold-out round, not a new one
+        assertEq(rips.stakeIdToCurrentRoundId(stakeId), roundId);
     }
 
     function test_WhenRequestedTicketsExceedAvailableTickets()
@@ -238,15 +256,16 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
+        assertEq(uint256(round.status), uint256(IRips.RoundStatus.Active));
 
         assertEq(user.balance, balanceBefore - payment + expectedRefund);
     }
 
     modifier givenTheStakeCurrencyIsAnERC20Token() {
         stakeId = _createDefaultERC20Stake();
-        roundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
         _mintAndApprove(user, 100 ether);
+        // roundId is set after first buyTickets since round is created lazily
+        roundId = rips.exposed_nextRoundId();
         _;
     }
 
@@ -324,13 +343,13 @@ contract Rips_BuyTickets is RipsTestBase {
                 feePercent: 0
             })
         );
-        uint256 largeRoundId = rips.exposedstakeIdToCurrentRoundId(largeStakeId);
 
         ticketsToBuy = 1500;
 
         vm.prank(user);
         rips.buyTickets(largeStakeId, ticketsToBuy, user);
 
+        uint256 largeRoundId = rips.stakeIdToCurrentRoundId(largeStakeId);
         IRips.TicketRange[] memory ranges = rips.getUserTickets(largeRoundId, user);
         assertEq(ranges.length, 2);
         assertEq(ranges[0].count, 1000);
@@ -355,7 +374,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
+        assertEq(uint256(round.status), uint256(IRips.RoundStatus.Active));
     }
 
     function test_WhenRequestedTicketsExceedAvailableTickets_GivenERC20()
@@ -381,6 +400,6 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.SoldOut));
+        assertEq(uint256(round.status), uint256(IRips.RoundStatus.Active));
     }
 }

@@ -206,18 +206,19 @@ contract Rips_CreateStake is RipsTestBase {
         uint256 expectedStakeId = rips.exposed_nextStakeId();
 
         vm.expectEmit();
-        emit IRips.RoundCreated(rips.exposed_nextRoundId(), expectedStakeId);
-
-        vm.expectEmit();
         emit IRips.StakeCreated(expectedStakeId);
 
         uint256 stakeId = rips.createStake(_validConfig());
 
         assertEq(stakeId, expectedStakeId);
         assertEq(rips.exposed_nextStakeId(), expectedStakeId + 1);
-        assertEq(rips.exposed_config(stakeId).ticketCap, DEFAULT_TICKET_CAP);
-        assertEq(rips.exposed_config(stakeId).ticketCost, DEFAULT_TICKET_COST);
-        assertEq(rips.exposed_config(stakeId).feePercent, DEFAULT_FEE_PERCENT);
-        assertNotEq(rips.exposedstakeIdToCurrentRoundId(stakeId), 0);
+
+        uint256 configId = rips.stakeIdToCurrentConfigId(stakeId);
+        assertNotEq(configId, 0);
+
+        IRips.Config memory config = rips.exposed_config(configId);
+        assertEq(config.ticketCap, DEFAULT_TICKET_CAP);
+        assertEq(config.ticketCost, DEFAULT_TICKET_COST);
+        assertEq(config.feePercent, DEFAULT_FEE_PERCENT);
     }
 }

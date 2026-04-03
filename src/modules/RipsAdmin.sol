@@ -25,7 +25,7 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
 
     function updateStake(uint256 stakeId, Config calldata config) external onlyOwner {
         if (isStakeDeleted[stakeId]) revert StakeNotExist();
-        if (stakeIdToCurrentRoundId[stakeId] == 0) revert StakeNotExist();
+        if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
 
         _applyConfig(stakeId, config);
 

@@ -16,13 +16,14 @@ contract Rips_ClaimPrizes is RipsTestBase {
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
 
         vm.deal(user, 100 ether);
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
             stakeId, DEFAULT_TICKET_CAP, user
         );
+
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
     }
 
     function _finalizeRound() private {
@@ -156,13 +157,12 @@ contract Rips_ClaimPrizes is RipsTestBase {
             })
         );
 
-        zeroFeeRoundId = rips.exposedstakeIdToCurrentRoundId(zeroFeeStakeId);
-
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
             zeroFeeStakeId, DEFAULT_TICKET_CAP, user
         );
 
+        zeroFeeRoundId = rips.stakeIdToCurrentRoundId(zeroFeeStakeId);
         uint256 vrfRequestId = rips.requestRandomness(zeroFeeRoundId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
@@ -211,11 +211,11 @@ contract Rips_ClaimPrizes is RipsTestBase {
         _mintAndApprove(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
 
         uint256 erc20StakeId = _createDefaultERC20Stake();
-        roundId = rips.exposedstakeIdToCurrentRoundId(erc20StakeId);
 
         vm.prank(user);
         rips.buyTickets(erc20StakeId, DEFAULT_TICKET_CAP, user);
 
+        roundId = rips.stakeIdToCurrentRoundId(erc20StakeId);
         uint256 vrfRequestId = rips.requestRandomness(roundId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
         _;
@@ -243,11 +243,10 @@ contract Rips_ClaimPrizes is RipsTestBase {
             })
         );
 
-        uint256 zeroFeeRoundId = rips.exposedstakeIdToCurrentRoundId(zeroFeeStakeId);
-
         vm.prank(user);
         rips.buyTickets(zeroFeeStakeId, DEFAULT_TICKET_CAP, user);
 
+        uint256 zeroFeeRoundId = rips.stakeIdToCurrentRoundId(zeroFeeStakeId);
         uint256 vrfRequestId = rips.requestRandomness(zeroFeeRoundId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 

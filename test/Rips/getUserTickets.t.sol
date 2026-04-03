@@ -11,11 +11,12 @@ contract Rips_GetUserTickets is RipsTestBase {
         super.setUp();
 
         stakeId = _createDefaultStake();
-        roundId = rips.exposedstakeIdToCurrentRoundId(stakeId);
     }
 
-    function test_WhenTheUserHasNoTicketsInTheRound() external view {
-        IRips.TicketRange[] memory ranges = rips.getUserTickets(roundId, user);
+    function test_WhenTheUserHasNoTicketsInTheRound() external {
+        // round doesn't exist yet — no tickets bought — empty array expected
+        uint256 nextRoundId = rips.exposed_nextRoundId();
+        IRips.TicketRange[] memory ranges = rips.getUserTickets(nextRoundId, user);
         assertEq(ranges.length, 0);
     }
 
@@ -26,6 +27,7 @@ contract Rips_GetUserTickets is RipsTestBase {
         vm.prank(user);
         rips.buyTickets{value: ticketCount * DEFAULT_TICKET_COST}(stakeId, ticketCount, user);
 
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
         IRips.TicketRange[] memory ranges = rips.getUserTickets(roundId, user);
         assertEq(ranges.length, 1);
         assertEq(ranges[0].start, 0);

@@ -25,6 +25,7 @@ contract Rips_RequestRandomness is RipsTestBase {
 
     uint256 private stakeId;
     uint256 private soldOutRoundId;
+    uint256 private activeRoundId;
 
     function setUp() public override {
         super.setUp();
@@ -36,7 +37,7 @@ contract Rips_RequestRandomness is RipsTestBase {
             maxPrize: uint128(TICKET_COST)
         });
 
-        vm.prank(owner);
+        vm.startPrank(owner);
         stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
@@ -47,22 +48,61 @@ contract Rips_RequestRandomness is RipsTestBase {
                 feePercent: 0
             })
         );
-
-        soldOutRoundId = 1;
+        vm.stopPrank();
 
         vm.deal(user, TICKET_CAP * TICKET_COST);
         vm.prank(user);
         rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP, user);
+
+        soldOutRoundId = rips.stakeIdToCurrentRoundId(stakeId);
+
+        // create a second stake and buy one ticket to initialize the round (but not sell out)
+        vm.prank(owner);
+        uint256 stakeId2 = rips.createStake(
+            IRips.Config({
+                currency: address(0),
+                prizeDistribution: tiers,
+                ticketCap: TICKET_CAP,
+                duration: 1 days,
+                ticketCost: TICKET_COST,
+                feePercent: 0
+            })
+        );
+        vm.deal(user, TICKET_COST);
+        vm.prank(user);
+        rips.buyTickets{value: TICKET_COST}(stakeId2, 1, user);
+        activeRoundId = rips.stakeIdToCurrentRoundId(stakeId2);
+    }
+
+    function test_RevertWhen_TheRoundDoesNotExist() external {
+        uint256 nonExistentRoundId = 999;
+        vm.expectRevert(IRips.RoundNotExist.selector);
+        rips.requestRandomness(nonExistentRoundId);
+    }
+
+    function test_RevertWhen_TheRoundStatusIsNotActive() external {
+        // request once to move status to VRFRequested
+        vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
+        rips.requestRandomness(soldOutRoundId);
+
+        vm.expectRevert(IRips.VrfAlreadyRequested.selector);
+        rips.requestRandomness(soldOutRoundId);
     }
 
     function test_RevertWhen_TheRoundIsNotSoldOut() external {
-        uint256 activeRoundId = 2;
-
         vm.expectRevert(IRips.RoundNotSoldOut.selector);
         rips.requestRandomness(activeRoundId);
     }
 
-    function test_WhenTheRoundIsSoldOut() external {
+    modifier whenTheRoundExistsIsActiveAndIsSoldOut() {
+        vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
+        _;
+    }
+
+    function test_WhenTheRoundExistsIsActiveAndIsSoldOut()
+        external
+        whenTheRoundExistsIsActiveAndIsSoldOut
+    {
         vm.expectEmit(true, true, true, false, address(vrfCoordinator));
         emit RandomWordsRequested(
             VRF_KEY_HASH,
@@ -76,8 +116,14 @@ contract Rips_RequestRandomness is RipsTestBase {
             address(rips)
         );
 
+        vm.expectEmit();
+        emit RandomnessRequested(soldOutRoundId, EXPECTED_FIRST_REQUEST_ID);
+
         uint256 requestId = rips.requestRandomness(soldOutRoundId);
 
         assertEq(requestId, EXPECTED_FIRST_REQUEST_ID);
+
+        IRips.Round memory round = rips.exposed_round(soldOutRoundId);
+        assertEq(uint8(round.status), uint8(IRips.RoundStatus.VRFRequested));
     }
 }

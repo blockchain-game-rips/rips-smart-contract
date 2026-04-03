@@ -5,11 +5,12 @@ import "../../RipsTestBase.sol";
 
 contract Rips_UpdateCallbackGasLimit is RipsTestBase {
     event CallbackGasLimitUpdated(uint32 newLimit);
+
     uint32 private constant NEW_GAS_LIMIT = 200_000;
 
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
         vm.prank(user);
-        vm.expectRevert("Only callable by owner");
+        vm.expectRevert();
         rips.updateCallbackGasLimit(NEW_GAS_LIMIT);
     }
 

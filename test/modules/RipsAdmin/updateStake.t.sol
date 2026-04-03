@@ -190,15 +190,14 @@ contract Rips_UpdateStake is RipsTestBase {
 
         rips.updateStake(stakeId, config);
 
-        assertTrue(rips.exposed_hasPendingConfig(stakeId));
-
-        IRips.Config memory pending = rips.exposed_pendingConfig(stakeId);
-        assertEq(pending.ticketCap, config.ticketCap);
-        assertEq(pending.ticketCost, config.ticketCost);
-        assertEq(pending.currency, config.currency);
-        assertEq(pending.duration, config.duration);
-        assertEq(pending.prizeDistribution.length, config.prizeDistribution.length);
-        assertEq(pending.feePercent, config.feePercent);
+        uint256 configId = rips.stakeIdToCurrentConfigId(stakeId);
+        IRips.Config memory stored = rips.exposed_config(configId);
+        assertEq(stored.ticketCap, config.ticketCap);
+        assertEq(stored.ticketCost, config.ticketCost);
+        assertEq(stored.currency, config.currency);
+        assertEq(stored.duration, config.duration);
+        assertEq(stored.prizeDistribution.length, config.prizeDistribution.length);
+        assertEq(stored.feePercent, config.feePercent);
     }
 
     function test_WhenTheNextRoundIsCreatedAfterAnUpdate() external whenTheCallerIsTheOwner {
@@ -218,12 +217,11 @@ contract Rips_UpdateStake is RipsTestBase {
         vm.prank(user);
         rips.buyTickets{value: newTicketCost}(stakeId, 1, user);
 
-        IRips.Config memory active = rips.exposed_config(stakeId);
+        uint256 configId = rips.stakeIdToCurrentConfigId(stakeId);
+        IRips.Config memory active = rips.exposed_config(configId);
         assertEq(active.ticketCap, config.ticketCap);
         assertEq(active.ticketCost, config.ticketCost);
         assertEq(active.currency, config.currency);
         assertEq(active.duration, config.duration);
-
-        assertFalse(rips.exposed_hasPendingConfig(stakeId));
     }
 }

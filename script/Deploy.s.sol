@@ -52,7 +52,7 @@ contract Deploy is Script {
         tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.002 ether, maxPrize: 0.002 ether});
 
         stakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: 8,
@@ -74,7 +74,7 @@ contract Deploy is Script {
         tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.004 ether, maxPrize: 0.004 ether});
 
         stakeId = rips.createStake(
-            IRips.StakeConfig({
+            IRips.Config({
                 currency: address(0),
                 prizeDistribution: tiers,
                 ticketCap: 8,

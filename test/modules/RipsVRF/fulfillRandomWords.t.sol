@@ -2,7 +2,8 @@
 pragma solidity ^0.8.13;
 
 import "../../RipsTestBase.sol";
-import "../../../src/modules/RipsMath.sol";
+import "../../../src/libraries/RipsMath.sol";
+import "../../../src/modules/RipsVrf.sol";
 
 contract Rips_FulfillRandomWords is RipsTestBase {
     event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
@@ -38,13 +39,25 @@ contract Rips_FulfillRandomWords is RipsTestBase {
             })
         );
 
-        roundId = 1;
-
         vm.deal(user, TICKET_CAP * TICKET_COST);
         vm.prank(user);
         rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP, user);
 
+        roundId = rips.stakeIdToCurrentRoundId(stakeId);
         vrfRequestId = rips.requestRandomness(roundId);
+    }
+
+    function test_RevertWhen_CalledByAnAddressThatIsNotTheVRFCoordinator() external {
+        uint256[] memory randomWords = new uint256[](1);
+        randomWords[0] = 12345;
+
+        vm.prank(user);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                RipsVrf.OnlyCoordinatorCanFulfill.selector, user, address(vrfCoordinator)
+            )
+        );
+        rips.rawFulfillRandomWords(vrfRequestId, randomWords);
     }
 
     function test_WhenCalledByTheVRFCoordinator() external {
@@ -56,5 +69,10 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         emit RoundFinalized(roundId, expectedA, expectedB);
 
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
+
+        IRips.Round memory round = rips.exposed_round(roundId);
+        assertEq(round.randomA, expectedA);
+        assertEq(round.randomB, expectedB);
+        assertEq(uint8(round.status), uint8(IRips.RoundStatus.Finalized));
     }
 }
