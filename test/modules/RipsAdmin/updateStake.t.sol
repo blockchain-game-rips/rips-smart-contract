@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "../../RipsTestBase.sol";
+import "./StakeValidationSetup.sol";
 
-contract Rips_UpdateStake is RipsTestBase {
+contract Rips_UpdateStake is StakeValidationSetup {
     uint256 private stakeId;
 
     function setUp() public override {
@@ -37,7 +37,7 @@ contract Rips_UpdateStake is RipsTestBase {
         // it should revert.
         vm.prank(user);
         vm.expectRevert();
-        rips.updateStake(stakeId, _updatedConfig());
+        rips.updateStake(stakeId, validConfig());
     }
 
     modifier whenTheCallerIsTheOwner() {
@@ -48,10 +48,8 @@ contract Rips_UpdateStake is RipsTestBase {
 
     function test_RevertWhen_TheStakeDoesNotExist() external whenTheCallerIsTheOwner {
         // it should revert.
-        uint256 nonExistentStakeId = 999;
-
         vm.expectRevert(IRips.StakeNotExist.selector);
-        rips.updateStake(nonExistentStakeId, _updatedConfig());
+        rips.updateStake(999, validConfig());
     }
 
     function test_RevertWhen_TheStakeIsDeleted() external whenTheCallerIsTheOwner {
@@ -59,48 +57,19 @@ contract Rips_UpdateStake is RipsTestBase {
         rips.deleteStake(stakeId);
 
         vm.expectRevert(IRips.StakeNotExist.selector);
-        rips.updateStake(stakeId, _updatedConfig());
+        rips.updateStake(stakeId, validConfig());
     }
 
     function test_RevertWhen_TicketCapIsNotAPowerOfTwo() external whenTheCallerIsTheOwner {
         // it should revert.
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: 3,
-            minPrize: uint128(DEFAULT_TICKET_COST),
-            maxPrize: uint128(DEFAULT_TICKET_COST)
-        });
-
         vm.expectRevert(IRips.TicketCapNotPowerOfTwo.selector);
-        rips.updateStake(
-            stakeId,
-            IRips.Config({
-                currency: address(0),
-                prizeDistribution: tiers,
-                ticketCap: 3,
-                duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
-                feePercent: DEFAULT_FEE_PERCENT
-            })
-        );
+        rips.updateStake(stakeId, configWithNonPowerOfTwoTicketCap());
     }
 
     function test_RevertWhen_PrizeDistributionIsEmpty() external whenTheCallerIsTheOwner {
         // it should revert.
-        IRips.PrizeTier[] memory emptyTiers = new IRips.PrizeTier[](0);
-
         vm.expectRevert(IRips.EmptyPrizeDistribution.selector);
-        rips.updateStake(
-            stakeId,
-            IRips.Config({
-                currency: address(0),
-                prizeDistribution: emptyTiers,
-                ticketCap: DEFAULT_TICKET_CAP,
-                duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
-                feePercent: DEFAULT_FEE_PERCENT
-            })
-        );
+        rips.updateStake(stakeId, configWithEmptyPrizeDistribution());
     }
 
     function test_RevertWhen_ATierHasMinPrizeGreaterThanMaxPrize()
@@ -108,23 +77,8 @@ contract Rips_UpdateStake is RipsTestBase {
         whenTheCallerIsTheOwner
     {
         // it should revert.
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP), minPrize: 2 ether, maxPrize: 1 ether
-        });
-
         vm.expectRevert(IRips.InvalidPrizeRange.selector);
-        rips.updateStake(
-            stakeId,
-            IRips.Config({
-                currency: address(0),
-                prizeDistribution: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
-                duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
-                feePercent: DEFAULT_FEE_PERCENT
-            })
-        );
+        rips.updateStake(stakeId, configWithMinPrizeGreaterThanMaxPrize());
     }
 
     function test_RevertWhen_TotalPrizeCountDoesNotEqualTicketCap()
@@ -132,25 +86,8 @@ contract Rips_UpdateStake is RipsTestBase {
         whenTheCallerIsTheOwner
     {
         // it should revert.
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP - 1),
-            minPrize: uint128(DEFAULT_TICKET_COST),
-            maxPrize: uint128(DEFAULT_TICKET_COST)
-        });
-
         vm.expectRevert(IRips.PrizeCountMismatch.selector);
-        rips.updateStake(
-            stakeId,
-            IRips.Config({
-                currency: address(0),
-                prizeDistribution: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
-                duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
-                feePercent: DEFAULT_FEE_PERCENT
-            })
-        );
+        rips.updateStake(stakeId, configWithPrizeCountMismatch());
     }
 
     function test_RevertWhen_TotalPrizePoolDoesNotEqualTicketCapTimesTicketCost()
@@ -158,34 +95,14 @@ contract Rips_UpdateStake is RipsTestBase {
         whenTheCallerIsTheOwner
     {
         // it should revert.
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(DEFAULT_TICKET_COST + 1),
-            maxPrize: uint128(DEFAULT_TICKET_COST + 1)
-        });
-
         vm.expectRevert(IRips.PrizePoolMismatch.selector);
-        rips.updateStake(
-            stakeId,
-            IRips.Config({
-                currency: address(0),
-                prizeDistribution: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
-                duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
-                feePercent: DEFAULT_FEE_PERCENT
-            })
-        );
+        rips.updateStake(stakeId, configWithPrizePoolMismatch());
     }
 
     function test_RevertWhen_FeePercentExceeds10000() external whenTheCallerIsTheOwner {
         // it should revert.
-        IRips.Config memory config = _updatedConfig();
-        config.feePercent = 10001;
-
         vm.expectRevert(IRips.FeeTooHigh.selector);
-        rips.updateStake(stakeId, config);
+        rips.updateStake(stakeId, configWithFeeTooHigh());
     }
 
     function test_WhenTheConfigIsValid() external whenTheCallerIsTheOwner {
@@ -218,11 +135,9 @@ contract Rips_UpdateStake is RipsTestBase {
 
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
-        uint256 newTicketCost = config.ticketCost;
-
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.buyTickets{value: newTicketCost}(stakeId, 1, user);
+        rips.buyTickets{value: config.ticketCost}(stakeId, 1, user);
 
         uint256 configId = rips.stakeIdToCurrentConfigId(stakeId);
         IRips.Config memory active = rips.exposed_config(configId);

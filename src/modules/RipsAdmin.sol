@@ -65,7 +65,9 @@ abstract contract RipsAdmin is RipsStorage, Ownable, Pausable {
 
         for (uint256 i = 0; i < config.prizeDistribution.length; i++) {
             PrizeTier calldata tier = config.prizeDistribution[i];
+
             if (tier.minPrize > tier.maxPrize) revert InvalidPrizeRange();
+
             totalPrizeCount += tier.prizeCount;
             totalPrizePool += (uint256(tier.prizeCount)
                     * (uint256(tier.minPrize) + uint256(tier.maxPrize))) / 2;
