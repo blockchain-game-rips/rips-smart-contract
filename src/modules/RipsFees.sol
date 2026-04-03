@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 abstract contract RipsFees is RipsUtils, Ownable {
     address public feeRecipient;
 
+    mapping(address referrer => bool frozen) public isReferrerFrozen;
+
     constructor(address initialFeeRecipient) {
         setFeeRecipient(initialFeeRecipient);
     }
@@ -30,8 +32,17 @@ abstract contract RipsFees is RipsUtils, Ownable {
         emit ProtocolFeeWithdrawn(feeRecipient, currency, amount);
     }
 
+    function setReferrerFrozen(address referrer, bool frozen) external onlyOwner {
+        if (referrer == address(0)) revert ZeroAddress();
+
+        isReferrerFrozen[referrer] = frozen;
+
+        emit ReferrerFreezeUpdated(referrer, frozen);
+    }
+
     function withdrawReferrerFee(address referrer, address currency) external {
         if (referrer == address(0)) revert ZeroAddress();
+        if (isReferrerFrozen[referrer]) revert ReferrerFrozen();
 
         uint256 amount = referrerFeeAccrued[referrer][currency];
         if (amount == 0) revert NothingToWithdraw();

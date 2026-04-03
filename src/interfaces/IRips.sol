@@ -56,6 +56,7 @@ interface IRips {
     error EthSentForERC20();
     error FeeTooHigh();
     error NothingToWithdraw();
+    error ReferrerFrozen();
     error TicketCapNotPowerOfTwo();
     error InvalidTierCount();
     error InvalidPrizeRange();
@@ -100,6 +101,7 @@ interface IRips {
     event FeeRecipientUpdated(address newRecipient);
     event ProtocolFeeWithdrawn(address indexed recipient, address indexed currency, uint256 amount);
     event ReferrerFeeWithdrawn(address indexed referrer, address indexed currency, uint256 amount);
+    event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
     event CallbackGasLimitUpdated(uint32 newLimit);
     event VrfSubscriptionIdUpdated(uint256 newSubscriptionId);
     event VrfKeyHashUpdated(bytes32 newKeyHash);
@@ -145,4 +147,6 @@ interface IRips {
     function withdrawProtocolFee(address currency) external;
 
     function withdrawReferrerFee(address referrer, address currency) external;
+
+    function setReferrerFrozen(address referrer, bool frozen) external;
 }
