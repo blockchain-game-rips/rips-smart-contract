@@ -116,21 +116,21 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         _setDefaultFee(DEFAULT_FEE);
         _setTiers();
 
-        // cross tier threshold in month 1
-        uint256 volumeAboveTier = uint256(TIER_LOW_MIN_VOLUME) + 1 ether;
-        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
+        // cross high tier threshold in month 1 (TIER_HIGH_FEE 10% > DEFAULT_FEE 5%)
+        uint256 volumeAboveHighTier = uint256(TIER_HIGH_MIN_VOLUME) + 1 ether;
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveHighTier);
 
         _advanceToNextMonth();
 
-        // month 2: previous month volume unlocks tier fee
-        uint256 expectedFee = (PROTOCOL_FEE * TIER_LOW_FEE) / rips.FEE_BASE();
+        // month 2: previous month volume unlocks high tier fee
+        uint256 expectedFee = (PROTOCOL_FEE * TIER_HIGH_FEE) / rips.FEE_BASE();
 
         uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
         assertEq(fee, expectedFee);
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
-        assertEq(stats.activeFeePercent, TIER_LOW_FEE);
+        assertEq(stats.activeFeePercent, TIER_HIGH_FEE);
     }
 
     function test_WhenActiveFeePercentIsBelowDefaultFeePercent() external {

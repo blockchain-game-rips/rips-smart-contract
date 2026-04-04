@@ -79,13 +79,13 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         uint32 currentMonth = uint32(block.timestamp / 30 days);
 
         if (referrerStats.currentMonth < currentMonth) {
-            uint128 volumeInPrevMonth = referrerStats.currentMonth;
+            bool isConsecutiveMonth = referrerStats.currentMonth + 1 == currentMonth;
+            uint128 volumeInPrevMonth = isConsecutiveMonth ? referrerStats.currMonthVolume : 0;
 
             referrerStats.activeFeePercent = _resolveTierFeePercent(volumeInPrevMonth);
             referrerStats.currMonthVolume = uint128(ticketRevenue);
             referrerStats.currentMonth = currentMonth;
-        }
-        {
+        } else {
             referrerStats.currMonthVolume += uint128(ticketRevenue);
         }
     }
