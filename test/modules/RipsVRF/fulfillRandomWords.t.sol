@@ -47,6 +47,8 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         vrfRequestId = rips.requestRandomness(roundId);
     }
 
+    uint256 private constant VRF_EXPIRY = 7 weeks;
+
     function test_RevertWhen_CalledByAnAddressThatIsNotTheVRFCoordinator() external {
         uint256[] memory randomWords = new uint256[](1);
         randomWords[0] = 12345;
@@ -57,6 +59,38 @@ contract Rips_FulfillRandomWords is RipsTestBase {
                 RipsVrf.OnlyCoordinatorCanFulfill.selector, user, address(vrfCoordinator)
             )
         );
+        rips.rawFulfillRandomWords(vrfRequestId, randomWords);
+    }
+
+    function test_RevertWhen_TheRequestIdDoesNotMapToARound() external {
+        uint256 unknownRequestId = 999;
+        uint256[] memory randomWords = new uint256[](1);
+        randomWords[0] = 12345;
+
+        vm.prank(address(vrfCoordinator));
+        vm.expectRevert(IRips.RoundNotExist.selector);
+        rips.rawFulfillRandomWords(unknownRequestId, randomWords);
+    }
+
+    function test_RevertWhen_TheRoundStatusIsNotVRFRequested() external {
+        vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
+
+        uint256[] memory randomWords = new uint256[](1);
+        randomWords[0] = 12345;
+
+        vm.prank(address(vrfCoordinator));
+        vm.expectRevert(IRips.InvalidRoundStatus.selector);
+        rips.rawFulfillRandomWords(vrfRequestId, randomWords);
+    }
+
+    function test_RevertWhen_TheVRFRequestIsExpired() external {
+        vm.warp(block.timestamp + VRF_EXPIRY + 1);
+
+        uint256[] memory randomWords = new uint256[](1);
+        randomWords[0] = 12345;
+
+        vm.prank(address(vrfCoordinator));
+        vm.expectRevert(IRips.RoundExpired.selector);
         rips.rawFulfillRandomWords(vrfRequestId, randomWords);
     }
 

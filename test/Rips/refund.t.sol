@@ -39,7 +39,27 @@ contract Rips_Refund is RipsTestBase {
         rips.refund(roundId, address(0));
     }
 
-    function test_RevertWhen_TheRoundIsNotExpired() external {
+    uint256 private constant VRF_EXPIRY = 7 weeks;
+
+    function test_RevertWhen_TheRoundIsNotSoldOutButHasNotPassedItsDuration() external {
+        vm.prank(user);
+        vm.expectRevert(IRips.RoundNotExpired.selector);
+        rips.refund(roundId, user);
+    }
+
+    function test_RevertWhen_TheRoundIsSoldOutAndTheVRFRequestHasNotExpired() external {
+        vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
+
+        vm.deal(user, (DEFAULT_TICKET_CAP - TICKETS_BOUGHT) * DEFAULT_TICKET_COST);
+        vm.prank(user);
+        rips.buyTickets{value: (DEFAULT_TICKET_CAP - TICKETS_BOUGHT) * DEFAULT_TICKET_COST}(
+            stakeId, DEFAULT_TICKET_CAP - TICKETS_BOUGHT, user
+        );
+
+        rips.requestRandomness(roundId);
+
+        vm.warp(block.timestamp + VRF_EXPIRY - 1);
+
         vm.prank(user);
         vm.expectRevert(IRips.RoundNotExpired.selector);
         rips.refund(roundId, user);

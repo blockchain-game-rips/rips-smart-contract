@@ -125,5 +125,7 @@ contract Rips_RequestRandomness is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(soldOutRoundId);
         assertEq(uint8(round.status), uint8(IRips.RoundStatus.VRFRequested));
+
+        assertEq(rips.exposed_requestTimestamp(soldOutRoundId), block.timestamp);
     }
 }

@@ -40,6 +40,10 @@ contract RipsHarness is Rips {
         return _collectReferrerFee(referrer, protocolFee, ticketRevenue);
     }
 
+    function exposed_requestTimestamp(uint256 roundId) external view returns (uint256) {
+        return _roundIdToRequestTimestamp[roundId];
+    }
+
     function exposed_nextStakeId() external view returns (uint256) {
         return _nextStakeId;
     }
