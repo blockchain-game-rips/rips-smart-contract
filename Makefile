@@ -1,15 +1,15 @@
 .PHONY: check fix scaffold local
 
-TREE_PATH ?= test/**/*.tree
+P ?= test/**/*.tree
 
 check:
-	bulloak check $(TREE_PATH)
+	bulloak check $(P)
 
 fix:
-	bulloak check --fix $(TREE_PATH) && forge fmt
+	bulloak check --fix $(P) && forge fmt
 
 scaffold:
-	bulloak scaffold -w $(TREE_PATH) && forge fmt
+	bulloak scaffold -w $(P) && forge fmt
 
 local:
 	sh local/setup.sh
