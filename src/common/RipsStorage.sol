@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import "../interfaces/IRips.sol";
 
 abstract contract RipsStorage is IRips {
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+
     mapping(address currency => uint256 amount) public protocolFeeAccrued;
     mapping(address referrer => mapping(address currency => uint256 amount)) public
         referrerFeeAccrued;

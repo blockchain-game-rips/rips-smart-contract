@@ -51,7 +51,7 @@ contract Rips_WithdrawProtocolFee is RipsTestBase {
         return DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST * FEE_PERCENT / 10_000;
     }
 
-    function test_RevertWhen_TheCallerIsNotTheOwner() external {
+    function test_RevertWhen_TheCallerHasNeitherAdminNorOperatorRole() external {
         // it should revert.
         vm.prank(user);
         vm.expectRevert();
@@ -75,6 +75,22 @@ contract Rips_WithdrawProtocolFee is RipsTestBase {
         emit IRips.ProtocolFeeWithdrawn(owner, address(0), _protocolFee());
 
         vm.prank(owner);
+        rips.withdrawProtocolFee(address(0));
+
+        assertEq(rips.protocolFeeAccrued(address(0)), 0);
+        assertEq(owner.balance, feeRecipientBalanceBefore + _protocolFee());
+    }
+
+    function test_WhenTheCallerHasOperatorRole() external {
+        // when the caller has operator role
+        // it should succeed.
+        vm.startPrank(owner);
+        rips.grantRole(rips.OPERATOR_ROLE(), operator);
+        vm.stopPrank();
+
+        uint256 feeRecipientBalanceBefore = owner.balance;
+
+        vm.prank(operator);
         rips.withdrawProtocolFee(address(0));
 
         assertEq(rips.protocolFeeAccrued(address(0)), 0);

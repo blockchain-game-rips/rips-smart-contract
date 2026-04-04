@@ -22,9 +22,9 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         address referrer
     ) external {
         if (recipient == address(0)) revert ZeroAddress();
-        if (msg.sender != recipient && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
-            revert NotRecipientOrOwner();
-        }
+        bool isPrivileged =
+            hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(OPERATOR_ROLE, msg.sender);
+        if (msg.sender != recipient && !isPrivileged) revert NotRecipientOrOwner();
 
         Round storage round = roundIdToRound[roundId];
         if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();

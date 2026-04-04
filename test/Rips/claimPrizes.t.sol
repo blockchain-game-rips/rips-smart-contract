@@ -144,7 +144,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         assertEq(user.balance, balanceBefore + _totalPrize());
     }
 
-    function test_RevertWhen_CallerIsNotTheRecipientAndNotTheOwner()
+    function test_RevertWhen_CallerIsNotTheRecipientAndHasNeitherAdminNorOperatorRole()
         external
         whenThereAreUnclaimedRanges
     {
@@ -155,7 +155,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
     }
 
-    function test_WhenCallerIsTheOwnerAndRecipientIsADifferentAddress()
+    function test_WhenCallerHasAdminRoleAndRecipientIsADifferentAddress()
         external
         whenThereAreUnclaimedRanges
     {
@@ -167,6 +167,25 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         assertEq(user.balance, recipientBalanceBefore + _totalPrize());
         assertEq(owner.balance, ownerBalanceBefore);
+    }
+
+    function test_WhenCallerHasOperatorRoleAndRecipientIsADifferentAddress()
+        external
+        whenThereAreUnclaimedRanges
+    {
+        vm.startPrank(owner);
+        rips.grantRole(rips.OPERATOR_ROLE(), operator);
+        vm.stopPrank();
+
+        uint256 recipientBalanceBefore = user.balance;
+        uint256 operatorBalanceBefore = operator.balance;
+
+        vm.prank(operator);
+        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+
+        assertEq(user.balance, recipientBalanceBefore + _totalPrize());
+        //TODO: unnecessary assert, check Rips smart contract balance
+        assertEq(operator.balance, operatorBalanceBefore);
     }
 
     modifier givenTheStakeCurrencyIsNative() {

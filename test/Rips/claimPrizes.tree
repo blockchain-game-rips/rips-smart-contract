@@ -3,7 +3,7 @@ Rips_ClaimPrizes
 │   └── it should revert.
 ├── when recipient is zero address
 │   └── it should revert.
-├── when caller is not the recipient and not the owner
+├── when caller is not the recipient and has neither admin nor operator role
 │   └── it should revert.
 ├── when start index is out of bounds
 │   └── it should revert.
@@ -12,8 +12,10 @@ Rips_ClaimPrizes
 └── when there are unclaimed ranges
     ├── it should mark processed ranges as claimed.
     ├── it should calculate correct prizes using the affine permutation.
-    ├── when caller is the owner and recipient is a different address
+    ├── when caller has admin role and recipient is a different address
     │   └── it should transfer the prize to the recipient.
+    └── when caller has operator role and recipient is a different address
+        └── it should transfer the prize to the recipient.
     ├── given the stake currency is native
     │   ├── when protocol fee is zero
     │   │   ├── it should transfer the full ETH prize to the recipient.

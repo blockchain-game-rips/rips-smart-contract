@@ -26,6 +26,9 @@ abstract contract RipsFees is RipsUtils, AccessControl {
     }
 
     function withdrawProtocolFee(address currency) external {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender) && !hasRole(OPERATOR_ROLE, msg.sender)) {
+            revert AccessControlUnauthorizedAccount(msg.sender, OPERATOR_ROLE);
+        }
         uint256 amount = protocolFeeAccrued[currency];
         if (amount == 0) revert NothingToWithdraw();
 
