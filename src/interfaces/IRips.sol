@@ -68,6 +68,8 @@ interface IRips {
     error IncorrectPayment();
     error RoundNotSoldOut();
     error RoundNotFinalized();
+    error InvalidRoundStatus();
+    error RoundExpired();
     error InvalidStartIndex();
     error TransferFailed();
     error RoundNotExpired();

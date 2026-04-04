@@ -9,6 +9,7 @@ import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 //TODO: refund if too much time has passed since vrf requested
 abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
+    //TODO: move error to interface
     error OnlyCoordinatorCanFulfill(address have, address want);
 
     uint32 public constant VRF_NUM_WORDS = 1;
@@ -97,6 +98,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
 
         round.status = RoundStatus.VRFRequested;
         _vrfRequestToRound[requestId] = roundId;
+        _roundIdToRequestTimestamp[roundId] = block.timestamp;
 
         emit RandomnessRequested(roundId, requestId);
     }
@@ -109,9 +111,17 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         fulfillRandomWords(requestId, randomWords);
     }
 
+    //TODO: add validation tests
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal {
         uint256 roundId = _vrfRequestToRound[requestId];
+
+        if (roundId == 0) revert RoundNotExist();
+
         Round storage round = roundIdToRound[roundId];
+
+        if (round.status != RoundStatus.VRFRequested) revert InvalidRoundStatus();
+        if (_isVrfRequestExpired(roundId)) revert RoundExpired();
+
         Config storage config = configIdToConfig[round.configId];
 
         uint64 n = config.ticketCap;

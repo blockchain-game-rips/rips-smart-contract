@@ -27,4 +27,6 @@ abstract contract RipsStorage is IRips {
         _userTickets;
     mapping(uint256 roundId => mapping(address buyer => uint256 ticketCount)) internal
         _userTicketCount;
+
+    mapping(uint256 roundId => uint256 requestTimestamp) internal _roundIdToRequestTimestamp;
 }

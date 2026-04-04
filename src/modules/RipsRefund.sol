@@ -14,7 +14,7 @@ abstract contract RipsRefund is RipsUtils {
 
         Config storage config = configIdToConfig[round.configId];
 
-        if (!_isExpired(round, config) && !_isSoldOut(round, config)) revert RoundNotExpired();
+        if (!_isRoundExpired(roundId, round, config)) revert RoundNotExpired();
         if (hasRefunded[roundId][recipient]) revert AlreadyRefunded();
 
         uint256 ticketCount = _userTicketCount[roundId][recipient];
@@ -24,5 +24,17 @@ abstract contract RipsRefund is RipsUtils {
         _transfer(config.currency, recipient, ticketCount * config.ticketCost);
 
         emit RefundIssued(roundId, recipient, ticketCount);
+    }
+
+    function _isRoundExpired(uint256 roundId, Round storage round, Config storage config)
+        internal
+        view
+        returns (bool)
+    {
+        if (_isExpired(round, config) && !_isSoldOut(round, config)) return true;
+
+        if (_isVrfRequestExpired(roundId) && round.status == RoundStatus.VRFRequested) return true;
+
+        return false;
     }
 }

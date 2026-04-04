@@ -40,4 +40,16 @@ abstract contract RipsUtils is RipsStorage, AccessControl {
     function _isPrivileged(address account) internal view returns (bool) {
         return hasRole(DEFAULT_ADMIN_ROLE, account) || hasRole(OPERATOR_ROLE, account);
     }
+
+    function _isVrfRequestExpired(uint256 roundId) internal view returns (bool) {
+        uint256 requestTimestamp = _roundIdToRequestTimestamp[roundId];
+
+        if (requestTimestamp == 0) return false;
+
+        if (block.timestamp > requestTimestamp + 7 weeks) {
+            return true;
+        }
+
+        return false;
+    }
 }
