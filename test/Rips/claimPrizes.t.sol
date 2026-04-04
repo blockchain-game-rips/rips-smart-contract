@@ -77,7 +77,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
     function test_RevertWhen_TheRoundIsNotFinalized() external {
         vm.prank(user);
-        vm.expectRevert(IRips.RoundNotFinalized.selector);
+        vm.expectRevert(IRips.RoundNotFulfilled.selector);
         rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
     }
 

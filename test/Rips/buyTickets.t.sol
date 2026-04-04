@@ -185,7 +185,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.Active));
+        assertEq(uint256(round.vrfRequestStatus), uint256(IRips.VrfRequestStatus.NotRequested));
     }
 
     function test_GivenTheStakeIsNotDeleted()
@@ -254,7 +254,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.Active));
+        assertEq(uint256(round.vrfRequestStatus), uint256(IRips.VrfRequestStatus.NotRequested));
 
         assertEq(user.balance, balanceBefore - payment + expectedRefund);
     }
@@ -370,7 +370,7 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.Active));
+        assertEq(uint256(round.vrfRequestStatus), uint256(IRips.VrfRequestStatus.NotRequested));
     }
 
     function test_WhenRequestedTicketsExceedAvailableTickets_GivenERC20()
@@ -396,6 +396,6 @@ contract Rips_BuyTickets is RipsTestBase {
 
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.ticketsSold, DEFAULT_TICKET_CAP);
-        assertEq(uint256(round.status), uint256(IRips.RoundStatus.Active));
+        assertEq(uint256(round.vrfRequestStatus), uint256(IRips.VrfRequestStatus.NotRequested));
     }
 }

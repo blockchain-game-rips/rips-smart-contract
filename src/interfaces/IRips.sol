@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 interface IRips {
-    enum RoundStatus {
-        Active,
-        VRFRequested,
-        Finalized
+    enum VrfRequestStatus {
+        NotRequested,
+        Requested,
+        Fulfilled
     }
 
     struct Round {
@@ -13,7 +13,7 @@ interface IRips {
         uint64 configId;
         uint40 startTime;
         uint32 ticketsSold;
-        RoundStatus status;
+        VrfRequestStatus vrfRequestStatus;
         uint64 randomA;
         uint64 randomB;
     }
@@ -67,8 +67,8 @@ interface IRips {
     error ZeroTickets();
     error IncorrectPayment();
     error RoundNotSoldOut();
-    error RoundNotFinalized();
-    error InvalidRoundStatus();
+    error RoundNotFulfilled();
+    error InvalidVrfRequestStatus();
     error RoundExpired();
     error InvalidStartIndex();
     error TransferFailed();

@@ -74,14 +74,14 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         rips.rawFulfillRandomWords(unknownRequestId, randomWords);
     }
 
-    function test_RevertWhen_TheRoundStatusIsNotVRFRequested() external {
+    function test_RevertWhen_TheVrfRequestStatusIsNotRequested() external {
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         uint256[] memory randomWords = new uint256[](1);
         randomWords[0] = 12345;
 
         vm.prank(address(vrfCoordinator));
-        vm.expectRevert(IRips.InvalidRoundStatus.selector);
+        vm.expectRevert(IRips.InvalidVrfRequestStatus.selector);
         rips.rawFulfillRandomWords(vrfRequestId, randomWords);
     }
 
@@ -109,6 +109,6 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         IRips.Round memory round = rips.exposed_round(roundId);
         assertEq(round.randomA, expectedA);
         assertEq(round.randomB, expectedB);
-        assertEq(uint8(round.status), uint8(IRips.RoundStatus.Finalized));
+        assertEq(uint8(round.vrfRequestStatus), uint8(IRips.VrfRequestStatus.Fulfilled));
     }
 }

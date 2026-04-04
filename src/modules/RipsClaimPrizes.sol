@@ -25,7 +25,7 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         if (msg.sender != recipient && !_isPrivileged(msg.sender)) revert NotRecipientOrOwner();
 
         Round storage round = roundIdToRound[roundId];
-        if (round.status != RoundStatus.Finalized) revert RoundNotFinalized();
+        if (round.vrfRequestStatus != VrfRequestStatus.Fulfilled) revert RoundNotFulfilled();
 
         TicketRange[] storage ranges = _userTickets[roundId][recipient];
         if (startIndex >= ranges.length) revert InvalidStartIndex();

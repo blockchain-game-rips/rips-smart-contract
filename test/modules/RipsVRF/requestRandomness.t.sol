@@ -80,8 +80,8 @@ contract Rips_RequestRandomness is RipsTestBase {
         rips.requestRandomness(nonExistentRoundId);
     }
 
-    function test_RevertWhen_TheRoundStatusIsNotActive() external {
-        // request once to move status to VRFRequested
+    function test_RevertWhen_TheVrfRequestStatusIsNotNotRequested() external {
+        // request once to move status to Requested
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
         rips.requestRandomness(soldOutRoundId);
 
@@ -124,7 +124,7 @@ contract Rips_RequestRandomness is RipsTestBase {
         assertEq(requestId, EXPECTED_FIRST_REQUEST_ID);
 
         IRips.Round memory round = rips.exposed_round(soldOutRoundId);
-        assertEq(uint8(round.status), uint8(IRips.RoundStatus.VRFRequested));
+        assertEq(uint8(round.vrfRequestStatus), uint8(IRips.VrfRequestStatus.Requested));
 
         assertEq(rips.exposed_requestTimestamp(soldOutRoundId), block.timestamp);
     }

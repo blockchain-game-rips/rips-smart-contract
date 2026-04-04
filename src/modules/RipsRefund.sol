@@ -33,7 +33,9 @@ abstract contract RipsRefund is RipsUtils {
     {
         if (_isExpired(round, config) && !_isSoldOut(round, config)) return true;
 
-        if (_isVrfRequestExpired(roundId) && round.status == RoundStatus.VRFRequested) return true;
+        if (_isVrfRequestExpired(roundId) && round.vrfRequestStatus == VrfRequestStatus.Requested) {
+            return true;
+        }
 
         return false;
     }

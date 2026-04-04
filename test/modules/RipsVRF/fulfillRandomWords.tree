@@ -4,12 +4,12 @@ Rips_FulfillRandomWords
 └── when called by the VRF coordinator
     ├── when the request ID does not map to a round
     │   └── it should revert with {RoundNotExist}.
-    ├── when the round status is not VRFRequested
-    │   └── it should revert with {InvalidRoundStatus}.
+    ├── when the vrf request status is not Requested
+    │   └── it should revert with {InvalidVrfRequestStatus}.
     ├── when the VRF request is expired
     │   └── it should revert with {RoundExpired}.
     └── when the round is valid and the request is not expired
         ├── it should derive a coprime value from the random word.
         ├── it should set randomB from the hash of the random word modulo ticket cap.
-        ├── it should set round status to Finalized.
+        ├── it should set vrf request status to Fulfilled.
         └── it should emit a {RoundFinalized} event.

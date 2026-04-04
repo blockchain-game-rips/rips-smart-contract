@@ -76,7 +76,7 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
         round.stakeId = uint64(stakeId);
         round.configId = uint64(configId);
         round.startTime = uint40(block.timestamp);
-        round.status = RoundStatus.Active;
+        round.vrfRequestStatus = VrfRequestStatus.NotRequested;
 
         stakeIdToCurrentRoundId[stakeId] = roundId;
 

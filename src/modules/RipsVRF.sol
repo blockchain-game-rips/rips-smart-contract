@@ -77,7 +77,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         Round storage round = roundIdToRound[roundId];
         if (round.stakeId == 0) revert RoundNotExist();
 
-        if (round.status != RoundStatus.Active) revert VrfAlreadyRequested();
+        if (round.vrfRequestStatus != VrfRequestStatus.NotRequested) revert VrfAlreadyRequested();
 
         Config storage config = configIdToConfig[round.configId];
         if (!_isSoldOut(round, config)) revert RoundNotSoldOut();
@@ -95,7 +95,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
             })
         );
 
-        round.status = RoundStatus.VRFRequested;
+        round.vrfRequestStatus = VrfRequestStatus.Requested;
         _vrfRequestToRound[requestId] = roundId;
         _roundIdToRequestTimestamp[roundId] = block.timestamp;
 
@@ -116,7 +116,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
 
         Round storage round = roundIdToRound[roundId];
 
-        if (round.status != RoundStatus.VRFRequested) revert InvalidRoundStatus();
+        if (round.vrfRequestStatus != VrfRequestStatus.Requested) revert InvalidVrfRequestStatus();
         if (_isVrfRequestExpired(roundId)) revert RoundExpired();
 
         Config storage config = configIdToConfig[round.configId];
@@ -125,7 +125,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         uint256 randomWord = randomWords[0];
         round.randomA = RipsMath.deriveCoprimeA(randomWord, n);
         round.randomB = uint64(uint256(keccak256(abi.encode(randomWord))) % n);
-        round.status = RoundStatus.Finalized;
+        round.vrfRequestStatus = VrfRequestStatus.Fulfilled;
 
         emit RoundFinalized(roundId, round.randomA, round.randomB);
     }
