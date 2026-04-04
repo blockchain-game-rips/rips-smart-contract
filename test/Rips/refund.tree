@@ -4,7 +4,10 @@ Rips_Refund
 ├── when recipient is zero address
 │   └── it should revert.
 ├── when the round is not expired
-│   └── it should revert.
+│   ├── when the round is not sold out but has not passed its duration
+│   │   └── it should revert with {RoundNotExpired}.
+│   └── when the round is sold out and the VRF request has not expired
+│       └── it should revert with {RoundNotExpired}.
 ├── when the recipient has already been refunded
 │   └── it should revert.
 ├── when the recipient has no tickets in the round
