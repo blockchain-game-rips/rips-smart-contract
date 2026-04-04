@@ -69,12 +69,10 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     }
 
     function updateCallbackGasLimit(uint32 newLimit) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        //TODO: consider case when admin set insufficient gas limit and callback is reverted
         s_callbackGasLimit = newLimit;
         emit CallbackGasLimitUpdated(newLimit);
     }
 
-    //TODO: if there is insufficient LINK balance on the subscription or chainlink stops to work account funds will be frozen
     function requestRandomness(uint256 roundId) external returns (uint256 requestId) {
         Round storage round = roundIdToRound[roundId];
         if (round.stakeId == 0) revert RoundNotExist();
@@ -111,7 +109,6 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         fulfillRandomWords(requestId, randomWords);
     }
 
-    //TODO: add validation tests
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal {
         uint256 roundId = _vrfRequestToRound[requestId];
 
