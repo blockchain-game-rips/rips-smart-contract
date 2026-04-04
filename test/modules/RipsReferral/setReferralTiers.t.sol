@@ -24,13 +24,6 @@ contract Rips_SetReferralTiers is RipsTestBase {
         vm.stopPrank();
     }
 
-    function test_RevertWhen_TiersArrayIsEmpty() external whenTheCallerIsTheOwner {
-        IRips.ReferralTier[] memory emptyTiers = new IRips.ReferralTier[](0);
-
-        vm.expectRevert(IRips.ReferralTiersEmpty.selector);
-        rips.setReferralTiers(emptyTiers);
-    }
-
     function test_RevertWhen_TiersCountExceedsMaxReferralTierCount()
         external
         whenTheCallerIsTheOwner

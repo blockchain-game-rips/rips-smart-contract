@@ -36,7 +36,6 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
     }
 
     function setReferralTiers(ReferralTier[] calldata tiers) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (tiers.length == 0) revert ReferralTiersEmpty();
         if (tiers.length > MAX_REFERRAL_TIER_COUNT) revert ReferralTierCountExceeded();
 
         for (uint256 i = 1; i < tiers.length; i++) {

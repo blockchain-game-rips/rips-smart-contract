@@ -2,8 +2,6 @@ Rips_SetReferralTiers
 ├── when the caller is not the owner
 │   └── it should revert.
 └── when the caller is the owner
-    ├── when tiers array is empty
-    │   └── it should revert.
     ├── when tiers count exceeds max referral tier count
     │   └── it should revert.
     ├── when tiers are not sorted by minVolume ascending
