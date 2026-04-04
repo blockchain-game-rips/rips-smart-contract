@@ -2,10 +2,9 @@
 pragma solidity ^0.8.13;
 
 import "../common/RipsStorage.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../common/RipsUtils.sol";
 
-abstract contract RipsReferral is RipsStorage, RipsUtils, AccessControl {
+abstract contract RipsReferral is RipsStorage, RipsUtils {
     uint256 public constant MAX_REFERRAL_TIER_COUNT = 10;
 
     uint16 public defaultReferralFee;

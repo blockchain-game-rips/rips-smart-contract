@@ -3,13 +3,12 @@ pragma solidity ^0.8.13;
 
 import "../common/RipsUtils.sol";
 import "../libraries/RipsMath.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 //TODO: refund if too much time has passed since vrf requested
-abstract contract RipsVrf is RipsUtils, AccessControl, IVRFMigratableConsumerV2Plus {
+abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     error OnlyCoordinatorCanFulfill(address have, address want);
 
     uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;

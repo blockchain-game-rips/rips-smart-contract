@@ -2,10 +2,11 @@
 pragma solidity ^0.8.13;
 
 import "./RipsStorage.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-abstract contract RipsUtils is RipsStorage {
+abstract contract RipsUtils is RipsStorage, AccessControl {
     uint256 public constant FEE_BASE = 10000;
 
     using SafeERC20 for IERC20;
@@ -34,5 +35,9 @@ abstract contract RipsUtils is RipsStorage {
         (bool success,) = to.call{value: amount}("");
 
         if (!success) revert TransferFailed();
+    }
+
+    function _isPrivileged(address account) internal view returns (bool) {
+        return hasRole(DEFAULT_ADMIN_ROLE, account) || hasRole(OPERATOR_ROLE, account);
     }
 }

@@ -3,11 +3,10 @@ pragma solidity ^0.8.13;
 
 import "../common/RipsStorage.sol";
 import "../libraries/RipsMath.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "../common/RipsUtils.sol";
 
-abstract contract RipsAdmin is RipsStorage, RipsUtils, AccessControl, Pausable {
+abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
     uint256 public constant MAX_TIER_COUNT = 20;
 
     function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {

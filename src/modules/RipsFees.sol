@@ -2,9 +2,8 @@
 pragma solidity ^0.8.13;
 
 import "../common/RipsUtils.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 
-abstract contract RipsFees is RipsUtils, AccessControl {
+abstract contract RipsFees is RipsUtils {
     address public feeRecipient;
 
     mapping(address referrer => bool frozen) public isReferrerFrozen;
@@ -26,7 +25,7 @@ abstract contract RipsFees is RipsUtils, AccessControl {
     }
 
     function withdrawProtocolFee(address currency) external {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender) && !hasRole(OPERATOR_ROLE, msg.sender)) {
+        if (!_isPrivileged(msg.sender)) {
             revert AccessControlUnauthorizedAccount(msg.sender, OPERATOR_ROLE);
         }
         uint256 amount = protocolFeeAccrued[currency];
