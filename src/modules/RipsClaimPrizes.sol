@@ -6,14 +6,6 @@ import "../modules/RipsReferral.sol";
 import "../libraries/RipsMath.sol";
 
 abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
-    struct PrizeCalcParams {
-        uint64 a;
-        uint64 b;
-        uint64 n;
-        PrizeTier[] tiers;
-        uint64[] bounds;
-    }
-
     function claimPrizes(
         uint256 roundId,
         uint256 startIndex,
@@ -80,13 +72,11 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         Round storage round,
         Config storage config
     ) private returns (uint256 ticketCount, uint256 totalPrize) {
-        PrizeCalcParams memory p = PrizeCalcParams({
-            a: round.randomA,
-            b: round.randomB,
-            n: config.ticketCap,
-            tiers: config.tiers,
-            bounds: configIdToTierBoundaries[round.configId]
-        });
+        uint64 a = round.randomA;
+        uint64 b = round.randomB;
+        uint64 n = config.ticketCap;
+        PrizeTier[] memory tiers = config.tiers;
+        uint64[] memory bounds = configIdToTierBoundaries[round.configId];
 
         uint256 endIndex = startIndex + maxRanges;
         if (endIndex > ranges.length) endIndex = ranges.length;
@@ -98,9 +88,8 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
             uint256 count = ranges[i].count;
 
             for (uint256 j = 0; j < count; j++) {
-                //TODO: try to pass memory struct and see gas consumption diff
                 totalPrize += RipsMath.calculateTicketPrize(
-                    rangeStart + j + 1, p.a, p.b, p.n, p.tiers, p.bounds
+                    rangeStart + j + 1, a, b, n, tiers, bounds
                 );
             }
 
