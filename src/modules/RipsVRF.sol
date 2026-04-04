@@ -7,10 +7,8 @@ import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.s
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
-//TODO: refund if too much time has passed since vrf requested
 abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
-    //TODO: move error to interface
-    error OnlyCoordinatorCanFulfill(address have, address want);
+    bytes32 public constant VRF_COORDINATOR_ROLE = keccak256("VRF_COORDINATOR_ROLE");
 
     uint32 public constant VRF_NUM_WORDS = 1;
 
@@ -37,10 +35,13 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         vrfKeyHash = vrfKeyHash_;
         s_callbackGasLimit = callbackGasLimit;
         vrfRequestConfirmations = 0;
+        _grantRole(VRF_COORDINATOR_ROLE, vrfCoordinator);
     }
 
     function setCoordinator(address vrfCoordinator) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         if (vrfCoordinator == address(0)) revert ZeroAddress();
+        _revokeRole(VRF_COORDINATOR_ROLE, address(s_vrfCoordinator));
+        _grantRole(VRF_COORDINATOR_ROLE, vrfCoordinator);
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
         emit CoordinatorSet(vrfCoordinator);
     }
@@ -103,11 +104,10 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         emit RandomnessRequested(roundId, requestId);
     }
 
-    function rawFulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) external {
-        if (msg.sender != address(s_vrfCoordinator)) {
-            revert OnlyCoordinatorCanFulfill(msg.sender, address(s_vrfCoordinator));
-        }
-
+    function rawFulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
+        external
+        onlyRole(VRF_COORDINATOR_ROLE)
+    {
         fulfillRandomWords(requestId, randomWords);
     }
 

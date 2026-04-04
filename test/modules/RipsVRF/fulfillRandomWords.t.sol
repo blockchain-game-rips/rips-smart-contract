@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "../../RipsTestBase.sol";
 import "../../../src/libraries/RipsMath.sol";
-import "../../../src/modules/RipsVrf.sol";
+import "@openzeppelin/contracts/access/IAccessControl.sol";
 
 contract Rips_FulfillRandomWords is RipsTestBase {
     event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
@@ -53,10 +53,12 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         uint256[] memory randomWords = new uint256[](1);
         randomWords[0] = 12345;
 
+        bytes32 coordinatorRole = rips.VRF_COORDINATOR_ROLE();
+
         vm.prank(user);
         vm.expectRevert(
             abi.encodeWithSelector(
-                RipsVrf.OnlyCoordinatorCanFulfill.selector, user, address(vrfCoordinator)
+                IAccessControl.AccessControlUnauthorizedAccount.selector, user, coordinatorRole
             )
         );
         rips.rawFulfillRandomWords(vrfRequestId, randomWords);
