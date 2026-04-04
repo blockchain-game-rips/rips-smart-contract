@@ -109,7 +109,7 @@ contract Rips_RequestRandomness is RipsTestBase {
             0,
             0,
             vrfSubscriptionId,
-            rips.VRF_REQUEST_CONFIRMATIONS(),
+            rips.vrfRequestConfirmations(),
             VRF_CALLBACK_GAS_LIMIT,
             rips.VRF_NUM_WORDS(),
             "",

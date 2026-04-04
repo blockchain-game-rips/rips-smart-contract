@@ -11,8 +11,9 @@ import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     error OnlyCoordinatorCanFulfill(address have, address want);
 
-    uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
     uint32 public constant VRF_NUM_WORDS = 1;
+
+    uint16 public vrfRequestConfirmations;
 
     IVRFCoordinatorV2Plus public s_vrfCoordinator;
     uint256 public vrfSubscriptionId;
@@ -34,6 +35,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         vrfSubscriptionId = vrfSubscriptionId_;
         vrfKeyHash = vrfKeyHash_;
         s_callbackGasLimit = callbackGasLimit;
+        vrfRequestConfirmations = 0;
     }
 
     function setCoordinator(address vrfCoordinator) external override onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -56,6 +58,14 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         emit VrfKeyHashUpdated(newKeyHash);
     }
 
+    function updateVrfRequestConfirmations(uint16 newConfirmations)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        vrfRequestConfirmations = newConfirmations;
+        emit VrfRequestConfirmationsUpdated(newConfirmations);
+    }
+
     function updateCallbackGasLimit(uint32 newLimit) external onlyRole(DEFAULT_ADMIN_ROLE) {
         //TODO: consider case when admin set insufficient gas limit and callback is reverted
         s_callbackGasLimit = newLimit;
@@ -76,7 +86,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: vrfKeyHash,
                 subId: vrfSubscriptionId,
-                requestConfirmations: VRF_REQUEST_CONFIRMATIONS,
+                requestConfirmations: vrfRequestConfirmations,
                 callbackGasLimit: s_callbackGasLimit,
                 numWords: VRF_NUM_WORDS,
                 extraArgs: VRFV2PlusClient._argsToBytes(

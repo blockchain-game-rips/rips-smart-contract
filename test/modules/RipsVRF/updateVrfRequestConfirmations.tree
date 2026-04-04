@@ -1,0 +1,6 @@
+Rips_UpdateVrfRequestConfirmations
+├── when the caller is not the owner
+│   └── it should revert.
+└── when the caller is the owner
+    ├── it should update the vrf request confirmations.
+    └── it should emit a {VrfRequestConfirmationsUpdated} event.

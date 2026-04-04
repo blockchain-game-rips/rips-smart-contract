@@ -104,6 +104,7 @@ interface IRips {
     event ReferrerFeeSeized(address indexed referrer, address indexed currency, uint256 amount);
     event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
     event CallbackGasLimitUpdated(uint32 newLimit);
+    event VrfRequestConfirmationsUpdated(uint16 newConfirmations);
     event VrfSubscriptionIdUpdated(uint256 newSubscriptionId);
     event VrfKeyHashUpdated(bytes32 newKeyHash);
     event ReferralTiersUpdated(ReferralTier[] tiers);
