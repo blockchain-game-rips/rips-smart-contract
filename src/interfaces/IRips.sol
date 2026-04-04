@@ -41,15 +41,14 @@ interface IRips {
 
     struct ReferrerStats {
         uint128 currMonthVolume;
-        uint16 activeFeePercent; // basis points, applied this month
-        uint16 nextFeePercent; // earned this month, applied next month
-        uint16 customFeePercent; // admin override, 0 = not set
-        uint32 currentMonth; // block.timestamp / 30 days
+        uint16 activeFeePercent;
+        uint16 customFeePercent;
+        uint32 currentMonth;
     }
 
     struct ReferralTier {
-        uint128 minVolume; // minimum volume to reach this tier (in currency units)
-        uint16 feePercent; // basis points
+        uint128 minVolume;
+        uint16 feePercent;
     }
 
     error ZeroAddress();
@@ -110,9 +109,6 @@ interface IRips {
     event VrfSubscriptionIdUpdated(uint256 newSubscriptionId);
     event VrfKeyHashUpdated(bytes32 newKeyHash);
     event ReferralTiersUpdated(ReferralTier[] tiers);
-    event ReferrerStatsUpdated(
-        address indexed referrer, uint16 activeFeePercent, uint16 nextFeePercent
-    );
     event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
     event ReferrerCustomFeeSet(address indexed referrer, uint16 customFeePercent);
     event ReferralFeePaid(uint256 indexed roundId, address indexed referrer, uint256 amount);

@@ -9,7 +9,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
     uint16 public defaultReferralFee;
 
-    mapping(address referrer => ReferrerStats stats) public referrerToReferrerStats;
+    mapping(address referrer => ReferrerStats) public referrerToReferrerStats;
     ReferralTier[] public referralTiers;
 
     function setDefaultReferralFee(uint16 newDefaultReferralFee)
@@ -57,40 +57,37 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
     {
         if (referrer == address(0)) return 0;
 
-        ReferrerStats storage stats = referrerToReferrerStats[referrer];
+        ReferrerStats storage referrerStats = _resolveReferrerStats(referrer, ticketRevenue);
 
-        if (stats.customFeePercent > 0) {
-            return (protocolFee * stats.customFeePercent) / FEE_BASE;
+        if (referrerStats.customFeePercent > 0) {
+            return (protocolFee * referrerStats.customFeePercent) / FEE_BASE;
         }
 
-        if (referralTiers.length == 0 && defaultReferralFee == 0) return 0;
+        uint16 activeFeePercent = referrerStats.activeFeePercent;
+        uint16 effectiveFeePercent =
+            activeFeePercent > defaultReferralFee ? activeFeePercent : defaultReferralFee;
+
+        referrerFee = (protocolFee * effectiveFeePercent) / FEE_BASE;
+    }
+
+    function _resolveReferrerStats(address referrer, uint256 ticketRevenue)
+        private
+        returns (ReferrerStats storage referrerStats)
+    {
+        referrerStats = referrerToReferrerStats[referrer];
 
         uint32 currentMonth = uint32(block.timestamp / 30 days);
 
-        if (stats.currentMonth < currentMonth) {
-            uint16 prevNextFeePercent = stats.nextFeePercent;
+        if (referrerStats.currentMonth < currentMonth) {
+            uint128 volumeInPrevMonth = referrerStats.currentMonth;
 
-            stats.activeFeePercent =
-                (currentMonth == stats.currentMonth + 1) ? prevNextFeePercent : 0;
-            stats.nextFeePercent = 0;
-            stats.currMonthVolume = 0;
-            stats.currentMonth = currentMonth;
+            referrerStats.activeFeePercent = _resolveTierFeePercent(volumeInPrevMonth);
+            referrerStats.currMonthVolume = uint128(ticketRevenue);
+            referrerStats.currentMonth = currentMonth;
         }
-
-        stats.currMonthVolume += uint128(ticketRevenue);
-
-        uint16 newNextFeePercent = _resolveTierFeePercent(stats.currMonthVolume);
-
-        if (newNextFeePercent != stats.nextFeePercent) {
-            stats.nextFeePercent = newNextFeePercent;
-            emit ReferrerStatsUpdated(referrer, stats.activeFeePercent, newNextFeePercent);
+        {
+            referrerStats.currMonthVolume += uint128(ticketRevenue);
         }
-
-        uint16 effectiveFeePercent = stats.activeFeePercent > defaultReferralFee
-            ? stats.activeFeePercent
-            : defaultReferralFee;
-
-        referrerFee = (protocolFee * effectiveFeePercent) / FEE_BASE;
     }
 
     function _resolveTierFeePercent(uint128 volume) private view returns (uint16 feePercent) {

@@ -4,139 +4,205 @@ pragma solidity ^0.8.13;
 import "../../RipsTestBase.sol";
 
 contract RipsReferral_CollectReferrerFee is RipsTestBase {
-    uint256 private constant PROTOCOL_FEE = 1 ether;
-    uint256 private constant TICKET_REVENUE = 10 ether;
-    uint16 private constant DEFAULT_REFERRAL_FEE = 300;
-    uint16 private constant TIER_1_FEE_PERCENT = 800;
-    uint16 private constant TIER_2_FEE_PERCENT = 1500;
-    uint16 private constant CUSTOM_FEE_PERCENT = 2000;
-    uint128 private constant TIER_1_MIN_VOLUME = 5 ether;
-    uint128 private constant TIER_2_MIN_VOLUME = 20 ether;
+    uint256 internal constant PROTOCOL_FEE = 1 ether;
+    uint256 internal constant TICKET_REVENUE = 10 ether;
 
-    function _setDefaultReferralFee() private {
+    uint16 internal constant DEFAULT_FEE = 500; // 5%
+    uint16 internal constant TIER_LOW_FEE = 300; // 3%
+    uint16 internal constant TIER_HIGH_FEE = 1000; // 10%
+    uint16 internal constant CUSTOM_FEE = 800; // 8%
+
+    uint128 internal constant TIER_LOW_MIN_VOLUME = 5 ether;
+    uint128 internal constant TIER_HIGH_MIN_VOLUME = 50 ether;
+
+    function _setDefaultFee(uint16 fee) internal {
         vm.prank(owner);
-        rips.setDefaultReferralFee(DEFAULT_REFERRAL_FEE);
+        rips.setDefaultReferralFee(fee);
     }
 
-    function _setTiers() private {
+    function _setTiers() internal {
         IRips.ReferralTier[] memory tiers = new IRips.ReferralTier[](2);
-        tiers[0] =
-            IRips.ReferralTier({minVolume: TIER_1_MIN_VOLUME, feePercent: TIER_1_FEE_PERCENT});
-        tiers[1] =
-            IRips.ReferralTier({minVolume: TIER_2_MIN_VOLUME, feePercent: TIER_2_FEE_PERCENT});
+        tiers[0] = IRips.ReferralTier({minVolume: TIER_LOW_MIN_VOLUME, feePercent: TIER_LOW_FEE});
+        tiers[1] = IRips.ReferralTier({minVolume: TIER_HIGH_MIN_VOLUME, feePercent: TIER_HIGH_FEE});
 
         vm.prank(owner);
         rips.setReferralTiers(tiers);
     }
 
-    function _collect(address ref, uint256 protocolFee, uint256 revenue) private returns (uint256) {
-        return rips.exposed_collectReferrerFee(ref, protocolFee, revenue);
+    function _setCustomFee(address _referrer, uint16 fee) internal {
+        vm.prank(owner);
+        rips.setReferrerCustomFee(_referrer, fee);
+    }
+
+    function _advanceToNextMonth() internal {
+        vm.warp(block.timestamp + 31 days);
     }
 
     function test_WhenReferrerIsZeroAddress() external {
-        uint256 fee = _collect(address(0), PROTOCOL_FEE, TICKET_REVENUE);
+        // it should return zero.
+        uint256 fee = rips.exposed_collectReferrerFee(address(0), PROTOCOL_FEE, TICKET_REVENUE);
+
         assertEq(fee, 0);
     }
 
     function test_WhenReferrerHasACustomFeeSet() external {
-        vm.prank(owner);
-        rips.setReferrerCustomFee(referrer, CUSTOM_FEE_PERCENT);
+        // it should return fee based on custom fee percent.
+        // it should update only currMonthVolume.
+        _setCustomFee(referrer, CUSTOM_FEE);
 
-        uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+        uint256 expectedFee = (PROTOCOL_FEE * CUSTOM_FEE) / rips.FEE_BASE();
 
-        assertEq(fee, 0.2 ether);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
-        assertEq(stats.currMonthVolume, 0);
-    }
-
-    function test_WhenNoReferralTiersAreConfiguredAndBaseFeeIsZero() external {
-        uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
-        assertEq(fee, 0);
-    }
-
-    function test_WhenBaseFeeIsSetAndReferrerHasNoPriorActivity() external {
-        _setDefaultReferralFee();
-
-        uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
-
-        assertEq(fee, 0.03 ether);
+        assertEq(fee, expectedFee);
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
         assertEq(stats.currMonthVolume, TICKET_REVENUE);
+        assertEq(stats.customFeePercent, CUSTOM_FEE);
+    }
+
+    function test_WhenNoReferralTiersAreConfiguredAndDefaultFeeIsZero() external {
+        // it should return zero.
+        // it should update only currMonthVolume.
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+
+        assertEq(fee, 0);
+
+        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        assertEq(stats.currMonthVolume, TICKET_REVENUE);
+        assertEq(stats.activeFeePercent, 0);
+    }
+
+    function test_WhenDefaultFeeIsSetAndReferrerHasNoPriorActivity() external {
+        // it should return fee based on default fee percent.
+        // it should update only currMonthVolume.
+        _setDefaultFee(DEFAULT_FEE);
+
+        uint256 expectedFee = (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE();
+
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+
+        assertEq(fee, expectedFee);
+
+        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        assertEq(stats.currMonthVolume, TICKET_REVENUE);
+        assertEq(stats.activeFeePercent, 0);
     }
 
     function test_WhenReferrerCurrentMonthVolumeCrossesATierThreshold() external {
-        _setDefaultReferralFee();
+        // it should return fee based on default fee percent.
+        // it should update only currMonthVolume.
+        _setDefaultFee(DEFAULT_FEE);
         _setTiers();
 
-        vm.expectEmit();
-        emit IRips.ReferrerStatsUpdated(referrer, 0, TIER_1_FEE_PERCENT);
+        // push referrer's current month volume above the low tier threshold
+        uint256 volumeAboveTier = uint256(TIER_LOW_MIN_VOLUME) + 1 ether;
 
-        _collect(referrer, PROTOCOL_FEE, TIER_1_MIN_VOLUME);
+        uint256 expectedFee = (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE();
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
-        assertEq(stats.nextFeePercent, TIER_1_FEE_PERCENT);
-    }
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
 
-    function test_WhenReferrerCurrentMonthVolumeCrossesMultipleTierThresholds() external {
-        _setDefaultReferralFee();
-        _setTiers();
-
-        _collect(referrer, PROTOCOL_FEE, TIER_2_MIN_VOLUME);
+        assertEq(fee, expectedFee);
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
-        assertEq(stats.nextFeePercent, TIER_2_FEE_PERCENT);
+        assertEq(stats.currMonthVolume, volumeAboveTier);
+        // active fee is not updated mid-month; tier is only applied next month
+        assertEq(stats.activeFeePercent, 0);
     }
 
     function test_WhenReferrersPreviousMonthVolumeReachedATierThreshold() external {
-        _setDefaultReferralFee();
+        // it should return fee based on active fee percent.
+        // it should update referrerStats.
+        _setDefaultFee(DEFAULT_FEE);
         _setTiers();
 
-        _collect(referrer, PROTOCOL_FEE, TIER_1_MIN_VOLUME);
+        // cross tier threshold in month 1
+        uint256 volumeAboveTier = uint256(TIER_LOW_MIN_VOLUME) + 1 ether;
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
 
-        vm.warp(block.timestamp + 31 days);
+        _advanceToNextMonth();
 
-        uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+        // month 2: previous month volume unlocks tier fee
+        uint256 expectedFee = (PROTOCOL_FEE * TIER_LOW_FEE) / rips.FEE_BASE();
 
-        assertEq(fee, 0.08 ether);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+
+        assertEq(fee, expectedFee);
+
+        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
+        assertEq(stats.activeFeePercent, TIER_LOW_FEE);
     }
 
-    function test_WhenActiveFeePercentIsBelowDefaultReferralFee() external {
-        _setDefaultReferralFee();
+    function test_WhenActiveFeePercentIsBelowDefaultFeePercent() external {
+        // it should return fee based on default fee percent.
+        // it should update only currMonthVolume.
+
+        // TIER_LOW_FEE (3%) < DEFAULT_FEE (5%), so default should win
+        _setDefaultFee(DEFAULT_FEE);
         _setTiers();
 
-        vm.warp(block.timestamp + 31 days);
+        // cross low tier threshold in month 1
+        uint256 volumeAboveTier = uint256(TIER_LOW_MIN_VOLUME) + 1 ether;
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
 
-        uint256 fee = _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+        _advanceToNextMonth();
 
-        assertEq(fee, 0.03 ether);
+        // month 2: active fee (3%) is below default (5%), default wins
+        uint256 expectedFee = (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE();
+
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+
+        assertEq(fee, expectedFee);
     }
 
     function test_WhenANewMonthStartsAfterAConsecutiveActiveMonth() external {
-        _setDefaultReferralFee();
+        // it should update referrerStats.
+        _setDefaultFee(DEFAULT_FEE);
         _setTiers();
 
-        _collect(referrer, PROTOCOL_FEE, TIER_1_MIN_VOLUME);
+        // month 1: cross tier threshold
+        uint256 volumeAboveTier = uint256(TIER_LOW_MIN_VOLUME) + 1 ether;
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
 
-        vm.warp(block.timestamp + 31 days);
+        _advanceToNextMonth();
 
-        _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+        // month 2: active, cross tier threshold again
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
 
-        IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
-        assertEq(stats.activeFeePercent, TIER_1_FEE_PERCENT);
-        assertEq(stats.currMonthVolume, TICKET_REVENUE);
+        IRips.ReferrerStats memory statsAfterMonth2 = rips.exposed_referrerStats(referrer);
+        assertEq(statsAfterMonth2.activeFeePercent, TIER_LOW_FEE);
+        assertEq(statsAfterMonth2.currMonthVolume, volumeAboveTier);
+
+        _advanceToNextMonth();
+
+        // month 3: new month starts, stats should roll over correctly
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+
+        IRips.ReferrerStats memory statsAfterMonth3 = rips.exposed_referrerStats(referrer);
+        assertEq(statsAfterMonth3.activeFeePercent, TIER_LOW_FEE);
+        assertEq(statsAfterMonth3.currMonthVolume, TICKET_REVENUE);
     }
 
     function test_WhenANewMonthStartsAfterAnInactiveMonthGap() external {
-        _setDefaultReferralFee();
+        // it should update referrerStats.
+        // it should reset active fee percent to zero.
+        _setDefaultFee(DEFAULT_FEE);
         _setTiers();
 
-        _collect(referrer, PROTOCOL_FEE, TIER_1_MIN_VOLUME);
+        // month 1: cross tier threshold
+        uint256 volumeAboveTier = uint256(TIER_LOW_MIN_VOLUME) + 1 ether;
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
 
+        _advanceToNextMonth();
+
+        // month 2: active — unlocks tier fee for month 2, but skip month 3
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
+
+        // skip two months (gap — month 3 is inactive)
         vm.warp(block.timestamp + 62 days);
 
-        _collect(referrer, PROTOCOL_FEE, TICKET_REVENUE);
+        // month 4: gap means active fee resets to zero
+        rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
         IRips.ReferrerStats memory stats = rips.exposed_referrerStats(referrer);
         assertEq(stats.activeFeePercent, 0);

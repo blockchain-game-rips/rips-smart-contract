@@ -3,24 +3,24 @@ RipsReferral_CollectReferrerFee
 │   └── it should return zero.
 ├── when referrer has a custom fee set
 │   ├── it should return fee based on custom fee percent.
-│   └── it should not update referrer stats.
-├── when no referral tiers are configured and base fee is zero
-│   └── it should return zero.
-├── when base fee is set and referrer has no prior activity
-│   ├── it should accumulate ticket revenue into curr month volume.
-│   └── it should return fee based on base fee percent.
+│   └── it should update only currMonthVolume.
+├── when no referral tiers are configured and default fee is zero
+│   ├── it should return zero.
+│   └── it should update only currMonthVolume.
+├── when default fee is set and referrer has no prior activity
+│   ├── it should return fee based on default fee percent.
+│   └── it should update only currMonthVolume.
 ├── when referrer current month volume crosses a tier threshold
-│   ├── it should update next fee percent.
-│   └── it should emit a {ReferrerStatsUpdated} event.
-├── when referrer current month volume crosses multiple tier thresholds
-│   └── it should set next fee percent to the highest reached tier.
+│   ├── it should return fee based on default fee percent.
+│   └── it should update only currMonthVolume.
 ├── when referrers previous month volume reached a tier threshold
-│   └── it should return fee based on active fee percent.
-├── when active fee percent is below base fee percent
-│   └── it should return fee based on base fee percent.
+│   ├── it should return fee based on active fee percent.
+│   └── it should update referrerStats.
+├── when active fee percent is below default fee percent
+│   ├── it should return fee based on default fee percent.
+│   └── it should update only currMonthVolume.
 ├── when a new month starts after a consecutive active month
-│   ├── it should promote next fee percent to active fee percent.
-│   └── it should reset curr month volume.
+│   └── it should update referrerStats.
 └── when a new month starts after an inactive month gap
-    ├── it should reset active fee percent to zero.
-    └── it should reset curr month volume.
+    ├── it should update referrerStats.
+    └── it should reset active fee percent to zero.
