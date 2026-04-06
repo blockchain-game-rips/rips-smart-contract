@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_GetUserTickets is RipsTestBase {
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private roundId;
 
     function setUp() public override {
@@ -21,7 +21,7 @@ contract Rips_GetUserTickets is RipsTestBase {
     }
 
     function test_WhenTheUserHasTicketsInTheRound() external {
-        uint256 ticketCount = 2;
+        uint64 ticketCount = 2;
 
         vm.deal(user, ticketCount * DEFAULT_TICKET_COST);
         vm.prank(user);

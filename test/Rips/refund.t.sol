@@ -4,9 +4,9 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_Refund is RipsTestBase {
-    uint256 private constant TICKETS_BOUGHT = 2;
+    uint64 private constant TICKETS_BOUGHT = 2;
 
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private roundId;
 
     function setUp() public override {
@@ -132,7 +132,7 @@ contract Rips_Refund is RipsTestBase {
     modifier givenTheStakeCurrencyIsAnERC20Token() {
         _mintAndApprove(user, TICKETS_BOUGHT * DEFAULT_TICKET_COST);
 
-        uint256 erc20StakeId = _createDefaultERC20Stake();
+        uint64 erc20StakeId = _createDefaultERC20Stake();
 
         vm.prank(user);
         rips.buyTickets(erc20StakeId, TICKETS_BOUGHT, user);

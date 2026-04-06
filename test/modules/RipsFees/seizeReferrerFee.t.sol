@@ -21,7 +21,7 @@ contract Rips_SeizeReferrerFee is RipsTestBase {
         });
 
         vm.startPrank(owner);
-        uint256 stakeId = rips.createStake(
+        uint64 stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,

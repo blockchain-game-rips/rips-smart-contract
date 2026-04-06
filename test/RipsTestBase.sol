@@ -40,7 +40,7 @@ contract RipsTestBase is Test {
         erc20 = new ERC20Mock();
     }
 
-    function _createDefaultStake() internal returns (uint256 stakeId) {
+    function _createDefaultStake() internal returns (uint64 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
             prizeCount: uint64(DEFAULT_TICKET_CAP),
@@ -67,7 +67,7 @@ contract RipsTestBase is Test {
         erc20.approve(address(rips), type(uint256).max);
     }
 
-    function _createDefaultERC20Stake() internal returns (uint256 stakeId) {
+    function _createDefaultERC20Stake() internal returns (uint64 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
             prizeCount: uint64(DEFAULT_TICKET_CAP),

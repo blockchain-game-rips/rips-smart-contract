@@ -12,7 +12,7 @@ interface IRips {
         uint64 stakeId;
         uint64 configId;
         uint40 startTime;
-        uint32 ticketsSold;
+        uint64 ticketsSold;
         VrfRequestStatus vrfRequestStatus;
         uint64 randomA;
         uint64 randomB;
@@ -34,13 +34,13 @@ interface IRips {
     }
 
     struct TicketRange {
-        uint96 start;
-        uint96 count;
+        uint64 start;
+        uint64 count;
         bool claimed;
     }
 
     struct ReferrerStats {
-        uint128 currMonthVolume;
+        uint192 currMonthVolume;
         uint16 activeFeePercent;
         uint16 customFeePercent;
         uint32 currentMonth;
@@ -83,23 +83,23 @@ interface IRips {
     error ZeroSubscriptionId();
     error InvalidRequestId();
 
-    event StakeCreated(uint256 indexed stakeId, uint256 configId);
-    event StakeUpdated(uint256 indexed stakeId, uint256 configId);
-    event StakeDeleted(uint256 indexed stakeId);
+    event StakeCreated(uint64 indexed stakeId, uint64 configId);
+    event StakeUpdated(uint64 indexed stakeId, uint64 configId);
+    event StakeDeleted(uint64 indexed stakeId);
 
-    event RoundCreated(uint256 indexed roundId, uint256 indexed stakeId, uint256 configId);
+    event RoundCreated(uint256 indexed roundId, uint64 indexed stakeId, uint64 configId);
 
     event TicketsPurchased(
-        uint256 indexed roundId, address indexed user, uint256 ticketCount, uint256 startTicketIndex
+        uint256 indexed roundId, address indexed user, uint64 ticketCount, uint256 startTicketIndex
     );
     event PrizesClaimed(
         uint256 indexed roundId,
         address indexed user,
         address referrer,
-        uint256 ticketCount,
+        uint64 ticketCount,
         uint256 prizeAmount
     );
-    event RefundIssued(uint256 indexed roundId, address indexed user, uint256 ticketCount);
+    event RefundIssued(uint256 indexed roundId, address indexed user, uint64 ticketCount);
 
     event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
     event RandomnessFulfilled(uint256 indexed roundId, uint256 randomA, uint256 randomB);
@@ -120,7 +120,7 @@ interface IRips {
     event ReferralFeeAccrued(uint256 indexed roundId, address indexed referrer, uint256 amount);
     event ProtocolFeeAccrued(uint256 indexed roundId, uint256 amount);
 
-    function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient) external payable;
+    function buyTickets(uint64 stakeId, uint64 ticketCount, address recipient) external payable;
 
     function claimPrizes(
         uint256 roundId,
@@ -132,11 +132,11 @@ interface IRips {
 
     function refund(uint256 roundId, address recipient) external;
 
-    function createStake(Config calldata config) external returns (uint256 stakeId);
+    function createStake(Config calldata config) external returns (uint64 stakeId);
 
-    function updateStake(uint256 stakeId, Config calldata config) external;
+    function updateStake(uint64 stakeId, Config calldata config) external;
 
-    function deleteStake(uint256 stakeId) external;
+    function deleteStake(uint64 stakeId) external;
 
     function requestRandomness(uint256 roundId) external returns (uint256 requestId);
 

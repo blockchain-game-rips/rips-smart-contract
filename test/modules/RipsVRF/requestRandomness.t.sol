@@ -78,7 +78,7 @@ contract Rips_RequestRandomness is RipsTestBase {
     uint256 private constant TICKET_COST = 1 ether;
     uint256 private constant EXPECTED_FIRST_REQUEST_ID = 1;
 
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private soldOutRoundId;
     uint256 private activeRoundId;
 
@@ -113,7 +113,7 @@ contract Rips_RequestRandomness is RipsTestBase {
 
         // create a second stake and buy one ticket to initialize the round (but not sell out)
         vm.prank(owner);
-        uint256 stakeId2 = rips.createStake(
+        uint64 stakeId2 = rips.createStake(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -173,7 +173,7 @@ contract Rips_RequestRandomness is RipsTestBase {
         rips.requestRandomness(soldOutRoundId);
 
         // create a second sold-out round
-        uint256 stakeId2 = _createDefaultStake();
+        uint64 stakeId2 = _createDefaultStake();
 
         vm.deal(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
         vm.prank(user);

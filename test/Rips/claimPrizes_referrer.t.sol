@@ -11,7 +11,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
     uint256 private constant CUSTOM_FEE_PERCENT = 2000; // 20%
     uint256 private constant PRIZE_PER_TICKET = 0.95 ether;
 
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private roundId;
 
     function setUp() public override {
@@ -32,7 +32,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
 
-    function _createFeeStake() private returns (uint256) {
+    function _createFeeStake() private returns (uint64) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
         tiers[0] = IRips.PrizeTier({
             prizeCount: uint64(DEFAULT_TICKET_CAP),

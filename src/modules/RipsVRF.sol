@@ -18,36 +18,43 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
 
     uint16 public vrfRequestConfirmations;
 
-    IVRFCoordinatorV2Plus public s_vrfCoordinator;
+    IVRFCoordinatorV2Plus public vrfCoordinator;
     uint256 public vrfSubscriptionId;
     bytes32 public vrfKeyHash;
-    uint32 private s_callbackGasLimit;
+    uint32 public callbackGasLimit;
 
     mapping(uint256 requestId => uint256 roundId) internal _vrfRequestToRound;
 
     constructor(
-        address vrfCoordinator,
+        address vrfCoordinator_,
         uint256 vrfSubscriptionId_,
         bytes32 vrfKeyHash_,
-        uint32 callbackGasLimit
+        uint32 callbackGasLimit_
     ) {
-        if (vrfCoordinator == address(0)) revert ZeroAddress();
+        if (vrfCoordinator_ == address(0)) revert ZeroAddress();
         if (vrfSubscriptionId_ == 0) revert ZeroSubscriptionId();
 
-        s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
+        vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator_);
         vrfSubscriptionId = vrfSubscriptionId_;
         vrfKeyHash = vrfKeyHash_;
-        s_callbackGasLimit = callbackGasLimit;
+        callbackGasLimit = callbackGasLimit_;
         vrfRequestConfirmations = 0;
-        _grantRole(VRF_COORDINATOR_ROLE, vrfCoordinator);
+        _grantRole(VRF_COORDINATOR_ROLE, vrfCoordinator_);
     }
 
-    function setCoordinator(address vrfCoordinator) external override onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (vrfCoordinator == address(0)) revert ZeroAddress();
-        _revokeRole(VRF_COORDINATOR_ROLE, address(s_vrfCoordinator));
-        _grantRole(VRF_COORDINATOR_ROLE, vrfCoordinator);
-        s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
-        emit CoordinatorSet(vrfCoordinator);
+    function setCoordinator(address newVrfCoordinator)
+        external
+        override
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        if (newVrfCoordinator == address(0)) revert ZeroAddress();
+
+        _revokeRole(VRF_COORDINATOR_ROLE, address(newVrfCoordinator));
+        _grantRole(VRF_COORDINATOR_ROLE, newVrfCoordinator);
+
+        vrfCoordinator = IVRFCoordinatorV2Plus(newVrfCoordinator);
+
+        emit CoordinatorSet(newVrfCoordinator);
     }
 
     function updateVrfSubscriptionId(uint256 newSubscriptionId)
@@ -73,7 +80,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     }
 
     function updateCallbackGasLimit(uint32 newLimit) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        s_callbackGasLimit = newLimit;
+        callbackGasLimit = newLimit;
         emit CallbackGasLimitUpdated(newLimit);
     }
 
@@ -86,12 +93,12 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         Config storage config = configIdToConfig[round.configId];
         if (!_isSoldOut(round, config)) revert RoundNotSoldOut();
 
-        requestId = s_vrfCoordinator.requestRandomWords(
+        requestId = vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: vrfKeyHash,
                 subId: vrfSubscriptionId,
                 requestConfirmations: vrfRequestConfirmations,
-                callbackGasLimit: s_callbackGasLimit,
+                callbackGasLimit: callbackGasLimit,
                 numWords: VRF_NUM_WORDS,
                 extraArgs: VRFV2PlusClient._argsToBytes(
                     VRFV2PlusClient.ExtraArgsV1({nativePayment: false})

@@ -17,7 +17,7 @@ abstract contract RipsRefund is RipsUtils {
         if (!_isRoundRefundable(roundId, round, config)) revert RoundNotExpired();
         if (hasRefunded[roundId][recipient]) revert AlreadyRefunded();
 
-        uint256 ticketCount = _userTicketCount[roundId][recipient];
+        uint64 ticketCount = _userTicketCount[roundId][recipient];
         if (ticketCount == 0) revert NoTicketsToRefund();
 
         hasRefunded[roundId][recipient] = true;

@@ -20,28 +20,28 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
     function createStake(Config calldata config)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
-        returns (uint256 stakeId)
+        returns (uint64 stakeId)
     {
         stakeId = _nextStakeId++;
 
-        uint256 configId = _applyConfig(stakeId, config);
+        uint64 configId = _applyConfig(stakeId, config);
 
         emit StakeCreated(stakeId, configId);
     }
 
-    function updateStake(uint256 stakeId, Config calldata config)
+    function updateStake(uint64 stakeId, Config calldata config)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         if (isStakeDeleted[stakeId]) revert StakeNotExist();
         if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
 
-        uint256 configId = _applyConfig(stakeId, config);
+        uint64 configId = _applyConfig(stakeId, config);
 
         emit StakeUpdated(stakeId, configId);
     }
 
-    function deleteStake(uint256 stakeId) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function deleteStake(uint64 stakeId) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (isStakeDeleted[stakeId]) revert StakeNotExist();
         if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
 
@@ -50,9 +50,9 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         emit StakeDeleted(stakeId);
     }
 
-    function _applyConfig(uint256 stakeId, Config calldata config)
+    function _applyConfig(uint64 stakeId, Config calldata config)
         internal
-        returns (uint256 configId)
+        returns (uint64 configId)
     {
         _validateConfig(config);
 
@@ -89,7 +89,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         if (totalPrizePool != totalRevenue - protocolFee) revert PrizePoolMismatch();
     }
 
-    function _storeConfig(Config calldata config) private returns (uint256 configId) {
+    function _storeConfig(Config calldata config) private returns (uint64 configId) {
         configId = _nextConfigId++;
 
         Config storage newConfig = configIdToConfig[configId];

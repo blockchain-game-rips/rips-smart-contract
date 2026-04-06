@@ -22,7 +22,7 @@ contract Rips_WithdrawProtocolFee is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint256 stakeId = rips.createStake(
+        uint64 stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,

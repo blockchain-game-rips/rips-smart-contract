@@ -9,7 +9,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
     uint16 private constant FEE_PERCENT = 500;
     uint256 private constant FEE_PRIZE_PER_TICKET = 0.95 ether;
 
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private roundId;
 
     function setUp() public override {
@@ -54,7 +54,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint256 feeStakeId = rips.createStake(
+        uint64 feeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -233,7 +233,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
     function test_WhenProtocolFeeIsZero_GivenTheStakeCurrencyIsAnERC20Token() external {
         _mintAndApprove(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
 
-        uint256 erc20StakeId = _createDefaultERC20Stake();
+        uint64 erc20StakeId = _createDefaultERC20Stake();
 
         vm.prank(user);
         rips.buyTickets(erc20StakeId, DEFAULT_TICKET_CAP, user);
@@ -264,7 +264,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint256 feeStakeId = rips.createStake(
+        uint64 feeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(erc20),
                 tiers: tiers,

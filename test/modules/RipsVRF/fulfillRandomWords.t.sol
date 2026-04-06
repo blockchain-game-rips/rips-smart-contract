@@ -11,7 +11,7 @@ contract Rips_FulfillRandomWords is RipsTestBase {
     uint64 private constant TICKET_CAP = 2;
     uint256 private constant TICKET_COST = 1 ether;
 
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private roundId;
     uint256 private vrfRequestId;
 

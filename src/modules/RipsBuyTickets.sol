@@ -9,9 +9,9 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 abstract contract RipsBuyTickets is RipsUtils, Pausable {
     using SafeERC20 for IERC20;
 
-    uint256 public constant MAX_TICKETS_PER_RANGE = 1000;
+    uint64 public constant MAX_TICKETS_PER_RANGE = 1000;
 
-    function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient)
+    function buyTickets(uint64 stakeId, uint64 ticketCount, address recipient)
         external
         payable
         whenNotPaused
@@ -22,7 +22,7 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
         (uint256 roundId, Round storage round, Config storage config) =
             _resolveRoundAndConfig(stakeId);
 
-        uint256 toBuy = _getTicketsToBuy(round, config, ticketCount);
+        uint64 toBuy = _getTicketsToBuy(round, config, ticketCount);
 
         _purchaseTickets(roundId, round, recipient, toBuy);
 
@@ -33,7 +33,7 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
         }
     }
 
-    function _resolveRoundAndConfig(uint256 stakeId)
+    function _resolveRoundAndConfig(uint64 stakeId)
         private
         returns (uint256 roundId, Round storage round, Config storage config)
     {
@@ -53,7 +53,7 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
 
         // stake is fresh, no round yet
         if (roundId == 0) {
-            uint256 configId = stakeIdToCurrentConfigId[stakeId];
+            uint64 configId = stakeIdToCurrentConfigId[stakeId];
 
             // ticketCap is guaranteed non-zero by isPowerOfTwo validation
             if (configIdToConfig[configId].ticketCap == 0) revert StakeNotExist();
@@ -63,14 +63,14 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
         return _createRound(stakeId);
     }
 
-    function _createRound(uint256 stakeId)
+    function _createRound(uint64 stakeId)
         private
         returns (uint256 roundId, Round storage round, Config storage config)
     {
         roundId = _nextRoundId++;
         round = roundIdToRound[roundId];
 
-        uint256 configId = stakeIdToCurrentConfigId[stakeId];
+        uint64 configId = stakeIdToCurrentConfigId[stakeId];
         config = configIdToConfig[configId];
 
         round.stakeId = uint64(stakeId);
@@ -83,12 +83,12 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
         emit RoundCreated(roundId, stakeId, configId);
     }
 
-    function _getTicketsToBuy(Round storage round, Config storage config, uint256 ticketCount)
+    function _getTicketsToBuy(Round storage round, Config storage config, uint64 ticketCount)
         private
         view
-        returns (uint256)
+        returns (uint64)
     {
-        uint256 available = config.ticketCap - round.ticketsSold;
+        uint64 available = config.ticketCap - round.ticketsSold;
 
         return ticketCount > available ? available : ticketCount;
     }
@@ -97,11 +97,11 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
         uint256 roundId,
         Round storage round,
         address recipient,
-        uint256 ticketsToBuy
+        uint64 ticketsToBuy
     ) private {
-        uint256 startTicket = round.ticketsSold;
+        uint64 startTicket = round.ticketsSold;
 
-        round.ticketsSold += uint32(ticketsToBuy);
+        round.ticketsSold += ticketsToBuy;
 
         _storeTicketRanges(roundId, recipient, startTicket, ticketsToBuy);
 
@@ -111,18 +111,18 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
     function _storeTicketRanges(
         uint256 roundId,
         address buyer,
-        uint256 startTicket,
-        uint256 ticketCount
+        uint64 startTicket,
+        uint64 ticketCount
     ) private {
         TicketRange[] storage ranges = _userTickets[roundId][buyer];
-        uint256 remaining = ticketCount;
-        uint256 currentStart = startTicket;
+        uint64 remaining = ticketCount;
+        uint64 currentStart = startTicket;
 
         while (remaining > 0) {
-            uint256 rangeSize =
-                remaining > MAX_TICKETS_PER_RANGE ? MAX_TICKETS_PER_RANGE : remaining;
+            uint64 rangeSize = remaining > MAX_TICKETS_PER_RANGE ? MAX_TICKETS_PER_RANGE : remaining;
+
             ranges.push(
-                TicketRange({start: uint96(currentStart), count: uint96(rangeSize), claimed: false})
+                TicketRange({start: uint64(currentStart), count: uint64(rangeSize), claimed: false})
             );
             currentStart += rangeSize;
             remaining -= rangeSize;

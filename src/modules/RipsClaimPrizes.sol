@@ -24,7 +24,7 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
 
         Config storage config = configIdToConfig[round.configId];
 
-        (uint256 ticketCount, uint256 totalPrize) =
+        (uint64 ticketCount, uint256 totalPrize) =
             _accumulateClaimedPrizes(ranges, startIndex, maxRanges, round, config);
 
         if (totalPrize > 0) {
@@ -37,7 +37,7 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         Round storage round,
         address recipient,
         address referrer,
-        uint256 ticketCount,
+        uint64 ticketCount,
         uint256 prize
     ) private {
         Config storage config = configIdToConfig[round.configId];
@@ -72,7 +72,7 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         uint256 maxRanges,
         Round storage round,
         Config storage config
-    ) private returns (uint256 ticketCount, uint256 totalPrize) {
+    ) private returns (uint64 ticketCount, uint256 totalPrize) {
         uint64 a = round.randomA;
         uint64 b = round.randomB;
         uint64 n = config.ticketCap;
@@ -86,7 +86,7 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
             if (ranges[i].claimed) continue;
 
             uint256 rangeStart = ranges[i].start;
-            uint256 count = ranges[i].count;
+            uint64 count = ranges[i].count;
 
             for (uint256 j = 0; j < count; j++) {
                 totalPrize += RipsMath.calculateTicketPrize(

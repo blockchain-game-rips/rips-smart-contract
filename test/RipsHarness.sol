@@ -24,7 +24,7 @@ contract RipsHarness is Rips {
         return roundIdToRound[roundId];
     }
 
-    function exposed_config(uint256 configId) external view returns (Config memory) {
+    function exposed_config(uint64 configId) external view returns (Config memory) {
         return configIdToConfig[configId];
     }
 
@@ -44,7 +44,7 @@ contract RipsHarness is Rips {
         return _roundIdToRequestTimestamp[roundId];
     }
 
-    function exposed_nextStakeId() external view returns (uint256) {
+    function exposed_nextStakeId() external view returns (uint64) {
         return _nextStakeId;
     }
 
@@ -52,7 +52,7 @@ contract RipsHarness is Rips {
         return _nextRoundId;
     }
 
-    function exposed_nextConfigId() external view returns (uint256) {
+    function exposed_nextConfigId() external view returns (uint64) {
         return _nextConfigId;
     }
 

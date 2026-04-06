@@ -18,7 +18,7 @@ contract Rips_SevenTiers is RipsTestBase {
     uint64 private constant TICKET_CAP = 128;
     uint256 private constant TICKET_COST = 1 ether;
 
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private roundId;
 
     function setUp() public override {
@@ -77,7 +77,7 @@ contract Rips_SevenTiers is RipsTestBase {
     }
 
     function test_Refund_SevenTiers() external {
-        uint256 ticketsToBuy = TICKET_CAP / 2;
+        uint64 ticketsToBuy = TICKET_CAP / 2;
 
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * TICKET_COST}(stakeId, ticketsToBuy, user);

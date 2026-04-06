@@ -4,9 +4,9 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_BuyTickets is RipsTestBase {
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private roundId;
-    uint256 private ticketsToBuy;
+    uint64 private ticketsToBuy;
 
     function setUp() public override {
         super.setUp();
@@ -33,7 +33,7 @@ contract Rips_BuyTickets is RipsTestBase {
     }
 
     function test_RevertWhen_TheStakeDoesNotExist() external {
-        uint256 nonExistentStakeId = 999;
+        uint64 nonExistentStakeId = 999;
 
         vm.prank(user);
         vm.expectRevert(IRips.StakeNotExist.selector);
@@ -60,7 +60,7 @@ contract Rips_BuyTickets is RipsTestBase {
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         uint256 expectedNewRoundId = rips.exposed_nextRoundId();
-        uint256 expectedConfigId = rips.stakeIdToCurrentConfigId(stakeId);
+        uint64 expectedConfigId = rips.stakeIdToCurrentConfigId(stakeId);
 
         vm.expectEmit();
         emit IRips.RoundCreated(expectedNewRoundId, stakeId, expectedConfigId);
@@ -150,7 +150,7 @@ contract Rips_BuyTickets is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint256 largeStakeId = rips.createStake(
+        uint64 largeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -236,12 +236,12 @@ contract Rips_BuyTickets is RipsTestBase {
         external
         givenTheStakeCurrencyIsNative
     {
-        uint256 initialBuy = DEFAULT_TICKET_CAP - 1;
+        uint64 initialBuy = DEFAULT_TICKET_CAP - 1;
         vm.prank(user);
         rips.buyTickets{value: initialBuy * DEFAULT_TICKET_COST}(stakeId, initialBuy, user);
 
         ticketsToBuy = 3;
-        uint256 availableTickets = DEFAULT_TICKET_CAP - initialBuy;
+        uint64 availableTickets = DEFAULT_TICKET_CAP - initialBuy;
         uint256 payment = ticketsToBuy * DEFAULT_TICKET_COST;
         uint256 expectedRefund = (ticketsToBuy - availableTickets) * DEFAULT_TICKET_COST;
 
@@ -330,7 +330,7 @@ contract Rips_BuyTickets is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint256 largeStakeId = rips.createStake(
+        uint64 largeStakeId = rips.createStake(
             IRips.Config({
                 currency: address(erc20),
                 tiers: tiers,
@@ -378,12 +378,12 @@ contract Rips_BuyTickets is RipsTestBase {
         external
         givenTheStakeCurrencyIsAnERC20Token
     {
-        uint256 initialBuy = DEFAULT_TICKET_CAP - 1;
+        uint64 initialBuy = DEFAULT_TICKET_CAP - 1;
         vm.prank(user);
         rips.buyTickets(stakeId, initialBuy, user);
 
         ticketsToBuy = 3;
-        uint256 availableTickets = DEFAULT_TICKET_CAP - initialBuy;
+        uint64 availableTickets = DEFAULT_TICKET_CAP - initialBuy;
         uint256 expectedCost = availableTickets * DEFAULT_TICKET_COST;
         uint256 balanceBefore = erc20.balanceOf(user);
 

@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "../src/Rips.sol";
+import {IRips} from "../src/interfaces/IRips.sol";
 
 /// @dev Deploy to production with a real Chainlink VRF coordinator.
 ///
@@ -36,12 +37,12 @@ contract Deploy is Script {
         vm.stopBroadcast();
     }
 
-    function _createDefaultStakes(Rips rips) internal returns (uint256 stakeId1, uint256 stakeId2) {
+    function _createDefaultStakes(Rips rips) internal returns (uint64 stakeId1, uint64 stakeId2) {
         stakeId1 = _createDefaultStake1(rips);
         stakeId2 = _createDefaultStake2(rips);
     }
 
-    function _createDefaultStake1(Rips rips) internal returns (uint256 stakeId) {
+    function _createDefaultStake1(Rips rips) internal returns (uint64 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
 
         tiers[0] =
@@ -63,7 +64,7 @@ contract Deploy is Script {
         );
     }
 
-    function _createDefaultStake2(Rips rips) internal returns (uint256 stakeId) {
+    function _createDefaultStake2(Rips rips) internal returns (uint64 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
 
         tiers[0] =

@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "../../RipsTestBase.sol";
 
 contract Rips_DeleteStake is RipsTestBase {
-    uint256 private stakeId;
+    uint64 private stakeId;
 
     function setUp() public override {
         super.setUp();
@@ -25,7 +25,7 @@ contract Rips_DeleteStake is RipsTestBase {
     }
 
     function test_RevertWhen_TheStakeDoesNotExist() external whenTheCallerIsTheOwner {
-        uint256 nonExistentStakeId = 999;
+        uint64 nonExistentStakeId = 999;
 
         vm.expectRevert(IRips.StakeNotExist.selector);
         rips.deleteStake(nonExistentStakeId);

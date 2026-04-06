@@ -80,17 +80,21 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
         if (referrerStats.currentMonth < currentMonth) {
             bool isConsecutiveMonth = referrerStats.currentMonth + 1 == currentMonth;
-            uint128 volumeInPrevMonth = isConsecutiveMonth ? referrerStats.currMonthVolume : 0;
+            uint192 volumeInPrevMonth = isConsecutiveMonth ? referrerStats.currMonthVolume : 0;
 
             referrerStats.activeFeePercent = _resolveTierFeePercent(volumeInPrevMonth);
-            referrerStats.currMonthVolume = uint128(ticketRevenue);
+
+            // the total supply of any real-world token, making overflow practically unreachable
+            // forge-lint: disable-next-line(unsafe-typecast)
+            referrerStats.currMonthVolume = uint192(ticketRevenue);
             referrerStats.currentMonth = currentMonth;
         } else {
-            referrerStats.currMonthVolume += uint128(ticketRevenue);
+            // forge-lint: disable-next-line(unsafe-typecast)
+            referrerStats.currMonthVolume += uint192(ticketRevenue);
         }
     }
 
-    function _resolveTierFeePercent(uint128 volume) private view returns (uint16 feePercent) {
+    function _resolveTierFeePercent(uint192 volume) private view returns (uint16 feePercent) {
         for (uint256 i = referralTiers.length; i > 0; i--) {
             if (volume >= referralTiers[i - 1].minVolume) {
                 return referralTiers[i - 1].feePercent;

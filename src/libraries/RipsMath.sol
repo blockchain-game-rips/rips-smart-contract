@@ -9,9 +9,12 @@ library RipsMath {
     }
 
     function deriveCoprimeA(uint256 randomValue, uint64 n) internal pure returns (uint64) {
-        uint64 a = uint64(randomValue % n);
         // a <= n-1 < type(uint64).max, so a+1 cannot overflow
+        // forge-lint: disable-next-line(unsafe-typecast)
+        uint64 a = uint64(randomValue % n);
+
         if (a % 2 == 0) a = a + 1;
+
         return a;
     }
 

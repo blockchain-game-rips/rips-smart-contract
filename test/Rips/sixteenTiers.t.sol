@@ -15,7 +15,7 @@ contract Rips_SixteenTiers is RipsTestBase {
     uint128 private constant MN_UNIT = 43_750_000_000_000_000;
     uint128 private constant MX_UNIT = 81_250_000_000_000_000;
 
-    uint256 private stakeId;
+    uint64 private stakeId;
     uint256 private roundId;
 
     function setUp() public override {
@@ -76,7 +76,7 @@ contract Rips_SixteenTiers is RipsTestBase {
     }
 
     function test_Refund_SixteenTiers() external {
-        uint256 ticketsToBuy = TICKET_CAP / 2;
+        uint64 ticketsToBuy = TICKET_CAP / 2;
 
         vm.prank(user);
         rips.buyTickets{value: ticketsToBuy * TICKET_COST}(stakeId, ticketsToBuy, user);

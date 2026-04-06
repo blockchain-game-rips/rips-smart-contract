@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "./StakeValidationSetup.sol";
 
 contract Rips_UpdateStake is StakeValidationSetup {
-    uint256 private stakeId;
+    uint64 private stakeId;
 
     function setUp() public override {
         super.setUp();
@@ -121,14 +121,14 @@ contract Rips_UpdateStake is StakeValidationSetup {
         // it should update the config immediately.
         // it should emit a {StakeUpdated} event.
         IRips.Config memory config = _updatedConfig();
-        uint256 expectedConfigId = rips.exposed_nextConfigId();
+        uint64 expectedConfigId = rips.exposed_nextConfigId();
 
         vm.expectEmit();
         emit IRips.StakeUpdated(stakeId, expectedConfigId);
 
         rips.updateStake(stakeId, config);
 
-        uint256 configId = rips.stakeIdToCurrentConfigId(stakeId);
+        uint64 configId = rips.stakeIdToCurrentConfigId(stakeId);
         IRips.Config memory stored = rips.exposed_config(configId);
         assertEq(stored.ticketCap, config.ticketCap);
         assertEq(stored.ticketCost, config.ticketCost);
@@ -152,7 +152,7 @@ contract Rips_UpdateStake is StakeValidationSetup {
         vm.prank(user);
         rips.buyTickets{value: config.ticketCost}(stakeId, 1, user);
 
-        uint256 configId = rips.stakeIdToCurrentConfigId(stakeId);
+        uint64 configId = rips.stakeIdToCurrentConfigId(stakeId);
         IRips.Config memory active = rips.exposed_config(configId);
         assertEq(active.ticketCap, config.ticketCap);
         assertEq(active.ticketCost, config.ticketCost);
