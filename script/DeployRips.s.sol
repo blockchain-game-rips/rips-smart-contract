@@ -12,6 +12,7 @@ contract DeployRips is Script {
     bytes32 private constant DEFAULT_KEY_HASH = bytes32(uint256(1));
     uint32 private constant DEFAULT_CALLBACK_GAS = 200_000;
     uint16 private constant DEFAULT_FEE_PERCENT = 500; // 5%
+    uint16 private constant DEFAULT_REFERRAL_FEE = 2000; // 20%
 
     function run() external returns (address rips) {
         address coordinator = vm.envAddress("VRF_COORDINATOR");
@@ -27,6 +28,8 @@ contract DeployRips is Script {
         coordinatorContract.fundSubscription(subscriptionId, VRF_FUND_AMOUNT);
 
         Rips ripsContract = new Rips(coordinator, subscriptionId, keyHash, callbackGasLimit);
+
+        ripsContract.setDefaultReferralFee(DEFAULT_REFERRAL_FEE);
 
         coordinatorContract.addConsumer(subscriptionId, address(ripsContract));
 
@@ -51,7 +54,7 @@ contract DeployRips is Script {
 
         tiers[1] = IRips.PrizeTier({prizeCount: 2, minPrize: 0.007 ether, maxPrize: 0.008 ether});
 
-        tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.02 ether, maxPrize: 0.02 ether});
+        tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.018 ether, maxPrize: 0.018 ether});
 
         stakeId = rips.createStake(
             IRips.Config({
@@ -72,7 +75,7 @@ contract DeployRips is Script {
 
         tiers[1] = IRips.PrizeTier({prizeCount: 2, minPrize: 0.014 ether, maxPrize: 0.016 ether});
 
-        tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.04 ether, maxPrize: 0.04 ether});
+        tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.036 ether, maxPrize: 0.036 ether});
 
         stakeId = rips.createStake(
             IRips.Config({
