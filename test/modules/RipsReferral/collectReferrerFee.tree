@@ -10,17 +10,20 @@ RipsReferral_CollectReferrerFee
 ├── when default fee is set and referrer has no prior activity
 │   ├── it should return fee based on default fee percent.
 │   └── it should update only currMonthVolume.
-├── when referrer current month volume crosses a tier threshold
+├── when referrer current period volume crosses a tier threshold
 │   ├── it should return fee based on default fee percent.
 │   └── it should update only currMonthVolume.
-├── when referrers previous month volume reached a tier threshold
+├── when referrers previous period volume reached a tier threshold
 │   ├── it should return fee based on active fee percent.
 │   └── it should update referrerStats.
 ├── when active fee percent is below default fee percent
 │   ├── it should return fee based on default fee percent.
 │   └── it should update only currMonthVolume.
-├── when a new month starts after a consecutive active month
+├── when a new period starts after a consecutive active period
 │   └── it should update referrerStats.
-└── when a new month starts after an inactive month gap
-    ├── it should update referrerStats.
-    └── it should reset active fee percent to zero.
+├── when a new period starts after an inactive period gap
+│   ├── it should update referrerStats.
+│   └── it should reset active fee percent to zero.
+└── when two referrers have independent period tracking
+    ├── it should apply tier fee to referrer A after their period ends.
+    └── it should apply default fee to referrer B whose period has not yet ended.

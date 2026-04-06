@@ -6,6 +6,7 @@ import {RipsUtils} from "../common/RipsUtils.sol";
 
 abstract contract RipsReferral is RipsStorage, RipsUtils {
     uint256 public constant MAX_REFERRAL_TIER_COUNT = 10;
+    uint40 public constant REFERRAL_PERIOD = 30 days;
 
     uint16 public defaultReferralFee;
 
@@ -76,25 +77,24 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
     {
         referrerStats = referrerToReferrerStats[referrer];
 
-        uint32 currentMonth = uint32(block.timestamp / 30 days);
+        uint40 nowTimestamp = uint40(block.timestamp);
 
-        if (referrerStats.currentMonth < currentMonth) {
-            bool isConsecutiveMonth = referrerStats.currentMonth + 1 == currentMonth;
-            uint192 volumeInPrevMonth = isConsecutiveMonth ? referrerStats.currMonthVolume : 0;
+        if (nowTimestamp >= referrerStats.monthStartTimestamp + REFERRAL_PERIOD) {
+            bool isConsecutiveMonth =
+                nowTimestamp < referrerStats.monthStartTimestamp + 2 * REFERRAL_PERIOD;
+
+            uint256 volumeInPrevMonth = isConsecutiveMonth ? referrerStats.currMonthVolume : 0;
 
             referrerStats.activeFeePercent = _resolveTierFeePercent(volumeInPrevMonth);
+            referrerStats.monthStartTimestamp += REFERRAL_PERIOD;
 
-            // the total supply of any real-world token, making overflow practically unreachable
-            // forge-lint: disable-next-line(unsafe-typecast)
-            referrerStats.currMonthVolume = uint192(ticketRevenue);
-            referrerStats.currentMonth = currentMonth;
+            referrerStats.currMonthVolume = ticketRevenue;
         } else {
-            // forge-lint: disable-next-line(unsafe-typecast)
-            referrerStats.currMonthVolume += uint192(ticketRevenue);
+            referrerStats.currMonthVolume += ticketRevenue;
         }
     }
 
-    function _resolveTierFeePercent(uint192 volume) private view returns (uint16 feePercent) {
+    function _resolveTierFeePercent(uint256 volume) private view returns (uint16 feePercent) {
         for (uint256 i = referralTiers.length; i > 0; i--) {
             if (volume >= referralTiers[i - 1].minVolume) {
                 return referralTiers[i - 1].feePercent;
