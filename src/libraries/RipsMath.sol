@@ -25,7 +25,7 @@ library RipsMath {
         uint64 n,
         IRips.PrizeTier[] memory tiers,
         uint64[] memory tierBoundaries
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 prizeNumber = (uint256(a) * ticketNumber + b) % n + 1;
 
         for (uint256 t = 0; t < tierBoundaries.length; t++) {
