@@ -95,6 +95,9 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
             })
         );
 
+        if (requestId == 0) revert InvalidRequestId();
+        if (_vrfRequestToRound[requestId] != 0) revert InvalidRequestId();
+
         round.vrfRequestStatus = VrfRequestStatus.Requested;
         _vrfRequestToRound[requestId] = roundId;
         _roundIdToRequestTimestamp[roundId] = block.timestamp;

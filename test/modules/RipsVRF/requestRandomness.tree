@@ -6,8 +6,13 @@ Rips_RequestRandomness
 ├── when the round is not sold out
 │   └── it should revert with {RoundNotSoldOut}.
 └── when the round exists, is Active, and is sold out
-    ├── it should request a random word from Chainlink VRF.
-    ├── it should set vrf request status to Requested.
-    ├── it should map the VRF request ID to the round ID.
-    ├── it should record the request timestamp.
-    └── it should emit a {RandomnessRequested} event.
+    ├── when the VRF coordinator returns a zero request ID
+    │   └── it should revert with {InvalidRequestId}.
+    ├── when the VRF coordinator returns a request ID already mapped to a round
+    │   └── it should revert with {InvalidRequestId}.
+    └── when the request ID is valid and not yet mapped
+        ├── it should request a random word from Chainlink VRF.
+        ├── it should set vrf request status to Requested.
+        ├── it should map the VRF request ID to the round ID.
+        ├── it should record the request timestamp.
+        └── it should emit a {RandomnessRequested} event.

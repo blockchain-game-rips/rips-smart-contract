@@ -81,6 +81,7 @@ interface IRips {
     error NotRecipientOrOwner();
     error VrfAlreadyRequested();
     error ZeroSubscriptionId();
+    error InvalidRequestId();
 
     event StakeCreated(uint256 indexed stakeId);
     event StakeUpdated(uint256 indexed stakeId);

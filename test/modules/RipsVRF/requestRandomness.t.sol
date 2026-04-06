@@ -3,6 +3,61 @@ pragma solidity ^0.8.13;
 
 import "../../RipsTestBase.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
+
+contract StubVrfCoordinator is IVRFCoordinatorV2Plus {
+    uint256 private _nextRequestId;
+
+    function setNextRequestId(uint256 requestId) external {
+        _nextRequestId = requestId;
+    }
+
+    function requestRandomWords(VRFV2PlusClient.RandomWordsRequest calldata)
+        external
+        override
+        returns (uint256)
+    {
+        return _nextRequestId;
+    }
+
+    function addConsumer(uint256, address) external override {}
+
+    function removeConsumer(uint256, address) external override {}
+
+    function cancelSubscription(uint256, address) external override {}
+
+    function acceptSubscriptionOwnerTransfer(uint256) external override {}
+
+    function createSubscription() external override returns (uint256) {
+        return 0;
+    }
+
+    function fundSubscriptionWithNative(uint256) external payable override {}
+
+    function getSubscription(uint256)
+        external
+        pure
+        override
+        returns (uint96, uint96, uint64, address, address[] memory)
+    {
+        return (0, 0, 0, address(0), new address[](0));
+    }
+
+    function getActiveSubscriptionIds(uint256, uint256)
+        external
+        pure
+        override
+        returns (uint256[] memory)
+    {
+        return new uint256[](0);
+    }
+
+    function requestSubscriptionOwnerTransfer(uint256, address) external override {}
+
+    function pendingRequestExists(uint256) external pure override returns (bool) {
+        return false;
+    }
+}
 
 contract Rips_RequestRandomness is RipsTestBase {
     event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
@@ -92,6 +147,44 @@ contract Rips_RequestRandomness is RipsTestBase {
     function test_RevertWhen_TheRoundIsNotSoldOut() external {
         vm.expectRevert(IRips.RoundNotSoldOut.selector);
         rips.requestRandomness(activeRoundId);
+    }
+
+    function test_RevertWhen_TheVRFCoordinatorReturnsAZeroRequestId() external {
+        StubVrfCoordinator stub = new StubVrfCoordinator();
+        stub.setNextRequestId(0);
+
+        vm.prank(owner);
+        rips.setCoordinator(address(stub));
+
+        vm.expectRevert(IRips.InvalidRequestId.selector);
+        rips.requestRandomness(soldOutRoundId);
+    }
+
+    function test_RevertWhen_TheVRFCoordinatorReturnsARequestIdAlreadyMappedToARound() external {
+        uint256 duplicateRequestId = 1;
+
+        StubVrfCoordinator stub = new StubVrfCoordinator();
+        stub.setNextRequestId(duplicateRequestId);
+
+        vm.prank(owner);
+        rips.setCoordinator(address(stub));
+
+        // first request succeeds and maps duplicateRequestId → soldOutRoundId
+        rips.requestRandomness(soldOutRoundId);
+
+        // create a second sold-out round
+        uint256 stakeId2 = _createDefaultStake();
+
+        vm.deal(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
+        vm.prank(user);
+        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
+            stakeId2, DEFAULT_TICKET_CAP, user
+        );
+
+        uint256 secondRoundId = rips.stakeIdToCurrentRoundId(stakeId2);
+
+        vm.expectRevert(IRips.InvalidRequestId.selector);
+        rips.requestRandomness(secondRoundId);
     }
 
     modifier whenTheRoundExistsIsActiveAndIsSoldOut() {
