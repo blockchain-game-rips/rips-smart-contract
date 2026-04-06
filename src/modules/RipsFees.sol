@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../common/RipsUtils.sol";
+import {RipsUtils} from "../common/RipsUtils.sol";
 
 abstract contract RipsFees is RipsUtils {
     address public feeRecipient;

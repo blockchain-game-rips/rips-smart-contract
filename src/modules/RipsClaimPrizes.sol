@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../common/RipsUtils.sol";
-import "../modules/RipsReferral.sol";
-import "../libraries/RipsMath.sol";
+import {RipsUtils} from "../common/RipsUtils.sol";
+import {RipsReferral} from "../modules/RipsReferral.sol";
+import {RipsMath} from "../libraries/RipsMath.sol";
 
 abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
     function claimPrizes(

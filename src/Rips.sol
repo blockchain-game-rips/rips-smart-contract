@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./modules/RipsAdmin.sol";
-import "./modules/RipsFees.sol";
-import "./modules/RipsReferral.sol";
-import "./modules/RipsVrf.sol";
-import "./modules/RipsBuyTickets.sol";
-import "./modules/RipsClaimPrizes.sol";
-import "./modules/RipsRefund.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {RipsAdmin} from "./modules/RipsAdmin.sol";
+import {RipsFees} from "./modules/RipsFees.sol";
+import {RipsReferral} from "./modules/RipsReferral.sol";
+import {RipsVrf} from "./modules/RipsVrf.sol";
+import {RipsBuyTickets} from "./modules/RipsBuyTickets.sol";
+import {RipsClaimPrizes} from "./modules/RipsClaimPrizes.sol";
+import {RipsRefund} from "./modules/RipsRefund.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract Rips is
     RipsAdmin,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../interfaces/IRips.sol";
+import {IRips} from "../interfaces/IRips.sol";
 
 library RipsMath {
     function isPowerOfTwo(uint256 n) internal pure returns (bool) {

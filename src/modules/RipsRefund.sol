@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../common/RipsUtils.sol";
+import {RipsUtils} from "../common/RipsUtils.sol";
 
 abstract contract RipsRefund is RipsUtils {
     mapping(uint256 roundId => mapping(address user => bool refunded)) public hasRefunded;

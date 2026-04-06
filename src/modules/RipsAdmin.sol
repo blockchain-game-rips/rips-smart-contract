@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../common/RipsStorage.sol";
-import "../libraries/RipsMath.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
-import "../common/RipsUtils.sol";
+import {RipsStorage} from "../common/RipsStorage.sol";
+import {RipsMath} from "../libraries/RipsMath.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {RipsUtils} from "../common/RipsUtils.sol";
 
 abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
     uint256 public constant MAX_TIER_COUNT = 20;
