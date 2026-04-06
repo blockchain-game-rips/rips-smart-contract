@@ -6,7 +6,7 @@ import "../../../src/libraries/RipsMath.sol";
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 
 contract Rips_FulfillRandomWords is RipsTestBase {
-    event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
+    event RandomnessFulfilled(uint256 indexed roundId, uint256 randomA, uint256 randomB);
 
     uint64 private constant TICKET_CAP = 2;
     uint256 private constant TICKET_COST = 1 ether;
@@ -102,7 +102,7 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         uint256 expectedB = uint256(keccak256(abi.encode(randomWord))) % TICKET_CAP;
 
         vm.expectEmit(true, false, false, true);
-        emit RoundFinalized(roundId, expectedA, expectedB);
+        emit RandomnessFulfilled(roundId, expectedA, expectedB);
 
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 

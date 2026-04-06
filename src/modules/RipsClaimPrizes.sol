@@ -52,12 +52,12 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
 
             if (remainingFee > 0) {
                 protocolFeeAccrued[currency] += remainingFee;
-                //TODO: consider event
+                emit ProtocolFeeAccrued(roundId, remainingFee);
             }
 
             if (referrerFee > 0) {
                 referrerFeeAccrued[referrer][currency] += referrerFee;
-                emit ReferralFeePaid(roundId, referrer, referrerFee);
+                emit ReferralFeeAccrued(roundId, referrer, referrerFee);
             }
         }
 

@@ -130,6 +130,6 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         round.randomB = uint64(uint256(keccak256(abi.encode(randomWord))) % n);
         round.vrfRequestStatus = VrfRequestStatus.Fulfilled;
 
-        emit RoundFinalized(roundId, round.randomA, round.randomB);
+        emit RandomnessFulfilled(roundId, round.randomA, round.randomB);
     }
 }

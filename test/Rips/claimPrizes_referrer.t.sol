@@ -92,7 +92,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         uint256 expectedReferrerFee = _referrerFeeFrom(CUSTOM_FEE_PERCENT);
 
         vm.expectEmit();
-        emit IRips.ReferralFeePaid(roundId, referrer, expectedReferrerFee);
+        emit IRips.ReferralFeeAccrued(roundId, referrer, expectedReferrerFee);
 
         _claim();
 
@@ -107,7 +107,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         uint256 expectedReferrerFee = _referrerFeeFrom(DEFAULT_REFERRAL_FEE);
 
         vm.expectEmit();
-        emit IRips.ReferralFeePaid(roundId, referrer, expectedReferrerFee);
+        emit IRips.ReferralFeeAccrued(roundId, referrer, expectedReferrerFee);
 
         _claim();
 

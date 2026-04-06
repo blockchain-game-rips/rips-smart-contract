@@ -80,7 +80,7 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
 
         stakeIdToCurrentRoundId[stakeId] = roundId;
 
-        emit RoundCreated(roundId, stakeId);
+        emit RoundCreated(roundId, stakeId, configId);
     }
 
     function _getTicketsToBuy(Round storage round, Config storage config, uint256 ticketCount)

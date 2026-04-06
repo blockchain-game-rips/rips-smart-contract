@@ -60,9 +60,10 @@ contract Rips_BuyTickets is RipsTestBase {
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         uint256 expectedNewRoundId = rips.exposed_nextRoundId();
+        uint256 expectedConfigId = rips.stakeIdToCurrentConfigId(stakeId);
 
         vm.expectEmit();
-        emit IRips.RoundCreated(expectedNewRoundId, stakeId);
+        emit IRips.RoundCreated(expectedNewRoundId, stakeId, expectedConfigId);
 
         vm.prank(user);
         rips.buyTickets{value: DEFAULT_TICKET_COST}(stakeId, 1, user);

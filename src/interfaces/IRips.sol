@@ -83,15 +83,15 @@ interface IRips {
     error ZeroSubscriptionId();
     error InvalidRequestId();
 
-    event StakeCreated(uint256 indexed stakeId);
-    event StakeUpdated(uint256 indexed stakeId);
+    event StakeCreated(uint256 indexed stakeId, uint256 configId);
+    event StakeUpdated(uint256 indexed stakeId, uint256 configId);
     event StakeDeleted(uint256 indexed stakeId);
-    event RoundCreated(uint256 indexed roundId, uint256 indexed stakeId);
+
+    event RoundCreated(uint256 indexed roundId, uint256 indexed stakeId, uint256 configId);
+
     event TicketsPurchased(
         uint256 indexed roundId, address indexed user, uint256 ticketCount, uint256 startTicketIndex
     );
-    event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
-    event RoundFinalized(uint256 indexed roundId, uint256 randomA, uint256 randomB);
     event PrizesClaimed(
         uint256 indexed roundId,
         address indexed user,
@@ -100,19 +100,25 @@ interface IRips {
         uint256 prizeAmount
     );
     event RefundIssued(uint256 indexed roundId, address indexed user, uint256 ticketCount);
-    event FeeRecipientUpdated(address newRecipient);
-    event ProtocolFeeWithdrawn(address indexed recipient, address indexed currency, uint256 amount);
-    event ReferrerFeeWithdrawn(address indexed referrer, address indexed currency, uint256 amount);
-    event ReferrerFeeSeized(address indexed referrer, address indexed currency, uint256 amount);
-    event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
+
+    event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
+    event RandomnessFulfilled(uint256 indexed roundId, uint256 randomA, uint256 randomB);
     event CallbackGasLimitUpdated(uint32 newLimit);
     event VrfRequestConfirmationsUpdated(uint16 newConfirmations);
     event VrfSubscriptionIdUpdated(uint256 newSubscriptionId);
     event VrfKeyHashUpdated(bytes32 newKeyHash);
+
+    event FeeRecipientUpdated(address newRecipient);
+    event ProtocolFeeWithdrawn(address indexed recipient, address indexed currency, uint256 amount);
+
+    event ReferrerFeeWithdrawn(address indexed referrer, address indexed currency, uint256 amount);
+    event ReferrerFeeSeized(address indexed referrer, address indexed currency, uint256 amount);
+    event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
     event ReferralTiersUpdated(ReferralTier[] tiers);
     event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
     event ReferrerCustomFeeSet(address indexed referrer, uint16 customFeePercent);
-    event ReferralFeePaid(uint256 indexed roundId, address indexed referrer, uint256 amount);
+    event ReferralFeeAccrued(uint256 indexed roundId, address indexed referrer, uint256 amount);
+    event ProtocolFeeAccrued(uint256 indexed roundId, uint256 amount);
 
     function buyTickets(uint256 stakeId, uint256 ticketCount, address recipient) external payable;
 

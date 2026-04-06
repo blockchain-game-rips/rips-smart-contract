@@ -24,9 +24,9 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
     {
         stakeId = _nextStakeId++;
 
-        _applyConfig(stakeId, config);
+        uint256 configId = _applyConfig(stakeId, config);
 
-        emit StakeCreated(stakeId);
+        emit StakeCreated(stakeId, configId);
     }
 
     function updateStake(uint256 stakeId, Config calldata config)
@@ -36,9 +36,9 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         if (isStakeDeleted[stakeId]) revert StakeNotExist();
         if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
 
-        _applyConfig(stakeId, config);
+        uint256 configId = _applyConfig(stakeId, config);
 
-        emit StakeUpdated(stakeId);
+        emit StakeUpdated(stakeId, configId);
     }
 
     function deleteStake(uint256 stakeId) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -50,10 +50,13 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         emit StakeDeleted(stakeId);
     }
 
-    function _applyConfig(uint256 stakeId, Config calldata config) internal {
+    function _applyConfig(uint256 stakeId, Config calldata config)
+        internal
+        returns (uint256 configId)
+    {
         _validateConfig(config);
 
-        uint256 configId = _storeConfig(config);
+        configId = _storeConfig(config);
 
         stakeIdToCurrentConfigId[stakeId] = configId;
     }

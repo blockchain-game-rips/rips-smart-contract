@@ -6,8 +6,8 @@ Rips_ClaimPrizes_Referrer
 ├── given referrer has a custom fee set
 │   ├── it should send the referrer fee to the referrer.
 │   ├── it should send the remaining protocol fee to the fee recipient.
-│   └── it should emit a {ReferralFeePaid} event.
+│   └── it should emit a {ReferralFeeAccrued} event.
 └── given base fee is set and referrer has no prior activity
     ├── it should send the referrer fee to the referrer.
     ├── it should send the remaining protocol fee to the fee recipient.
-    └── it should emit a {ReferralFeePaid} event.
+    └── it should emit a {ReferralFeeAccrued} event.

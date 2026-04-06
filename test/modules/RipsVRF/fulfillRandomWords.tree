@@ -12,4 +12,4 @@ Rips_FulfillRandomWords
         ├── it should derive a coprime value from the random word.
         ├── it should set randomB from the hash of the random word modulo ticket cap.
         ├── it should set vrf request status to Fulfilled.
-        └── it should emit a {RoundFinalized} event.
+        └── it should emit a {RandomnessFulfilled} event.

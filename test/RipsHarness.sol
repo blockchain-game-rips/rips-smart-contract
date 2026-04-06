@@ -52,6 +52,10 @@ contract RipsHarness is Rips {
         return _nextRoundId;
     }
 
+    function exposed_nextConfigId() external view returns (uint256) {
+        return _nextConfigId;
+    }
+
     function exposed_calculateTicketPrize(
         uint256 ticketNumber,
         uint64 a,

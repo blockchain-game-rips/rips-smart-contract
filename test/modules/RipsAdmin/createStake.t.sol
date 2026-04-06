@@ -70,9 +70,10 @@ contract Rips_CreateStake is StakeValidationSetup {
         // it should increment the next stake ID.
         // it should emit a {StakeCreated} event.
         uint256 expectedStakeId = rips.exposed_nextStakeId();
+        uint256 expectedConfigId = rips.exposed_nextConfigId();
 
         vm.expectEmit();
-        emit IRips.StakeCreated(expectedStakeId);
+        emit IRips.StakeCreated(expectedStakeId, expectedConfigId);
 
         uint256 stakeId = rips.createStake(validConfig());
 

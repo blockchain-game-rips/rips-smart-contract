@@ -23,6 +23,7 @@ Rips_ClaimPrizes
     │   └── when protocol fee is greater than zero
     │       ├── it should transfer the fee in ETH to the fee recipient.
     │       ├── it should transfer the remaining ETH prize to the recipient.
+    │       ├── it should emit a {ProtocolFeeAccrued} event.
     │       └── it should emit a {PrizesClaimed} event.
     └── given the stake currency is an ERC20 token
         ├── when protocol fee is zero
@@ -31,4 +32,5 @@ Rips_ClaimPrizes
         └── when protocol fee is greater than zero
             ├── it should transfer the fee in tokens to the fee recipient.
             ├── it should transfer the remaining token prize to the recipient.
+            ├── it should emit a {ProtocolFeeAccrued} event.
             └── it should emit a {PrizesClaimed} event.

@@ -121,9 +121,10 @@ contract Rips_UpdateStake is StakeValidationSetup {
         // it should update the config immediately.
         // it should emit a {StakeUpdated} event.
         IRips.Config memory config = _updatedConfig();
+        uint256 expectedConfigId = rips.exposed_nextConfigId();
 
         vm.expectEmit();
-        emit IRips.StakeUpdated(stakeId);
+        emit IRips.StakeUpdated(stakeId, expectedConfigId);
 
         rips.updateStake(stakeId, config);
 

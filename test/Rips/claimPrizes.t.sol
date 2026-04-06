@@ -218,6 +218,9 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 userBalanceBefore = user.balance;
 
         vm.expectEmit();
+        emit IRips.ProtocolFeeAccrued(feeRoundId, _protocolFee());
+
+        vm.expectEmit();
         emit IRips.PrizesClaimed(feeRoundId, user, referrer, DEFAULT_TICKET_CAP, _feePrizePool());
 
         vm.prank(user);
@@ -280,6 +283,9 @@ contract Rips_ClaimPrizes is RipsTestBase {
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         uint256 userBalanceBefore = erc20.balanceOf(user);
+
+        vm.expectEmit();
+        emit IRips.ProtocolFeeAccrued(feeRoundId, _protocolFee());
 
         vm.expectEmit();
         emit IRips.PrizesClaimed(feeRoundId, user, referrer, DEFAULT_TICKET_CAP, _feePrizePool());
