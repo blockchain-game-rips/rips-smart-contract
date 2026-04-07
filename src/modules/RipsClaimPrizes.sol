@@ -46,8 +46,10 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         uint256 ticketRevenue = ticketCount * config.ticketCost;
         uint256 protocolFee = (ticketRevenue * config.feePercent) / FEE_BASE;
 
+        // even if protocolFee == 0, update referrer volume
+        uint256 referrerFee = _collectReferrerFee(referrer, protocolFee, ticketRevenue);
+
         if (protocolFee > 0) {
-            uint256 referrerFee = _collectReferrerFee(referrer, protocolFee, ticketRevenue);
             uint256 remainingFee = protocolFee - referrerFee;
 
             if (remainingFee > 0) {
