@@ -3,8 +3,8 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
-import "../src/Rips.sol";
 import {IRips} from "../src/interfaces/IRips.sol";
+import {RipsHarness} from "../test/RipsHarness.sol";
 
 uint256 constant VRF_FUND_AMOUNT = 10 ether;
 
@@ -27,7 +27,8 @@ contract DeployRips is Script {
 
         coordinatorContract.fundSubscription(subscriptionId, VRF_FUND_AMOUNT);
 
-        Rips ripsContract = new Rips(coordinator, subscriptionId, keyHash, callbackGasLimit);
+        RipsHarness ripsContract =
+            new RipsHarness(coordinator, subscriptionId, keyHash, callbackGasLimit);
 
         ripsContract.setDefaultReferralFee(DEFAULT_REFERRAL_FEE);
 
@@ -42,12 +43,15 @@ contract DeployRips is Script {
         console.log("rips:", rips);
     }
 
-    function _createDefaultStakes(Rips rips) internal returns (uint64 stakeId1, uint64 stakeId2) {
+    function _createDefaultStakes(RipsHarness rips)
+        internal
+        returns (uint64 stakeId1, uint64 stakeId2)
+    {
         stakeId1 = _createDefaultStake1(rips);
         stakeId2 = _createDefaultStake2(rips);
     }
 
-    function _createDefaultStake1(Rips rips) internal returns (uint64 stakeId) {
+    function _createDefaultStake1(RipsHarness rips) internal returns (uint64 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
 
         tiers[0] = IRips.PrizeTier({prizeCount: 5, minPrize: 0.0008 ether, maxPrize: 0.0012 ether});
@@ -68,7 +72,7 @@ contract DeployRips is Script {
         );
     }
 
-    function _createDefaultStake2(Rips rips) internal returns (uint64 stakeId) {
+    function _createDefaultStake2(RipsHarness rips) internal returns (uint64 stakeId) {
         IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
 
         tiers[0] = IRips.PrizeTier({prizeCount: 5, minPrize: 0.0016 ether, maxPrize: 0.0024 ether});

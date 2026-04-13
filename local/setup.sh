@@ -34,7 +34,7 @@ SUBSCRIPTION_ID=$(jq -r '.receipts[].logs[] | select(.topics[0] == "0x1d3015d7ba
 
 echo "Deploying Rips..."
 VRF_COORDINATOR="$COORDINATOR_ADDRESS" VRF_SUBSCRIPTION_ID="$SUBSCRIPTION_ID" \
-    forge script script/DeployRips.s.sol:DeployRips \
+    forge script script/DeployRipsHarness.s.sol:DeployRips \
     --rpc-url "$RPC_URL" \
     --broadcast \
     --sender "$DEPLOYER_ADDRESS" \
