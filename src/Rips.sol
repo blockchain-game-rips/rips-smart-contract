@@ -37,6 +37,6 @@ contract Rips is
         view
         returns (TicketRange[] memory)
     {
-        return _userTickets[roundId][user];
+        return userTickets[roundId][user];
     }
 }

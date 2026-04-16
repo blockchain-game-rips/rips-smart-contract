@@ -19,7 +19,7 @@ abstract contract RipsClaimPrizes is RipsUtils, RipsReferral {
         Round storage round = roundIdToRound[roundId];
         if (round.vrfRequestStatus != VrfRequestStatus.Fulfilled) revert RoundNotFulfilled();
 
-        TicketRange[] storage ranges = _userTickets[roundId][recipient];
+        TicketRange[] storage ranges = userTickets[roundId][recipient];
         if (startIndex >= ranges.length) revert InvalidStartIndex();
 
         Config storage config = configIdToConfig[round.configId];

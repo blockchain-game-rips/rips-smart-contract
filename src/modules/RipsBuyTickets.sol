@@ -114,7 +114,7 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
         uint64 startTicket,
         uint64 ticketCount
     ) private {
-        TicketRange[] storage ranges = _userTickets[roundId][buyer];
+        TicketRange[] storage ranges = userTickets[roundId][buyer];
         uint64 remaining = ticketCount;
         uint64 currentStart = startTicket;
 
@@ -128,7 +128,7 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
             remaining -= rangeSize;
         }
 
-        _userTicketCount[roundId][buyer] += ticketCount;
+        userTicketCount[roundId][buyer] += ticketCount;
     }
 
     function _receivePayment(Config storage config, uint256 toBuy, address from)

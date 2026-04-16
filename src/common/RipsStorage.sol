@@ -23,10 +23,8 @@ abstract contract RipsStorage is IRips {
     mapping(uint64 stakeId => uint256 roundId) public stakeIdToCurrentRoundId;
     mapping(uint64 stakeId => bool deleted) public isStakeDeleted;
 
-    mapping(uint256 roundId => mapping(address buyer => TicketRange[] ranges)) internal
-        _userTickets;
-    mapping(uint256 roundId => mapping(address buyer => uint64 ticketCount)) internal
-        _userTicketCount;
+    mapping(uint256 roundId => mapping(address buyer => TicketRange[] ranges)) internal userTickets;
+    mapping(uint256 roundId => mapping(address buyer => uint64 ticketCount)) public userTicketCount;
 
     mapping(uint256 roundId => uint256 requestTimestamp) internal _roundIdToRequestTimestamp;
 }
