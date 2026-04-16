@@ -29,7 +29,7 @@ abstract contract RipsBuyTickets is RipsUtils, Pausable {
         uint256 nativeExcess = _receivePayment(config, toBuy, msg.sender);
 
         if (nativeExcess > 0) {
-            _sendNative(msg.sender, nativeExcess);
+            _sendNative(recipient, nativeExcess);
         }
     }
 
