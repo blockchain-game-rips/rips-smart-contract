@@ -3,27 +3,37 @@ RipsReferral_CollectReferrerFee
 │   └── it should return zero.
 ├── when referrer has a custom fee set
 │   ├── it should return fee based on custom fee percent.
-│   └── it should update only currMonthVolume.
+│   ├── it should update only currMonthVolume.
+│   └── it should emit a {ReferralStatsUpdated} event.
 ├── when no referral tiers are configured and default fee is zero
 │   ├── it should return zero.
-│   └── it should update only currMonthVolume.
+│   ├── it should update only currMonthVolume.
+│   └── it should emit a {ReferralStatsUpdated} event.
 ├── when default fee is set and referrer has no prior activity
 │   ├── it should return fee based on default fee percent.
-│   └── it should update only currMonthVolume.
+│   ├── it should update only currMonthVolume.
+│   └── it should emit a {ReferralStatsUpdated} event.
 ├── when referrer current period volume crosses a tier threshold
 │   ├── it should return fee based on default fee percent.
-│   └── it should update only currMonthVolume.
+│   ├── it should update only currMonthVolume.
+│   └── it should emit a {ReferralStatsUpdated} event.
 ├── when referrers previous period volume reached a tier threshold
 │   ├── it should return fee based on active fee percent.
-│   └── it should update referrerStats.
+│   ├── it should update referrerStats.
+│   └── it should emit a {ReferralStatsUpdated} event.
 ├── when active fee percent is below default fee percent
 │   ├── it should return fee based on default fee percent.
-│   └── it should update only currMonthVolume.
+│   ├── it should update only currMonthVolume.
+│   └── it should emit a {ReferralStatsUpdated} event.
 ├── when a new period starts after a consecutive active period
-│   └── it should update referrerStats.
+│   ├── it should update referrerStats.
+│   └── it should emit a {ReferralStatsUpdated} event.
 ├── when a new period starts after an inactive period gap
 │   ├── it should update referrerStats.
-│   └── it should reset active fee percent to zero.
+│   ├── it should reset active fee percent to zero.
+│   ├── it should advance monthStartTimestamp to the current period.
+│   └── it should emit a {ReferralStatsUpdated} event.
 └── when two referrers have independent period tracking
     ├── it should apply tier fee to referrer A after their period ends.
-    └── it should apply default fee to referrer B whose period has not yet ended.
+    ├── it should apply default fee to referrer B whose period has not yet ended.
+    └── it should emit a {ReferralStatsUpdated} event for each referrer.

@@ -31,9 +31,10 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         if (referrer == address(0)) revert ZeroAddress();
         if (customFeePercent > FEE_BASE) revert FeeTooHigh();
 
-        referrerToReferrerStats[referrer].customFeePercent = customFeePercent;
+        ReferrerStats storage referrerStats = referrerToReferrerStats[referrer];
+        referrerStats.customFeePercent = customFeePercent;
 
-        emit ReferrerCustomFeeSet(referrer, customFeePercent);
+        emit ReferralStatsUpdated(referrerStats);
     }
 
     function setReferralTiers(ReferralTier[] calldata tiers) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -60,8 +61,9 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
         ReferrerStats storage referrerStats = _resolveReferrerStats(referrer, ticketRevenue);
 
-        if (referrerStats.customFeePercent > 0) {
-            return (protocolFee * referrerStats.customFeePercent) / FEE_BASE;
+        uint16 customFeePercent = referrerStats.customFeePercent;
+        if (customFeePercent > 0) {
+            return (protocolFee * customFeePercent) / FEE_BASE;
         }
 
         uint16 activeFeePercent = referrerStats.activeFeePercent;
@@ -80,18 +82,21 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         uint40 nowTimestamp = uint40(block.timestamp);
 
         if (nowTimestamp >= referrerStats.monthStartTimestamp + REFERRAL_PERIOD) {
-            bool isConsecutiveMonth =
-                nowTimestamp < referrerStats.monthStartTimestamp + 2 * REFERRAL_PERIOD;
+            uint40 periodsElapsed =
+                (nowTimestamp - referrerStats.monthStartTimestamp) / REFERRAL_PERIOD;
+            bool isConsecutiveMonth = periodsElapsed == 1;
 
             uint256 volumeInPrevMonth = isConsecutiveMonth ? referrerStats.currMonthVolume : 0;
 
             referrerStats.activeFeePercent = _resolveTierFeePercent(volumeInPrevMonth);
-            referrerStats.monthStartTimestamp += REFERRAL_PERIOD;
+            referrerStats.monthStartTimestamp += periodsElapsed * REFERRAL_PERIOD;
 
             referrerStats.currMonthVolume = ticketRevenue;
         } else {
             referrerStats.currMonthVolume += ticketRevenue;
         }
+
+        emit ReferralStatsUpdated(referrerStats);
     }
 
     function _resolveTierFeePercent(uint256 volume) private view returns (uint16 feePercent) {

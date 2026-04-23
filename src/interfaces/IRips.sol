@@ -116,9 +116,9 @@ interface IRips {
     event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
     event ReferralTiersUpdated(ReferralTier[] tiers);
     event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
-    event ReferrerCustomFeeSet(address indexed referrer, uint16 customFeePercent);
     event ReferralFeeAccrued(uint256 indexed roundId, address indexed referrer, uint256 amount);
     event ProtocolFeeAccrued(uint256 indexed roundId, uint256 amount);
+    event ReferralStatsUpdated(ReferrerStats referralStats);
 
     function buyTickets(uint64 stakeId, uint64 ticketCount, address recipient) external payable;
 
