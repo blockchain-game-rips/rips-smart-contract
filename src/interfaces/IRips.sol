@@ -39,7 +39,7 @@ interface IRips {
         bool claimed;
     }
 
-    struct ReferrerStats {
+    struct ReferrerState {
         uint16 activeFeePercent;
         uint16 customFeePercent;
         uint40 monthStartTimestamp;
@@ -118,7 +118,7 @@ interface IRips {
     event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
     event ReferralFeeAccrued(uint256 indexed roundId, address indexed referrer, uint256 amount);
     event ProtocolFeeAccrued(uint256 indexed roundId, uint256 amount);
-    event ReferralStatsUpdated(ReferrerStats referralStats);
+    event ReferralStatsUpdated(ReferrerState referralStats);
 
     function buyTickets(uint64 stakeId, uint64 ticketCount, address recipient) external payable;
 

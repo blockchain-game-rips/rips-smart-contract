@@ -10,7 +10,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
     uint16 public defaultReferralFee;
 
-    mapping(address referrer => ReferrerStats) public referrerToReferrerStats;
+    mapping(address referrer => ReferrerState) public referrerToReferrerState;
     ReferralTier[] public referralTiers;
 
     function setDefaultReferralFee(uint16 newDefaultReferralFee)
@@ -31,7 +31,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         if (referrer == address(0)) revert ZeroAddress();
         if (customFeePercent > FEE_BASE) revert FeeTooHigh();
 
-        ReferrerStats storage referrerStats = referrerToReferrerStats[referrer];
+        ReferrerState storage referrerStats = referrerToReferrerState[referrer];
         referrerStats.customFeePercent = customFeePercent;
 
         emit ReferralStatsUpdated(referrerStats);
@@ -59,7 +59,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
     {
         if (referrer == address(0)) return 0;
 
-        ReferrerStats storage referrerStats = _resolveReferrerStats(referrer, ticketRevenue);
+        ReferrerState storage referrerStats = _resolveReferrerState(referrer, ticketRevenue);
 
         uint16 customFeePercent = referrerStats.customFeePercent;
         if (customFeePercent > 0) {
@@ -73,11 +73,11 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         referrerFee = (protocolFee * effectiveFeePercent) / FEE_BASE;
     }
 
-    function _resolveReferrerStats(address referrer, uint256 ticketRevenue)
+    function _resolveReferrerState(address referrer, uint256 ticketRevenue)
         private
-        returns (ReferrerStats storage referrerStats)
+        returns (ReferrerState storage referrerStats)
     {
-        referrerStats = referrerToReferrerStats[referrer];
+        referrerStats = referrerToReferrerState[referrer];
 
         uint40 nowTimestamp = uint40(block.timestamp);
 
