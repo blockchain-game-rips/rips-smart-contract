@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "../../RipsTestBase.sol";
 
 contract RipsReferral_CollectReferrerFee is RipsTestBase {
-    event ReferralStatsUpdated(IRips.ReferrerState referralStats);
+    event ReferralStatsUpdated(address indexed referrer, IRips.ReferrerState referrerState);
     uint256 internal constant PROTOCOL_FEE = 1 ether;
     uint256 internal constant TICKET_REVENUE = 10 ether;
 
@@ -57,12 +57,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         uint256 expectedFee = (PROTOCOL_FEE * CUSTOM_FEE) / rips.FEE_BASE();
 
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: 0,
                 customFeePercent: CUSTOM_FEE,
                 monthStartTimestamp: 0,
                 currMonthVolume: TICKET_REVENUE
-            }));
+            })
+        );
 
         uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
@@ -78,12 +81,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         // it should update only currMonthVolume.
         // it should emit a {ReferralStatsUpdated} event.
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: 0,
                 customFeePercent: 0,
                 monthStartTimestamp: 0,
                 currMonthVolume: TICKET_REVENUE
-            }));
+            })
+        );
 
         uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
@@ -103,12 +109,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         uint256 expectedFee = (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE();
 
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: 0,
                 customFeePercent: 0,
                 monthStartTimestamp: 0,
                 currMonthVolume: TICKET_REVENUE
-            }));
+            })
+        );
 
         uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
@@ -132,12 +141,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         uint256 expectedFee = (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE();
 
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: 0,
                 customFeePercent: 0,
                 monthStartTimestamp: 0,
                 currMonthVolume: volumeAboveTier
-            }));
+            })
+        );
 
         uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, volumeAboveTier);
 
@@ -166,12 +178,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         uint256 expectedFee = (PROTOCOL_FEE * TIER_HIGH_FEE) / rips.FEE_BASE();
 
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: TIER_HIGH_FEE,
                 customFeePercent: 0,
                 monthStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
                 currMonthVolume: TICKET_REVENUE
-            }));
+            })
+        );
 
         uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
@@ -200,12 +215,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         uint256 expectedFee = (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE();
 
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: TIER_LOW_FEE,
                 customFeePercent: 0,
                 monthStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
                 currMonthVolume: TICKET_REVENUE
-            }));
+            })
+        );
 
         uint256 fee = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
@@ -236,12 +254,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         // period 3: new period starts, stats should roll over correctly
         uint40 referralPeriod = uint40(rips.REFERRAL_PERIOD());
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: TIER_LOW_FEE,
                 customFeePercent: 0,
                 monthStartTimestamp: 2 * referralPeriod,
                 currMonthVolume: TICKET_REVENUE
-            }));
+            })
+        );
 
         rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
@@ -272,12 +293,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         // period 4: gap means active fee resets to zero
         uint40 referralPeriod = uint40(rips.REFERRAL_PERIOD());
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: 0,
                 customFeePercent: 0,
                 monthStartTimestamp: 3 * referralPeriod,
                 currMonthVolume: TICKET_REVENUE
-            }));
+            })
+        );
 
         rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
 
@@ -307,12 +331,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         // referrer A: period 2 — previous period volume unlocks TIER_HIGH_FEE
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrer,
+            IRips.ReferrerState({
                 activeFeePercent: TIER_HIGH_FEE,
                 customFeePercent: 0,
                 monthStartTimestamp: referralPeriod,
                 currMonthVolume: TICKET_REVENUE
-            }));
+            })
+        );
 
         uint256 feeA = rips.exposed_collectReferrerFee(referrer, PROTOCOL_FEE, TICKET_REVENUE);
         assertEq(feeA, (PROTOCOL_FEE * TIER_HIGH_FEE) / rips.FEE_BASE());
@@ -322,12 +349,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         // referrer B: still in their first period — no previous period volume yet, default fee applies
         vm.expectEmit();
-        emit ReferralStatsUpdated(IRips.ReferrerState({
+        emit ReferralStatsUpdated(
+            referrerB,
+            IRips.ReferrerState({
                 activeFeePercent: 0,
                 customFeePercent: 0,
                 monthStartTimestamp: referralPeriod,
                 currMonthVolume: volumeAboveHighTier + TICKET_REVENUE
-            }));
+            })
+        );
 
         uint256 feeB = rips.exposed_collectReferrerFee(referrerB, PROTOCOL_FEE, TICKET_REVENUE);
         assertEq(feeB, (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE());

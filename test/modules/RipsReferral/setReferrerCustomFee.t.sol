@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "../../RipsTestBase.sol";
 
 contract Rips_SetReferrerCustomFee is RipsTestBase {
-    event ReferralStatsUpdated(IRips.ReferrerState referralStats);
+    event ReferralStatsUpdated(address indexed referrer, IRips.ReferrerState referrerState);
 
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
         vm.prank(user);
@@ -39,7 +39,7 @@ contract Rips_SetReferrerCustomFee is RipsTestBase {
         });
 
         vm.expectEmit();
-        emit ReferralStatsUpdated(expectedStats);
+        emit ReferralStatsUpdated(referrer, expectedStats);
 
         rips.setReferrerCustomFee(referrer, customFee);
 

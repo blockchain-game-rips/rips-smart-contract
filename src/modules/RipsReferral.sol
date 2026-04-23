@@ -34,7 +34,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         ReferrerState storage referrerStats = referrerToReferrerState[referrer];
         referrerStats.customFeePercent = customFeePercent;
 
-        emit ReferralStatsUpdated(referrerStats);
+        emit ReferralStatsUpdated(referrer, referrerStats);
     }
 
     function setReferralTiers(ReferralTier[] calldata tiers) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -96,7 +96,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
             referrerStats.currMonthVolume += ticketRevenue;
         }
 
-        emit ReferralStatsUpdated(referrerStats);
+        emit ReferralStatsUpdated(referrer, referrerStats);
     }
 
     function _resolveTierFeePercent(uint256 volume) private view returns (uint16 feePercent) {
