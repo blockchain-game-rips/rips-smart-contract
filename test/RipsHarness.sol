@@ -28,16 +28,21 @@ contract RipsHarness is Rips {
         return configIdToConfig[configId];
     }
 
-    function exposed_referrerStats(address referrer) external view returns (ReferrerState memory) {
-        return referrerToReferrerState[referrer];
+    function exposed_referrerStats(address referrer, address currency)
+        external
+        view
+        returns (ReferrerState memory)
+    {
+        return referrerToReferrerState[referrer][currency];
     }
 
     function exposed_collectReferrerFee(
         address referrer,
+        address currency,
         uint256 protocolFee,
         uint256 ticketRevenue
     ) external returns (uint256) {
-        return _collectReferrerFee(referrer, protocolFee, ticketRevenue);
+        return _collectReferrerFee(referrer, currency, protocolFee, ticketRevenue);
     }
 
     function exposed_requestTimestamp(uint256 roundId) external view returns (uint256) {

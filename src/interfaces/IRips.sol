@@ -41,7 +41,6 @@ interface IRips {
 
     struct ReferrerState {
         uint16 activeFeePercent;
-        uint16 customFeePercent;
         uint40 monthStartTimestamp;
         uint256 currMonthVolume;
     }
@@ -114,11 +113,14 @@ interface IRips {
     event ReferrerFeeWithdrawn(address indexed referrer, address indexed currency, uint256 amount);
     event ReferrerFeeSeized(address indexed referrer, address indexed currency, uint256 amount);
     event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
-    event ReferralTiersUpdated(ReferralTier[] tiers);
+    event ReferralTiersUpdated(address indexed currency, ReferralTier[] tiers);
     event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
     event ReferralFeeAccrued(uint256 indexed roundId, address indexed referrer, uint256 amount);
     event ProtocolFeeAccrued(uint256 indexed roundId, uint256 amount);
-    event ReferralStatsUpdated(address indexed referrer, ReferrerState referrerState);
+    event ReferralStateUpdated(
+        address indexed referrer, address indexed currency, ReferrerState referrerState
+    );
+    event ReferrerCustomFeeUpdated(address indexed referrer, uint16 customFeePercent);
 
     function buyTickets(uint64 stakeId, uint64 ticketCount, address recipient) external payable;
 
@@ -145,7 +147,7 @@ interface IRips {
         view
         returns (TicketRange[] memory);
 
-    function setReferralTiers(ReferralTier[] calldata tiers) external;
+    function setReferralTiers(address currency, ReferralTier[] calldata tiers) external;
 
     function setDefaultReferralFee(uint16 newDefaultReferralFee) external;
 

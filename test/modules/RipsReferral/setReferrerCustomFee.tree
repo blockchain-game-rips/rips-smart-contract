@@ -8,4 +8,4 @@ Rips_SetReferrerCustomFee
     │   └── it should revert.
     └── when inputs are valid
         ├── it should update the referrer's customFeePercent.
-        └── it should emit a {ReferralStatsUpdated} event.
+        └── it should emit a {ReferrerCustomFeeUpdated} event.

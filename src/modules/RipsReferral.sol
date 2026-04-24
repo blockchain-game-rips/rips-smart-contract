@@ -10,8 +10,10 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
     uint16 public defaultReferralFee;
 
-    mapping(address referrer => ReferrerState) public referrerToReferrerState;
-    ReferralTier[] public referralTiers;
+    mapping(address referrer => uint16 customFeePercent) public referrerCustomFee;
+    mapping(address referrer => mapping(address currency => ReferrerState)) public
+        referrerToReferrerState;
+    mapping(address currency => ReferralTier[]) internal _referralTiers;
 
     function setDefaultReferralFee(uint16 newDefaultReferralFee)
         external
@@ -31,37 +33,46 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         if (referrer == address(0)) revert ZeroAddress();
         if (customFeePercent > FEE_BASE) revert FeeTooHigh();
 
-        ReferrerState storage referrerStats = referrerToReferrerState[referrer];
-        referrerStats.customFeePercent = customFeePercent;
+        referrerCustomFee[referrer] = customFeePercent;
 
-        emit ReferralStatsUpdated(referrer, referrerStats);
+        emit ReferrerCustomFeeUpdated(referrer, customFeePercent);
     }
 
-    function setReferralTiers(ReferralTier[] calldata tiers) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setReferralTiers(address currency, ReferralTier[] calldata tiers)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         if (tiers.length > MAX_REFERRAL_TIER_COUNT) revert ReferralTierCountExceeded();
 
         for (uint256 i = 1; i < tiers.length; i++) {
             if (tiers[i].minVolume <= tiers[i - 1].minVolume) revert ReferralTiersNotSorted();
         }
 
-        delete referralTiers;
+        delete _referralTiers[currency];
 
         for (uint256 i = 0; i < tiers.length; i++) {
-            referralTiers.push(tiers[i]);
+            _referralTiers[currency].push(tiers[i]);
         }
 
-        emit ReferralTiersUpdated(tiers);
+        emit ReferralTiersUpdated(currency, tiers);
     }
 
-    function _collectReferrerFee(address referrer, uint256 protocolFee, uint256 ticketRevenue)
-        internal
-        returns (uint256 referrerFee)
-    {
+    function getReferralTiers(address currency) external view returns (ReferralTier[] memory) {
+        return _referralTiers[currency];
+    }
+
+    function _collectReferrerFee(
+        address referrer,
+        address currency,
+        uint256 protocolFee,
+        uint256 ticketRevenue
+    ) internal returns (uint256 referrerFee) {
         if (referrer == address(0)) return 0;
 
-        ReferrerState storage referrerStats = _resolveReferrerState(referrer, ticketRevenue);
+        ReferrerState storage referrerStats =
+            _resolveReferrerState(referrer, currency, ticketRevenue);
 
-        uint16 customFeePercent = referrerStats.customFeePercent;
+        uint16 customFeePercent = referrerCustomFee[referrer];
         if (customFeePercent > 0) {
             return (protocolFee * customFeePercent) / FEE_BASE;
         }
@@ -73,11 +84,11 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         referrerFee = (protocolFee * effectiveFeePercent) / FEE_BASE;
     }
 
-    function _resolveReferrerState(address referrer, uint256 ticketRevenue)
+    function _resolveReferrerState(address referrer, address currency, uint256 ticketRevenue)
         private
         returns (ReferrerState storage referrerStats)
     {
-        referrerStats = referrerToReferrerState[referrer];
+        referrerStats = referrerToReferrerState[referrer][currency];
 
         uint40 nowTimestamp = uint40(block.timestamp);
 
@@ -88,7 +99,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
             uint256 volumeInPrevMonth = isConsecutiveMonth ? referrerStats.currMonthVolume : 0;
 
-            referrerStats.activeFeePercent = _resolveTierFeePercent(volumeInPrevMonth);
+            referrerStats.activeFeePercent = _resolveTierFeePercent(currency, volumeInPrevMonth);
             referrerStats.monthStartTimestamp += periodsElapsed * REFERRAL_PERIOD;
 
             referrerStats.currMonthVolume = ticketRevenue;
@@ -96,13 +107,19 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
             referrerStats.currMonthVolume += ticketRevenue;
         }
 
-        emit ReferralStatsUpdated(referrer, referrerStats);
+        emit ReferralStateUpdated(referrer, currency, referrerStats);
     }
 
-    function _resolveTierFeePercent(uint256 volume) private view returns (uint16 feePercent) {
-        for (uint256 i = referralTiers.length; i > 0; i--) {
-            if (volume >= referralTiers[i - 1].minVolume) {
-                return referralTiers[i - 1].feePercent;
+    function _resolveTierFeePercent(address currency, uint256 volume)
+        private
+        view
+        returns (uint16 feePercent)
+    {
+        ReferralTier[] storage tiers = _referralTiers[currency];
+
+        for (uint256 i = tiers.length; i > 0; i--) {
+            if (volume >= tiers[i - 1].minVolume) {
+                return tiers[i - 1].feePercent;
             }
         }
     }
