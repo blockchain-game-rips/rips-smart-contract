@@ -92,19 +92,19 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
         uint40 nowTimestamp = uint40(block.timestamp);
 
-        if (nowTimestamp >= referrerStats.monthStartTimestamp + REFERRAL_PERIOD) {
+        if (nowTimestamp >= referrerStats.periodStartTimestamp + REFERRAL_PERIOD) {
             uint40 periodsElapsed =
-                (nowTimestamp - referrerStats.monthStartTimestamp) / REFERRAL_PERIOD;
-            bool isConsecutiveMonth = periodsElapsed == 1;
+                (nowTimestamp - referrerStats.periodStartTimestamp) / REFERRAL_PERIOD;
+            bool isConsecutivePeriod = periodsElapsed == 1;
 
-            uint256 volumeInPrevMonth = isConsecutiveMonth ? referrerStats.currMonthVolume : 0;
+            uint256 volumeInPrevPeriod = isConsecutivePeriod ? referrerStats.periodVolume : 0;
 
-            referrerStats.activeFeePercent = _resolveTierFeePercent(currency, volumeInPrevMonth);
-            referrerStats.monthStartTimestamp += periodsElapsed * REFERRAL_PERIOD;
+            referrerStats.activeFeePercent = _resolveTierFeePercent(currency, volumeInPrevPeriod);
+            referrerStats.periodStartTimestamp += periodsElapsed * REFERRAL_PERIOD;
 
-            referrerStats.currMonthVolume = ticketRevenue;
+            referrerStats.periodVolume = ticketRevenue;
         } else {
-            referrerStats.currMonthVolume += ticketRevenue;
+            referrerStats.periodVolume += ticketRevenue;
         }
 
         emit ReferralStateUpdated(referrer, currency, referrerStats);

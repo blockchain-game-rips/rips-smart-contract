@@ -41,8 +41,8 @@ interface IRips {
 
     struct ReferrerState {
         uint16 activeFeePercent;
-        uint40 monthStartTimestamp;
-        uint256 currMonthVolume;
+        uint40 periodStartTimestamp;
+        uint256 periodVolume;
     }
 
     struct ReferralTier {

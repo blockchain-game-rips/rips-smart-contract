@@ -78,8 +78,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_HIGH_FEE,
-                monthStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
-                currMonthVolume: TICKET_REVENUE
+                periodStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
+                periodVolume: TICKET_REVENUE
             })
         );
 
@@ -89,14 +89,14 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(fee, expectedFee);
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(stats.currMonthVolume, TICKET_REVENUE);
+        assertEq(stats.periodVolume, TICKET_REVENUE);
         assertEq(stats.activeFeePercent, TIER_HIGH_FEE);
         assertEq(rips.referrerCustomFee(referrer), CUSTOM_FEE);
     }
 
     function test_WhenReferrerHasACustomFeeSet_AndANewPeriodStarts() external {
-        // it should reset currMonthVolume to the current revenue.
-        // it should advance monthStartTimestamp to the current period.
+        // it should reset periodVolume to the current revenue.
+        // it should advance periodStartTimestamp to the current period.
         // it should emit a {ReferralStateUpdated} event.
         _setCustomFee(referrer, CUSTOM_FEE);
 
@@ -112,8 +112,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: 0,
-                monthStartTimestamp: referralPeriod,
-                currMonthVolume: TICKET_REVENUE
+                periodStartTimestamp: referralPeriod,
+                periodVolume: TICKET_REVENUE
             })
         );
 
@@ -123,20 +123,20 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(fee, (PROTOCOL_FEE * CUSTOM_FEE) / rips.FEE_BASE());
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(stats.currMonthVolume, TICKET_REVENUE);
-        assertEq(stats.monthStartTimestamp, referralPeriod);
+        assertEq(stats.periodVolume, TICKET_REVENUE);
+        assertEq(stats.periodStartTimestamp, referralPeriod);
     }
 
     function test_WhenNoReferralTiersAreConfiguredAndDefaultFeeIsZero() external {
         // it should return zero.
-        // it should update only currMonthVolume.
+        // it should update only periodVolume.
         // it should emit a {ReferralStateUpdated} event.
         vm.expectEmit();
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0, monthStartTimestamp: 0, currMonthVolume: TICKET_REVENUE
+                activeFeePercent: 0, periodStartTimestamp: 0, periodVolume: TICKET_REVENUE
             })
         );
 
@@ -146,13 +146,13 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(fee, 0);
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(stats.currMonthVolume, TICKET_REVENUE);
+        assertEq(stats.periodVolume, TICKET_REVENUE);
         assertEq(stats.activeFeePercent, 0);
     }
 
     function test_WhenDefaultFeeIsSetAndReferrerHasNoPriorActivity() external {
         // it should return fee based on default fee percent.
-        // it should update only currMonthVolume.
+        // it should update only periodVolume.
         // it should emit a {ReferralStateUpdated} event.
         _setDefaultFee(DEFAULT_FEE);
 
@@ -163,7 +163,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0, monthStartTimestamp: 0, currMonthVolume: TICKET_REVENUE
+                activeFeePercent: 0, periodStartTimestamp: 0, periodVolume: TICKET_REVENUE
             })
         );
 
@@ -173,13 +173,13 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(fee, expectedFee);
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(stats.currMonthVolume, TICKET_REVENUE);
+        assertEq(stats.periodVolume, TICKET_REVENUE);
         assertEq(stats.activeFeePercent, 0);
     }
 
     function test_WhenReferrerCurrentPeriodVolumeCrossesATierThreshold() external {
         // it should return fee based on default fee percent.
-        // it should update only currMonthVolume.
+        // it should update only periodVolume.
         // it should emit a {ReferralStateUpdated} event.
         _setDefaultFee(DEFAULT_FEE);
         _setTiers();
@@ -194,7 +194,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0, monthStartTimestamp: 0, currMonthVolume: volumeAboveTier
+                activeFeePercent: 0, periodStartTimestamp: 0, periodVolume: volumeAboveTier
             })
         );
 
@@ -204,7 +204,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(fee, expectedFee);
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(stats.currMonthVolume, volumeAboveTier);
+        assertEq(stats.periodVolume, volumeAboveTier);
         // active fee is not updated mid-period; tier is only applied next period
         assertEq(stats.activeFeePercent, 0);
     }
@@ -231,8 +231,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_HIGH_FEE,
-                monthStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
-                currMonthVolume: TICKET_REVENUE
+                periodStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
+                periodVolume: TICKET_REVENUE
             })
         );
 
@@ -247,7 +247,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
     function test_WhenActiveFeePercentIsBelowDefaultFeePercent() external {
         // it should return fee based on default fee percent.
-        // it should update only currMonthVolume.
+        // it should update only periodVolume.
         // it should emit a {ReferralStateUpdated} event.
 
         // TIER_LOW_FEE (3%) < DEFAULT_FEE (5%), so default should win
@@ -269,8 +269,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_LOW_FEE,
-                monthStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
-                currMonthVolume: TICKET_REVENUE
+                periodStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
+                periodVolume: TICKET_REVENUE
             })
         );
 
@@ -298,7 +298,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         IRips.ReferrerState memory statsAfterPeriod2 =
             rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(statsAfterPeriod2.activeFeePercent, TIER_LOW_FEE);
-        assertEq(statsAfterPeriod2.currMonthVolume, volumeAboveTier);
+        assertEq(statsAfterPeriod2.periodVolume, volumeAboveTier);
 
         _advanceToNextPeriod();
 
@@ -310,8 +310,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_LOW_FEE,
-                monthStartTimestamp: 2 * referralPeriod,
-                currMonthVolume: TICKET_REVENUE
+                periodStartTimestamp: 2 * referralPeriod,
+                periodVolume: TICKET_REVENUE
             })
         );
 
@@ -320,7 +320,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         IRips.ReferrerState memory statsAfterPeriod3 =
             rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(statsAfterPeriod3.activeFeePercent, TIER_LOW_FEE);
-        assertEq(statsAfterPeriod3.currMonthVolume, TICKET_REVENUE);
+        assertEq(statsAfterPeriod3.periodVolume, TICKET_REVENUE);
     }
 
     function test_WhenANewPeriodStartsAfterAnInactivePeriodGap() external {
@@ -350,8 +350,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: 0,
-                monthStartTimestamp: 3 * referralPeriod,
-                currMonthVolume: TICKET_REVENUE
+                periodStartTimestamp: 3 * referralPeriod,
+                periodVolume: TICKET_REVENUE
             })
         );
 
@@ -359,8 +359,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(stats.activeFeePercent, 0);
-        assertEq(stats.currMonthVolume, TICKET_REVENUE);
-        assertEq(stats.monthStartTimestamp, 3 * referralPeriod);
+        assertEq(stats.periodVolume, TICKET_REVENUE);
+        assertEq(stats.periodStartTimestamp, 3 * referralPeriod);
     }
 
     function test_WhenTwoReferrersHaveIndependentPeriodTracking() external {
@@ -388,8 +388,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_HIGH_FEE,
-                monthStartTimestamp: referralPeriod,
-                currMonthVolume: TICKET_REVENUE
+                periodStartTimestamp: referralPeriod,
+                periodVolume: TICKET_REVENUE
             })
         );
 
@@ -407,8 +407,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: 0,
-                monthStartTimestamp: referralPeriod,
-                currMonthVolume: volumeAboveHighTier + TICKET_REVENUE
+                periodStartTimestamp: referralPeriod,
+                periodVolume: volumeAboveHighTier + TICKET_REVENUE
             })
         );
 
