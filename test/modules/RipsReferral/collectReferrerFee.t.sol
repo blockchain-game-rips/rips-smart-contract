@@ -23,6 +23,14 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
     address internal referrerB = makeAddr("referrerB");
 
+    uint40 internal periodStart;
+
+    function setUp() public override {
+        super.setUp();
+        periodStart = uint40(rips.REFERRAL_PERIOD());
+        vm.warp(periodStart);
+    }
+
     function _setDefaultFee(uint16 fee) internal {
         vm.prank(owner);
         rips.setDefaultReferralFee(fee);
@@ -78,7 +86,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_HIGH_FEE,
-                periodStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
+                periodStartTimestamp: 2 * periodStart,
                 periodVolume: TICKET_REVENUE
             })
         );
@@ -104,15 +112,13 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         _advanceToNextPeriod();
 
-        uint40 referralPeriod = uint40(rips.REFERRAL_PERIOD());
-
         vm.expectEmit();
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: 0,
-                periodStartTimestamp: referralPeriod,
+                periodStartTimestamp: 2 * periodStart,
                 periodVolume: TICKET_REVENUE
             })
         );
@@ -124,7 +130,33 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(stats.periodVolume, TICKET_REVENUE);
-        assertEq(stats.periodStartTimestamp, referralPeriod);
+        assertEq(stats.periodStartTimestamp, 2 * periodStart);
+    }
+
+    function test_WhenReferrerAppearsForTheFirstTime() external {
+        // it should set periodStartTimestamp to block.timestamp.
+        // it should set periodVolume to the current revenue.
+        // it should treat the next call within the period as the same period.
+        _setDefaultFee(DEFAULT_FEE);
+        _setTiers();
+
+        uint40 firstAppearance = periodStart * 100 + 13 days; // not a clean multiple of REFERRAL_PERIOD
+        vm.warp(firstAppearance);
+
+        rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, TICKET_REVENUE);
+
+        IRips.ReferrerState memory statsAfterFirst = rips.exposed_referrerStats(referrer, CURRENCY);
+        assertEq(statsAfterFirst.periodStartTimestamp, firstAppearance);
+        assertEq(statsAfterFirst.periodVolume, TICKET_REVENUE);
+
+        // second call shortly after — same period, volume should accumulate
+        vm.warp(firstAppearance + 1 days);
+
+        rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, TICKET_REVENUE);
+
+        IRips.ReferrerState memory statsAfterSecond = rips.exposed_referrerStats(referrer, CURRENCY);
+        assertEq(statsAfterSecond.periodStartTimestamp, firstAppearance);
+        assertEq(statsAfterSecond.periodVolume, 2 * TICKET_REVENUE);
     }
 
     function test_WhenNoReferralTiersAreConfiguredAndDefaultFeeIsZero() external {
@@ -136,7 +168,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0, periodStartTimestamp: 0, periodVolume: TICKET_REVENUE
+                activeFeePercent: 0, periodStartTimestamp: periodStart, periodVolume: TICKET_REVENUE
             })
         );
 
@@ -163,7 +195,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0, periodStartTimestamp: 0, periodVolume: TICKET_REVENUE
+                activeFeePercent: 0, periodStartTimestamp: periodStart, periodVolume: TICKET_REVENUE
             })
         );
 
@@ -194,7 +226,9 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0, periodStartTimestamp: 0, periodVolume: volumeAboveTier
+                activeFeePercent: 0,
+                periodStartTimestamp: periodStart,
+                periodVolume: volumeAboveTier
             })
         );
 
@@ -231,7 +265,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_HIGH_FEE,
-                periodStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
+                periodStartTimestamp: 2 * periodStart,
                 periodVolume: TICKET_REVENUE
             })
         );
@@ -269,7 +303,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_LOW_FEE,
-                periodStartTimestamp: uint40(rips.REFERRAL_PERIOD()),
+                periodStartTimestamp: 2 * periodStart,
                 periodVolume: TICKET_REVENUE
             })
         );
@@ -303,14 +337,13 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         _advanceToNextPeriod();
 
         // period 3: new period starts, stats should roll over correctly
-        uint40 referralPeriod = uint40(rips.REFERRAL_PERIOD());
         vm.expectEmit();
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_LOW_FEE,
-                periodStartTimestamp: 2 * referralPeriod,
+                periodStartTimestamp: 3 * periodStart,
                 periodVolume: TICKET_REVENUE
             })
         );
@@ -343,14 +376,13 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         vm.warp(block.timestamp + 2 * rips.REFERRAL_PERIOD() + 1);
 
         // period 4: gap means active fee resets to zero
-        uint40 referralPeriod = uint40(rips.REFERRAL_PERIOD());
         vm.expectEmit();
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: 0,
-                periodStartTimestamp: 3 * referralPeriod,
+                periodStartTimestamp: 4 * periodStart,
                 periodVolume: TICKET_REVENUE
             })
         );
@@ -360,7 +392,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(stats.activeFeePercent, 0);
         assertEq(stats.periodVolume, TICKET_REVENUE);
-        assertEq(stats.periodStartTimestamp, 3 * referralPeriod);
+        assertEq(stats.periodStartTimestamp, 4 * periodStart);
     }
 
     function test_WhenTwoReferrersHaveIndependentPeriodTracking() external {
@@ -371,7 +403,6 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         _setTiers();
 
         uint256 volumeAboveHighTier = uint256(TIER_HIGH_MIN_VOLUME) + 1 ether;
-        uint40 referralPeriod = uint40(rips.REFERRAL_PERIOD());
 
         // referrer A claims in period 1 with high volume
         rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, volumeAboveHighTier);
@@ -388,7 +419,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: TIER_HIGH_FEE,
-                periodStartTimestamp: referralPeriod,
+                periodStartTimestamp: 2 * periodStart,
                 periodVolume: TICKET_REVENUE
             })
         );
@@ -401,13 +432,15 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(statsA.activeFeePercent, TIER_HIGH_FEE);
 
         // referrer B: still in their first period — no previous period volume yet, default fee applies
+        // B's period started at block.timestamp when they first appeared (2 * periodStart + 1)
+        uint40 referrerBPeriodStart = 2 * periodStart + 1;
         vm.expectEmit();
         emit ReferralStateUpdated(
             referrerB,
             CURRENCY,
             IRips.ReferrerState({
                 activeFeePercent: 0,
-                periodStartTimestamp: referralPeriod,
+                periodStartTimestamp: referrerBPeriodStart,
                 periodVolume: volumeAboveHighTier + TICKET_REVENUE
             })
         );

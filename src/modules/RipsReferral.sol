@@ -86,13 +86,22 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
     function _resolveReferrerState(address referrer, address currency, uint256 ticketRevenue)
         private
-        returns (ReferrerState storage referrerStats)
+        returns (ReferrerState storage)
     {
-        referrerStats = referrerToReferrerState[referrer][currency];
+        ReferrerState storage referrerStats = referrerToReferrerState[referrer][currency];
 
         uint40 nowTimestamp = uint40(block.timestamp);
+        uint40 periodStartTimestamp = referrerStats.periodStartTimestamp;
 
-        if (nowTimestamp >= referrerStats.periodStartTimestamp + REFERRAL_PERIOD) {
+        if (periodStartTimestamp == 0) {
+            referrerStats.periodStartTimestamp = nowTimestamp;
+            referrerStats.periodVolume = ticketRevenue;
+
+            emit ReferralStateUpdated(referrer, currency, referrerStats);
+            return referrerStats;
+        }
+
+        if (nowTimestamp >= periodStartTimestamp + REFERRAL_PERIOD) {
             uint40 periodsElapsed =
                 (nowTimestamp - referrerStats.periodStartTimestamp) / REFERRAL_PERIOD;
             bool isConsecutivePeriod = periodsElapsed == 1;
@@ -101,13 +110,16 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
             referrerStats.activeFeePercent = _resolveTierFeePercent(currency, volumeInPrevPeriod);
             referrerStats.periodStartTimestamp += periodsElapsed * REFERRAL_PERIOD;
-
             referrerStats.periodVolume = ticketRevenue;
-        } else {
-            referrerStats.periodVolume += ticketRevenue;
+
+            emit ReferralStateUpdated(referrer, currency, referrerStats);
+            return referrerStats;
         }
 
+        referrerStats.periodVolume += ticketRevenue;
+
         emit ReferralStateUpdated(referrer, currency, referrerStats);
+        return referrerStats;
     }
 
     function _resolveTierFeePercent(address currency, uint256 volume)

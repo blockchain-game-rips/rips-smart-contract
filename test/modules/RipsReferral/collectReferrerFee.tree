@@ -9,6 +9,10 @@ RipsReferral_CollectReferrerFee
 │       ├── it should reset periodVolume to the current revenue.
 │       ├── it should advance periodStartTimestamp to the current period.
 │       └── it should emit a {ReferralStateUpdated} event.
+├── when referrer appears for the first time
+│   ├── it should set periodStartTimestamp to block.timestamp.
+│   ├── it should set periodVolume to the current revenue.
+│   └── it should treat the next call within the period as the same period.
 ├── when no referral tiers are configured and default fee is zero
 │   ├── it should return zero.
 │   ├── it should update only periodVolume for the currency.
