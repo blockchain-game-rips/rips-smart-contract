@@ -118,8 +118,10 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         ReferralTier[] storage tiers = _referralTiers[currency];
 
         for (uint256 i = tiers.length; i > 0; i--) {
-            if (volume >= tiers[i - 1].minVolume) {
-                return tiers[i - 1].feePercent;
+            ReferralTier storage tier = tiers[i - 1];
+
+            if (volume >= tier.minVolume) {
+                return tier.feePercent;
             }
         }
     }
