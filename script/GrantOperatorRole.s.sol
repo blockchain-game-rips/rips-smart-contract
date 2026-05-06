@@ -8,15 +8,13 @@ import {Rips} from "../src/Rips.sol";
 ///
 /// Required env vars:
 ///   RIPS_ADDRESS   - Address of the deployed Rips contract
-///   OPERATOR       - Address to grant the operator role to
 ///   PRIVATE_KEY    - Private key of an account that holds DEFAULT_ADMIN_ROLE
 ///
 /// Usage:
-///   forge script script/GrantOperatorRole.s.sol --rpc-url $RPC_URL --broadcast
+///   forge script script/GrantOperatorRole.s.sol --sig "run(address)" <OPERATOR> --rpc-url $RPC_URL --broadcast
 contract GrantOperatorRole is Script {
-    function run() external {
+    function run(address operator) external {
         address ripsAddress = vm.envAddress("RIPS_ADDRESS");
-        address operator = vm.envAddress("OPERATOR");
 
         Rips rips = Rips(ripsAddress);
 
