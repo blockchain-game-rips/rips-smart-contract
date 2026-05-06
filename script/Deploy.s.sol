@@ -18,7 +18,7 @@ import {IRips} from "../src/interfaces/IRips.sol";
 /// Usage:
 ///   forge script script/Deploy.s.sol --rpc-url $RPC_URL --broadcast --verify
 contract Deploy is Script {
-    uint32 private constant DEFAULT_CALLBACK_GAS = 200_000;
+    uint32 private constant DEFAULT_CALLBACK_GAS = 300_000;
     uint16 private constant DEFAULT_FEE_PERCENT = 500; // 5%
 
     function run() external returns (address rips) {
