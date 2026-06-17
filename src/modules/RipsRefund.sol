@@ -4,36 +4,36 @@ pragma solidity ^0.8.13;
 import {RipsUtils} from "../common/RipsUtils.sol";
 
 abstract contract RipsRefund is RipsUtils {
-    mapping(uint256 roundId => mapping(address user => bool refunded)) public hasRefunded;
+    mapping(uint256 ripId => mapping(address user => bool refunded)) public hasRefunded;
 
-    function refund(uint256 roundId, address recipient) external {
+    function refund(uint256 ripId, address recipient) external {
         if (recipient == address(0)) revert ZeroAddress();
 
-        Round storage round = roundIdToRound[roundId];
-        if (round.stakeId == 0) revert RoundNotExist();
+        Rip storage rip = ripIdToRip[ripId];
+        if (rip.stakeId == 0) revert RipNotExist();
 
-        Config storage config = configIdToConfig[round.configId];
+        Config storage config = configIdToConfig[rip.configId];
 
-        if (!_isRoundRefundable(roundId, round, config)) revert RoundNotExpired();
-        if (hasRefunded[roundId][recipient]) revert AlreadyRefunded();
+        if (!_isRipRefundable(ripId, rip, config)) revert RipNotExpired();
+        if (hasRefunded[ripId][recipient]) revert AlreadyRefunded();
 
-        uint64 ticketCount = userTicketCount[roundId][recipient];
-        if (ticketCount == 0) revert NoTicketsToRefund();
+        uint64 entryCount = userEntryCount[ripId][recipient];
+        if (entryCount == 0) revert NoEntriesToRefund();
 
-        hasRefunded[roundId][recipient] = true;
-        _transfer(config.currency, recipient, ticketCount * config.ticketCost);
+        hasRefunded[ripId][recipient] = true;
+        _transfer(config.currency, recipient, entryCount * config.entryPrice);
 
-        emit RefundIssued(roundId, recipient, ticketCount);
+        emit RefundIssued(ripId, recipient, entryCount);
     }
 
-    function _isRoundRefundable(uint256 roundId, Round storage round, Config storage config)
+    function _isRipRefundable(uint256 ripId, Rip storage rip, Config storage config)
         internal
         view
         returns (bool)
     {
-        if (_isExpired(round, config) && !_isSoldOut(round, config)) return true;
+        if (_isExpired(rip, config) && !_isSoldOut(rip, config)) return true;
 
-        if (_isVrfRequestExpired(roundId) && round.vrfRequestStatus == VrfRequestStatus.Requested) {
+        if (_isVrfRequestExpired(ripId) && rip.vrfRequestStatus == VrfRequestStatus.Requested) {
             return true;
         }
 

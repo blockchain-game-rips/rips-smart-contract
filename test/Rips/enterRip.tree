@@ -1,0 +1,60 @@
+Rips_EnterRip
+├── when the contract is paused
+│   └── it should revert.
+├── when recipient is zero address
+│   └── it should revert.
+├── when the stake does not exist
+│   └── it should revert.
+├── when the active rip has expired and the stake is deleted
+│   └── it should revert.
+├── when the active rip has expired and the stake is not deleted
+│   ├── it should create a new rip.
+│   └── it should emit a {RipCreated} event.
+├── when entry count is zero
+│   └── it should revert.
+├── given the stake currency is native
+│   ├── when the payment amount is incorrect
+│   │   └── it should revert.
+│   ├── when requested entries are fewer than available
+│   │   ├── it should update entries sold count.
+│   │   ├── it should store entry ranges for the recipient.
+│   │   ├── it should emit a {RipEntered} event.
+│   │   ├── when recipient is different from the caller
+│   │   │   └── it should store entry ranges for the recipient, not the caller.
+│   │   └── when entry count exceeds MAX_ENTRIES_PER_RANGE
+│   │       └── it should split into multiple entry ranges.
+│   ├── when requested entries equal the remaining capacity
+│   │   ├── it should purchase all requested entries.
+│   │   ├── it should set rip status to SoldOut.
+│   │   ├── it should emit a {RipEntered} event.
+│   │   ├── given the stake is not deleted
+│   │   │   └── it should create a new rip for the stake.
+│   │   └── given the stake is deleted
+│   │       └── it should clear the active rip mapping.
+│   └── when requested entries exceed available entries
+│       ├── it should purchase only the available entries.
+│       ├── it should set rip status to SoldOut.
+│       ├── it should refund excess ETH to the caller. TODO: fix test - to recipient
+│       └── it should emit a {RipEntered} event.
+└── given the stake currency is an ERC20 token
+    ├── when ETH is sent
+    │   └── it should revert.
+    ├── when requested entries are fewer than available
+    │   ├── it should pull exactly toBuy * entryPrice tokens from the caller.
+    │   ├── it should update entries sold count.
+    │   ├── it should store entry ranges for the recipient.
+    │   ├── it should emit a {RipEntered} event.
+    │   ├── when recipient is different from the caller
+    │   │   └── it should store entry ranges for the recipient, not the caller.
+    │   └── when entry count exceeds MAX_ENTRIES_PER_RANGE
+    │       └── it should split into multiple entry ranges.
+    ├── when requested entries equal the remaining capacity
+    │   ├── it should purchase all requested entries.
+    │   ├── it should pull exactly entryCap * entryPrice tokens from the caller.
+    │   ├── it should set rip status to SoldOut.
+    │   └── it should emit a {RipEntered} event.
+    └── when requested entries exceed available entries
+        ├── it should purchase only the available entries.
+        ├── it should pull only the available entries cost from the caller.
+        ├── it should set rip status to SoldOut.
+        └── it should emit a {RipEntered} event.

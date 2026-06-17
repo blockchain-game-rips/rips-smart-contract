@@ -18,26 +18,26 @@ library RipsMath {
         return a;
     }
 
-    function calculateTicketPrize(
-        uint256 ticketNumber,
+    function calculateEntryPayout(
+        uint256 entryNumber,
         uint64 a,
         uint64 b,
         uint64 n,
-        IRips.PrizeTier[] memory tiers,
+        IRips.PayoutTier[] memory tiers,
         uint64[] memory tierBoundaries
     ) public pure returns (uint256) {
-        uint256 prizeNumber = (uint256(a) * ticketNumber + b) % n + 1;
+        uint256 payoutNumber = (uint256(a) * entryNumber + b) % n + 1;
 
         for (uint256 t = 0; t < tierBoundaries.length; t++) {
-            if (prizeNumber <= tierBoundaries[t]) {
-                IRips.PrizeTier memory tier = tiers[t];
+            if (payoutNumber <= tierBoundaries[t]) {
+                IRips.PayoutTier memory tier = tiers[t];
 
-                if (tier.prizeCount == 1) return tier.minPrize;
+                if (tier.payoutCount == 1) return tier.minPayout;
 
-                uint256 rank = prizeNumber - (t == 0 ? 0 : tierBoundaries[t - 1]);
+                uint256 rank = payoutNumber - (t == 0 ? 0 : tierBoundaries[t - 1]);
 
-                return tier.minPrize + ((tier.maxPrize - tier.minPrize) * (rank - 1))
-                    / (tier.prizeCount - 1);
+                return tier.minPayout + ((tier.maxPayout - tier.minPayout) * (rank - 1))
+                    / (tier.payoutCount - 1);
             }
         }
 

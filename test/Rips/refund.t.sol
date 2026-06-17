@@ -4,10 +4,10 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_Refund is RipsTestBase {
-    uint64 private constant TICKETS_BOUGHT = 2;
+    uint64 private constant ENTRIES_BOUGHT = 2;
 
     uint64 private stakeId;
-    uint256 private roundId;
+    uint256 private ripId;
 
     function setUp() public override {
         super.setUp();
@@ -16,106 +16,106 @@ contract Rips_Refund is RipsTestBase {
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.buyTickets{value: TICKETS_BOUGHT * DEFAULT_TICKET_COST}(stakeId, TICKETS_BOUGHT, user);
+        rips.enterRip{value: ENTRIES_BOUGHT * DEFAULT_ENTRY_PRICE}(stakeId, ENTRIES_BOUGHT, user);
 
-        roundId = rips.stakeIdToCurrentRoundId(stakeId);
+        ripId = rips.stakeIdToCurrentRipId(stakeId);
     }
 
     function _expectedRefundAmount() private pure returns (uint256) {
-        return TICKETS_BOUGHT * DEFAULT_TICKET_COST;
+        return ENTRIES_BOUGHT * DEFAULT_ENTRY_PRICE;
     }
 
-    function test_RevertWhen_TheRoundDoesNotExist() external {
-        uint256 nonExistentRoundId = 999;
+    function test_RevertWhen_TheRipDoesNotExist() external {
+        uint256 nonExistentRipId = 999;
 
         vm.prank(user);
-        vm.expectRevert(IRips.RoundNotExist.selector);
-        rips.refund(nonExistentRoundId, user);
+        vm.expectRevert(IRips.RipNotExist.selector);
+        rips.refund(nonExistentRipId, user);
     }
 
     function test_RevertWhen_RecipientIsZeroAddress() external {
         vm.prank(user);
         vm.expectRevert();
-        rips.refund(roundId, address(0));
+        rips.refund(ripId, address(0));
     }
 
     uint256 private constant VRF_EXPIRY = 7 weeks;
 
-    function test_RevertWhen_TheRoundIsNotSoldOutButHasNotPassedItsDuration() external {
+    function test_RevertWhen_TheRipIsNotSoldOutButHasNotPassedItsDuration() external {
         vm.prank(user);
-        vm.expectRevert(IRips.RoundNotExpired.selector);
-        rips.refund(roundId, user);
+        vm.expectRevert(IRips.RipNotExpired.selector);
+        rips.refund(ripId, user);
     }
 
-    function test_RevertWhen_TheRoundIsSoldOutAndTheVRFRequestHasNotExpired() external {
+    function test_RevertWhen_TheRipIsSoldOutAndTheVRFRequestHasNotExpired() external {
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
-        vm.deal(user, (DEFAULT_TICKET_CAP - TICKETS_BOUGHT) * DEFAULT_TICKET_COST);
+        vm.deal(user, (DEFAULT_ENTRY_CAP - ENTRIES_BOUGHT) * DEFAULT_ENTRY_PRICE);
         vm.prank(user);
-        rips.buyTickets{value: (DEFAULT_TICKET_CAP - TICKETS_BOUGHT) * DEFAULT_TICKET_COST}(
-            stakeId, DEFAULT_TICKET_CAP - TICKETS_BOUGHT, user
+        rips.enterRip{value: (DEFAULT_ENTRY_CAP - ENTRIES_BOUGHT) * DEFAULT_ENTRY_PRICE}(
+            stakeId, DEFAULT_ENTRY_CAP - ENTRIES_BOUGHT, user
         );
 
-        rips.requestRandomness(roundId);
+        rips.requestRandomness(ripId);
 
         vm.warp(block.timestamp + VRF_EXPIRY - 1);
 
         vm.prank(user);
-        vm.expectRevert(IRips.RoundNotExpired.selector);
-        rips.refund(roundId, user);
+        vm.expectRevert(IRips.RipNotExpired.selector);
+        rips.refund(ripId, user);
     }
 
     function test_RevertWhen_TheRecipientHasAlreadyBeenRefunded() external {
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         vm.prank(user);
-        rips.refund(roundId, user);
+        rips.refund(ripId, user);
 
         vm.prank(user);
         vm.expectRevert(IRips.AlreadyRefunded.selector);
-        rips.refund(roundId, user);
+        rips.refund(ripId, user);
     }
 
-    function test_RevertWhen_TheRecipientHasNoTicketsInTheRound() external {
+    function test_RevertWhen_TheRecipientHasNoEntriesInTheRip() external {
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
-        address noTickets = makeAddr("noTickets");
+        address noEntries = makeAddr("noEntries");
 
-        vm.prank(noTickets);
-        vm.expectRevert(IRips.NoTicketsToRefund.selector);
-        rips.refund(roundId, noTickets);
+        vm.prank(noEntries);
+        vm.expectRevert(IRips.NoEntriesToRefund.selector);
+        rips.refund(ripId, noEntries);
     }
 
     modifier givenTheStakeCurrencyIsNative() {
         _;
     }
 
-    modifier whenTheRecipientHasTicketsInTheRound() {
+    modifier whenTheRecipientHasEntriesInTheRip() {
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
         _;
     }
 
-    function test_WhenTheRecipientHasTicketsInTheRound()
+    function test_WhenTheRecipientHasEntriesInTheRip()
         external
         givenTheStakeCurrencyIsNative
-        whenTheRecipientHasTicketsInTheRound
+        whenTheRecipientHasEntriesInTheRip
     {
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.RefundIssued(roundId, user, TICKETS_BOUGHT);
+        emit IRips.RefundIssued(ripId, user, ENTRIES_BOUGHT);
 
         vm.prank(user);
-        rips.refund(roundId, user);
+        rips.refund(ripId, user);
 
         assertEq(user.balance, balanceBefore + _expectedRefundAmount());
-        assertTrue(rips.hasRefunded(roundId, user));
+        assertTrue(rips.hasRefunded(ripId, user));
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller()
         external
         givenTheStakeCurrencyIsNative
-        whenTheRecipientHasTicketsInTheRound
+        whenTheRecipientHasEntriesInTheRip
     {
         address caller = makeAddr("caller");
 
@@ -123,40 +123,40 @@ contract Rips_Refund is RipsTestBase {
         uint256 callerBalanceBefore = caller.balance;
 
         vm.prank(caller);
-        rips.refund(roundId, user);
+        rips.refund(ripId, user);
 
         assertEq(user.balance, recipientBalanceBefore + _expectedRefundAmount());
         assertEq(caller.balance, callerBalanceBefore);
     }
 
     modifier givenTheStakeCurrencyIsAnERC20Token() {
-        _mintAndApprove(user, TICKETS_BOUGHT * DEFAULT_TICKET_COST);
+        _mintAndApprove(user, ENTRIES_BOUGHT * DEFAULT_ENTRY_PRICE);
 
         uint64 erc20StakeId = _createDefaultERC20Stake();
 
         vm.prank(user);
-        rips.buyTickets(erc20StakeId, TICKETS_BOUGHT, user);
+        rips.enterRip(erc20StakeId, ENTRIES_BOUGHT, user);
 
-        roundId = rips.stakeIdToCurrentRoundId(erc20StakeId);
+        ripId = rips.stakeIdToCurrentRipId(erc20StakeId);
 
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
         _;
     }
 
-    function test_WhenTheRecipientHasTicketsInTheRound_GivenERC20()
+    function test_WhenTheRecipientHasEntriesInTheRip_GivenERC20()
         external
         givenTheStakeCurrencyIsAnERC20Token
     {
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();
-        emit IRips.RefundIssued(roundId, user, TICKETS_BOUGHT);
+        emit IRips.RefundIssued(ripId, user, ENTRIES_BOUGHT);
 
         vm.prank(user);
-        rips.refund(roundId, user);
+        rips.refund(ripId, user);
 
         assertEq(erc20.balanceOf(user), balanceBefore + _expectedRefundAmount());
-        assertTrue(rips.hasRefunded(roundId, user));
+        assertTrue(rips.hasRefunded(ripId, user));
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20()
@@ -169,7 +169,7 @@ contract Rips_Refund is RipsTestBase {
         uint256 callerBalanceBefore = erc20.balanceOf(caller);
 
         vm.prank(caller);
-        rips.refund(roundId, user);
+        rips.refund(ripId, user);
 
         assertEq(erc20.balanceOf(user), recipientBalanceBefore + _expectedRefundAmount());
         assertEq(erc20.balanceOf(caller), callerBalanceBefore);

@@ -1,4 +1,4 @@
-Rips_ClaimPrizes_Referrer
+Rips_ClaimPayout_Referrer
 ├── given referrer is zero address
 │   └── it should send the full protocol fee to the fee recipient.
 ├── given no referral tiers are configured and base fee is zero

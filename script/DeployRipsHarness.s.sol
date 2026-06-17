@@ -52,42 +52,48 @@ contract DeployRips is Script {
     }
 
     function _createDefaultStake1(RipsHarness rips) internal returns (uint64 stakeId) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](3);
 
-        tiers[0] = IRips.PrizeTier({prizeCount: 5, minPrize: 0.0008 ether, maxPrize: 0.0012 ether});
+        tiers[0] =
+            IRips.PayoutTier({payoutCount: 5, minPayout: 0.0008 ether, maxPayout: 0.0012 ether});
 
-        tiers[1] = IRips.PrizeTier({prizeCount: 2, minPrize: 0.007 ether, maxPrize: 0.008 ether});
+        tiers[1] =
+            IRips.PayoutTier({payoutCount: 2, minPayout: 0.007 ether, maxPayout: 0.008 ether});
 
-        tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.018 ether, maxPrize: 0.018 ether});
+        tiers[2] =
+            IRips.PayoutTier({payoutCount: 1, minPayout: 0.018 ether, maxPayout: 0.018 ether});
 
         stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
-                ticketCap: 8,
+                entryCap: 8,
                 duration: 5 minutes,
-                ticketCost: 0.005 ether,
+                entryPrice: 0.005 ether,
                 feePercent: DEFAULT_FEE_PERCENT
             })
         );
     }
 
     function _createDefaultStake2(RipsHarness rips) internal returns (uint64 stakeId) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](3);
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](3);
 
-        tiers[0] = IRips.PrizeTier({prizeCount: 5, minPrize: 0.0016 ether, maxPrize: 0.0024 ether});
+        tiers[0] =
+            IRips.PayoutTier({payoutCount: 5, minPayout: 0.0016 ether, maxPayout: 0.0024 ether});
 
-        tiers[1] = IRips.PrizeTier({prizeCount: 2, minPrize: 0.014 ether, maxPrize: 0.016 ether});
+        tiers[1] =
+            IRips.PayoutTier({payoutCount: 2, minPayout: 0.014 ether, maxPayout: 0.016 ether});
 
-        tiers[2] = IRips.PrizeTier({prizeCount: 1, minPrize: 0.036 ether, maxPrize: 0.036 ether});
+        tiers[2] =
+            IRips.PayoutTier({payoutCount: 1, minPayout: 0.036 ether, maxPayout: 0.036 ether});
 
         stakeId = rips.createStake(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
-                ticketCap: 8,
+                entryCap: 8,
                 duration: 5 minutes,
-                ticketCost: 0.01 ether,
+                entryPrice: 0.01 ether,
                 feePercent: DEFAULT_FEE_PERCENT
             })
         );

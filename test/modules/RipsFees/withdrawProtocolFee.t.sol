@@ -5,20 +5,20 @@ import "../../RipsTestBase.sol";
 
 contract Rips_WithdrawProtocolFee is RipsTestBase {
     uint16 private constant FEE_PERCENT = 500;
-    uint256 private constant PRIZE_PER_TICKET = 0.95 ether;
+    uint256 private constant PAYOUT_PER_ENTRY = 0.95 ether;
 
-    uint256 private roundId;
+    uint256 private ripId;
 
     function setUp() public override {
         super.setUp();
 
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(PRIZE_PER_TICKET),
-            maxPrize: uint128(PRIZE_PER_TICKET)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(PAYOUT_PER_ENTRY),
+            maxPayout: uint128(PAYOUT_PER_ENTRY)
         });
 
         vm.prank(owner);
@@ -26,29 +26,29 @@ contract Rips_WithdrawProtocolFee is RipsTestBase {
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
+                entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
+                entryPrice: DEFAULT_ENTRY_PRICE,
                 feePercent: FEE_PERCENT
             })
         );
 
-        vm.deal(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
+        vm.deal(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
         vm.prank(user);
-        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
-            stakeId, DEFAULT_TICKET_CAP, user
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
+            stakeId, DEFAULT_ENTRY_CAP, user
         );
 
-        roundId = rips.stakeIdToCurrentRoundId(stakeId);
-        uint256 vrfRequestId = rips.requestRandomness(roundId);
+        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        uint256 vrfRequestId = rips.requestRandomness(ripId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         vm.prank(user);
-        rips.claimPrizes(roundId, 0, 10, user, address(0));
+        rips.claimPayout(ripId, 0, 10, user, address(0));
     }
 
     function _protocolFee() private pure returns (uint256) {
-        return DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST * FEE_PERCENT / 10_000;
+        return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE * FEE_PERCENT / 10_000;
     }
 
     function test_RevertWhen_TheCallerHasNeitherAdminNorOperatorRole() external {

@@ -6,13 +6,13 @@ import "../../../src/libraries/RipsMath.sol";
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 
 contract Rips_FulfillRandomWords is RipsTestBase {
-    event RandomnessFulfilled(uint256 indexed roundId, uint256 randomA, uint256 randomB);
+    event RandomnessFulfilled(uint256 indexed ripId, uint256 randomA, uint256 randomB);
 
-    uint64 private constant TICKET_CAP = 2;
-    uint256 private constant TICKET_COST = 1 ether;
+    uint64 private constant ENTRY_CAP = 2;
+    uint256 private constant ENTRY_PRICE = 1 ether;
 
     uint64 private stakeId;
-    uint256 private roundId;
+    uint256 private ripId;
     uint256 private vrfRequestId;
 
     function setUp() public override {
@@ -20,11 +20,11 @@ contract Rips_FulfillRandomWords is RipsTestBase {
 
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(TICKET_CAP),
-            minPrize: uint128(TICKET_COST),
-            maxPrize: uint128(TICKET_COST)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(ENTRY_CAP),
+            minPayout: uint128(ENTRY_PRICE),
+            maxPayout: uint128(ENTRY_PRICE)
         });
 
         vm.prank(owner);
@@ -32,19 +32,19 @@ contract Rips_FulfillRandomWords is RipsTestBase {
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
-                ticketCap: TICKET_CAP,
+                entryCap: ENTRY_CAP,
                 duration: 1 days,
-                ticketCost: TICKET_COST,
+                entryPrice: ENTRY_PRICE,
                 feePercent: 0
             })
         );
 
-        vm.deal(user, TICKET_CAP * TICKET_COST);
+        vm.deal(user, ENTRY_CAP * ENTRY_PRICE);
         vm.prank(user);
-        rips.buyTickets{value: TICKET_CAP * TICKET_COST}(stakeId, TICKET_CAP, user);
+        rips.enterRip{value: ENTRY_CAP * ENTRY_PRICE}(stakeId, ENTRY_CAP, user);
 
-        roundId = rips.stakeIdToCurrentRoundId(stakeId);
-        vrfRequestId = rips.requestRandomness(roundId);
+        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        vrfRequestId = rips.requestRandomness(ripId);
     }
 
     uint256 private constant VRF_EXPIRY = 7 weeks;
@@ -64,13 +64,13 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         rips.rawFulfillRandomWords(vrfRequestId, randomWords);
     }
 
-    function test_RevertWhen_TheRequestIdDoesNotMapToARound() external {
+    function test_RevertWhen_TheRequestIdDoesNotMapToARip() external {
         uint256 unknownRequestId = 999;
         uint256[] memory randomWords = new uint256[](1);
         randomWords[0] = 12345;
 
         vm.prank(address(vrfCoordinator));
-        vm.expectRevert(IRips.RoundNotExist.selector);
+        vm.expectRevert(IRips.RipNotExist.selector);
         rips.rawFulfillRandomWords(unknownRequestId, randomWords);
     }
 
@@ -92,23 +92,23 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         randomWords[0] = 12345;
 
         vm.prank(address(vrfCoordinator));
-        vm.expectRevert(IRips.RoundExpired.selector);
+        vm.expectRevert(IRips.RipExpired.selector);
         rips.rawFulfillRandomWords(vrfRequestId, randomWords);
     }
 
     function test_WhenCalledByTheVRFCoordinator() external {
         uint256 randomWord = uint256(keccak256(abi.encode(vrfRequestId, uint256(0))));
-        uint256 expectedA = RipsMath.deriveCoprimeA(randomWord, TICKET_CAP);
-        uint256 expectedB = uint256(keccak256(abi.encode(randomWord))) % TICKET_CAP;
+        uint256 expectedA = RipsMath.deriveCoprimeA(randomWord, ENTRY_CAP);
+        uint256 expectedB = uint256(keccak256(abi.encode(randomWord))) % ENTRY_CAP;
 
         vm.expectEmit(true, false, false, true);
-        emit RandomnessFulfilled(roundId, expectedA, expectedB);
+        emit RandomnessFulfilled(ripId, expectedA, expectedB);
 
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
-        IRips.Round memory round = rips.exposed_round(roundId);
-        assertEq(round.randomA, expectedA);
-        assertEq(round.randomB, expectedB);
-        assertEq(uint8(round.vrfRequestStatus), uint8(IRips.VrfRequestStatus.Fulfilled));
+        IRips.Rip memory rip = rips.exposed_rip(ripId);
+        assertEq(rip.randomA, expectedA);
+        assertEq(rip.randomB, expectedB);
+        assertEq(uint8(rip.vrfRequestStatus), uint8(IRips.VrfRequestStatus.Fulfilled));
     }
 }

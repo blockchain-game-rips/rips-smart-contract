@@ -20,8 +20,8 @@ contract RipsHarness is Rips {
         return RipsMath.deriveCoprimeA(randomValue, n);
     }
 
-    function exposed_round(uint256 roundId) external view returns (Round memory) {
-        return roundIdToRound[roundId];
+    function exposed_rip(uint256 ripId) external view returns (Rip memory) {
+        return ripIdToRip[ripId];
     }
 
     function exposed_config(uint64 configId) external view returns (Config memory) {
@@ -40,35 +40,35 @@ contract RipsHarness is Rips {
         address referrer,
         address currency,
         uint256 protocolFee,
-        uint256 ticketRevenue
+        uint256 entryRevenue
     ) external returns (uint256) {
-        return _collectReferrerFee(referrer, currency, protocolFee, ticketRevenue);
+        return _collectReferrerFee(referrer, currency, protocolFee, entryRevenue);
     }
 
-    function exposed_requestTimestamp(uint256 roundId) external view returns (uint256) {
-        return _roundIdToRequestTimestamp[roundId];
+    function exposed_requestTimestamp(uint256 ripId) external view returns (uint256) {
+        return _ripIdToRequestTimestamp[ripId];
     }
 
     function exposed_nextStakeId() external view returns (uint64) {
         return _nextStakeId;
     }
 
-    function exposed_nextRoundId() external view returns (uint256) {
-        return _nextRoundId;
+    function exposed_nextRipId() external view returns (uint256) {
+        return _nextRipId;
     }
 
     function exposed_nextConfigId() external view returns (uint64) {
         return _nextConfigId;
     }
 
-    function exposed_calculateTicketPrize(
-        uint256 ticketNumber,
+    function exposed_calculateEntryPayout(
+        uint256 entryNumber,
         uint64 a,
         uint64 b,
         uint64 n,
-        IRips.PrizeTier[] memory tiers,
+        IRips.PayoutTier[] memory tiers,
         uint64[] memory tierBoundaries
     ) external pure returns (uint256) {
-        return RipsMath.calculateTicketPrize(ticketNumber, a, b, n, tiers, tierBoundaries);
+        return RipsMath.calculateEntryPayout(entryNumber, a, b, n, tiers, tierBoundaries);
     }
 }

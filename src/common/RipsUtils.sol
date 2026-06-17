@@ -11,12 +11,12 @@ abstract contract RipsUtils is RipsStorage, AccessControl {
 
     using SafeERC20 for IERC20;
 
-    function _isExpired(Round storage round, Config storage config) internal view returns (bool) {
-        return block.timestamp > round.startTime + config.duration;
+    function _isExpired(Rip storage rip, Config storage config) internal view returns (bool) {
+        return block.timestamp > rip.startTime + config.duration;
     }
 
-    function _isSoldOut(Round storage round, Config storage config) internal view returns (bool) {
-        return round.ticketsSold == config.ticketCap;
+    function _isSoldOut(Rip storage rip, Config storage config) internal view returns (bool) {
+        return rip.entriesSold == config.entryCap;
     }
 
     function _isNative(address currency) internal pure returns (bool) {
@@ -41,8 +41,8 @@ abstract contract RipsUtils is RipsStorage, AccessControl {
         return hasRole(DEFAULT_ADMIN_ROLE, account) || hasRole(OPERATOR_ROLE, account);
     }
 
-    function _isVrfRequestExpired(uint256 roundId) internal view returns (bool) {
-        uint256 requestTimestamp = _roundIdToRequestTimestamp[roundId];
+    function _isVrfRequestExpired(uint256 ripId) internal view returns (bool) {
+        uint256 requestTimestamp = _ripIdToRequestTimestamp[ripId];
 
         if (requestTimestamp == 0) return false;
 

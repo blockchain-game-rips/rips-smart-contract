@@ -1,0 +1,19 @@
+RipsMath_CalculateEntryPayout
+├── it result payout number is always between 1 and n inclusive.
+├── it different entry numbers produce different payout numbers when a is odd and n is a power of two.
+├── it should never revert for valid inputs.
+├── when the payout number falls in the first tier
+│   └── it should return the payout for that position.
+├── when the payout number falls in a middle tier
+│   └── it should return the payout for that position.
+├── when the payout number falls in the last tier
+│   └── it should return the payout for that position.
+├── when the tier has a single payout
+│   └── it should return the min payout.
+└── when the tier has multiple payouts
+    ├── when the rank is first in the tier
+    │   └── it should return the min payout.
+    ├── when the rank is last in the tier
+    │   └── it should return the max payout.
+    └── when the rank is in the middle of the tier
+        └── it should linearly interpolate between min and max payout.

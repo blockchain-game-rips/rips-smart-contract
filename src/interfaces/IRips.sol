@@ -8,32 +8,32 @@ interface IRips {
         Fulfilled
     }
 
-    struct Round {
+    struct Rip {
         uint64 stakeId;
         uint64 configId;
         uint40 startTime;
-        uint64 ticketsSold;
+        uint64 entriesSold;
         VrfRequestStatus vrfRequestStatus;
         uint64 randomA;
         uint64 randomB;
     }
 
-    struct PrizeTier {
-        uint64 prizeCount;
-        uint128 minPrize;
-        uint128 maxPrize;
+    struct PayoutTier {
+        uint64 payoutCount;
+        uint128 minPayout;
+        uint128 maxPayout;
     }
 
     struct Config {
-        PrizeTier[] tiers;
+        PayoutTier[] tiers;
         address currency;
-        uint64 ticketCap;
+        uint64 entryCap;
         uint32 duration;
-        uint256 ticketCost;
+        uint256 entryPrice;
         uint16 feePercent;
     }
 
-    struct TicketRange {
+    struct EntryRange {
         uint64 start;
         uint64 count;
         bool claimed;
@@ -55,25 +55,25 @@ interface IRips {
     error FeeTooHigh();
     error NothingToWithdraw();
     error ReferrerFrozen();
-    error TicketCapNotPowerOfTwo();
+    error EntryCapNotPowerOfTwo();
     error InvalidTierCount();
-    error InvalidPrizeRange();
-    error TiersNotSortedByCount();
-    error PrizeCountMismatch();
-    error PrizePoolMismatch();
+    error InvalidPayoutRange();
+    error TiersNotSortedByPayoutCount();
+    error PayoutCountMismatch();
+    error PayoutPoolMismatch();
     error StakeNotExist();
-    error ZeroTickets();
+    error ZeroEntries();
     error IncorrectPayment();
-    error RoundNotSoldOut();
-    error RoundNotFulfilled();
+    error RipNotSoldOut();
+    error RipNotFulfilled();
     error InvalidVrfRequestStatus();
-    error RoundExpired();
+    error RipExpired();
     error InvalidStartIndex();
     error TransferFailed();
-    error RoundNotExpired();
+    error RipNotExpired();
     error AlreadyRefunded();
-    error NoTicketsToRefund();
-    error RoundNotExist();
+    error NoEntriesToRefund();
+    error RipNotExist();
     error ReferralTiersEmpty();
     error ReferralTiersNotSorted();
     error ReferralTierCountExceeded();
@@ -86,22 +86,22 @@ interface IRips {
     event StakeUpdated(uint64 indexed stakeId, uint64 configId);
     event StakeDeleted(uint64 indexed stakeId);
 
-    event RoundCreated(uint256 indexed roundId, uint64 indexed stakeId, uint64 configId);
+    event RipCreated(uint256 indexed ripId, uint64 indexed stakeId, uint64 configId);
 
-    event TicketsPurchased(
-        uint256 indexed roundId, address indexed user, uint64 ticketCount, uint256 startTicketIndex
+    event RipEntered(
+        uint256 indexed ripId, address indexed user, uint64 entryCount, uint256 startEntryIndex
     );
-    event PrizesClaimed(
-        uint256 indexed roundId,
+    event PayoutClaimed(
+        uint256 indexed ripId,
         address indexed user,
         address referrer,
-        uint64 ticketCount,
-        uint256 prizeAmount
+        uint64 entryCount,
+        uint256 payoutAmount
     );
-    event RefundIssued(uint256 indexed roundId, address indexed user, uint64 ticketCount);
+    event RefundIssued(uint256 indexed ripId, address indexed user, uint64 entryCount);
 
-    event RandomnessRequested(uint256 indexed roundId, uint256 vrfRequestId);
-    event RandomnessFulfilled(uint256 indexed roundId, uint256 randomA, uint256 randomB);
+    event RandomnessRequested(uint256 indexed ripId, uint256 vrfRequestId);
+    event RandomnessFulfilled(uint256 indexed ripId, uint256 randomA, uint256 randomB);
     event CallbackGasLimitUpdated(uint32 newLimit);
     event VrfRequestConfirmationsUpdated(uint16 newConfirmations);
     event VrfSubscriptionIdUpdated(uint256 newSubscriptionId);
@@ -115,24 +115,24 @@ interface IRips {
     event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
     event ReferralTiersUpdated(address indexed currency, ReferralTier[] tiers);
     event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
-    event ReferralFeeAccrued(uint256 indexed roundId, address indexed referrer, uint256 amount);
-    event ProtocolFeeAccrued(uint256 indexed roundId, uint256 amount);
+    event ReferralFeeAccrued(uint256 indexed ripId, address indexed referrer, uint256 amount);
+    event ProtocolFeeAccrued(uint256 indexed ripId, uint256 amount);
     event ReferralStateUpdated(
         address indexed referrer, address indexed currency, ReferrerState referrerState
     );
     event ReferrerCustomFeeUpdated(address indexed referrer, uint16 customFeePercent);
 
-    function buyTickets(uint64 stakeId, uint64 ticketCount, address recipient) external payable;
+    function enterRip(uint64 stakeId, uint64 entryCount, address recipient) external payable;
 
-    function claimPrizes(
-        uint256 roundId,
+    function claimPayout(
+        uint256 ripId,
         uint256 startIndex,
         uint256 maxRanges,
         address recipient,
         address referrer
     ) external;
 
-    function refund(uint256 roundId, address recipient) external;
+    function refund(uint256 ripId, address recipient) external;
 
     function createStake(Config calldata config) external returns (uint64 stakeId);
 
@@ -140,12 +140,9 @@ interface IRips {
 
     function deleteStake(uint64 stakeId) external;
 
-    function requestRandomness(uint256 roundId) external returns (uint256 requestId);
+    function requestRandomness(uint256 ripId) external returns (uint256 requestId);
 
-    function getUserTickets(uint256 roundId, address user)
-        external
-        view
-        returns (TicketRange[] memory);
+    function getUserEntries(uint256 ripId, address user) external view returns (EntryRange[] memory);
 
     function setReferralTiers(address currency, ReferralTier[] calldata tiers) external;
 

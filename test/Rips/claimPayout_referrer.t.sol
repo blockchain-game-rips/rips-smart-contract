@@ -3,16 +3,16 @@ pragma solidity ^0.8.13;
 
 import "../RipsTestBase.sol";
 
-contract Rips_ClaimPrizes_Referrer is RipsTestBase {
+contract Rips_ClaimPayout_Referrer is RipsTestBase {
     uint256 private constant START_INDEX = 0;
     uint256 private constant MAX_RANGES = 10;
     uint16 private constant PROTOCOL_FEE_PERCENT = 500; // 5%
     uint256 private constant DEFAULT_REFERRAL_FEE = 300; // 3%
     uint256 private constant CUSTOM_FEE_PERCENT = 2000; // 20%
-    uint256 private constant PRIZE_PER_TICKET = 0.95 ether;
+    uint256 private constant PAYOUT_PER_ENTRY = 0.95 ether;
 
     uint64 private stakeId;
-    uint256 private roundId;
+    uint256 private ripId;
 
     function setUp() public override {
         super.setUp();
@@ -23,21 +23,21 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
-            stakeId, DEFAULT_TICKET_CAP, user
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
+            stakeId, DEFAULT_ENTRY_CAP, user
         );
 
-        roundId = rips.stakeIdToCurrentRoundId(stakeId);
-        uint256 vrfRequestId = rips.requestRandomness(roundId);
+        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        uint256 vrfRequestId = rips.requestRandomness(ripId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
 
     function _createFeeStake() private returns (uint64) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(PRIZE_PER_TICKET),
-            maxPrize: uint128(PRIZE_PER_TICKET)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(PAYOUT_PER_ENTRY),
+            maxPayout: uint128(PAYOUT_PER_ENTRY)
         });
 
         vm.prank(owner);
@@ -45,20 +45,20 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
+                entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
+                entryPrice: DEFAULT_ENTRY_PRICE,
                 feePercent: PROTOCOL_FEE_PERCENT
             })
         );
     }
 
-    function _ticketRevenue() private pure returns (uint256) {
-        return DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST;
+    function _entryRevenue() private pure returns (uint256) {
+        return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE;
     }
 
     function _protocolFee() private pure returns (uint256) {
-        return _ticketRevenue() * PROTOCOL_FEE_PERCENT / 10_000;
+        return _entryRevenue() * PROTOCOL_FEE_PERCENT / 10_000;
     }
 
     function _referrerFeeFrom(uint256 feePercent) private pure returns (uint256) {
@@ -67,12 +67,12 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
 
     function _claim() private {
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
     }
 
     function test_GivenReferrerIsZeroAddress() external {
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, address(0));
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, address(0));
 
         assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee());
         assertEq(rips.referrerFeeAccrued(referrer, address(0)), 0);
@@ -92,7 +92,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         uint256 expectedReferrerFee = _referrerFeeFrom(CUSTOM_FEE_PERCENT);
 
         vm.expectEmit();
-        emit IRips.ReferralFeeAccrued(roundId, referrer, expectedReferrerFee);
+        emit IRips.ReferralFeeAccrued(ripId, referrer, expectedReferrerFee);
 
         _claim();
 
@@ -107,7 +107,7 @@ contract Rips_ClaimPrizes_Referrer is RipsTestBase {
         uint256 expectedReferrerFee = _referrerFeeFrom(DEFAULT_REFERRAL_FEE);
 
         vm.expectEmit();
-        emit IRips.ReferralFeeAccrued(roundId, referrer, expectedReferrerFee);
+        emit IRips.ReferralFeeAccrued(ripId, referrer, expectedReferrerFee);
 
         _claim();
 

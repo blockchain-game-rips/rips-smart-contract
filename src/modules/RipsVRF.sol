@@ -23,7 +23,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     bytes32 public vrfKeyHash;
     uint32 public callbackGasLimit;
 
-    mapping(uint256 requestId => uint256 roundId) internal _vrfRequestToRound;
+    mapping(uint256 requestId => uint256 ripId) internal _vrfRequestToRip;
 
     constructor(
         address vrfCoordinator_,
@@ -49,7 +49,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     {
         if (newVrfCoordinator == address(0)) revert ZeroAddress();
 
-        _revokeRole(VRF_COORDINATOR_ROLE, address(newVrfCoordinator));
+        _revokeRole(VRF_COORDINATOR_ROLE, address(vrfCoordinator));
         _grantRole(VRF_COORDINATOR_ROLE, newVrfCoordinator);
 
         vrfCoordinator = IVRFCoordinatorV2Plus(newVrfCoordinator);
@@ -84,14 +84,14 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         emit CallbackGasLimitUpdated(newLimit);
     }
 
-    function requestRandomness(uint256 roundId) external returns (uint256 requestId) {
-        Round storage round = roundIdToRound[roundId];
-        if (round.stakeId == 0) revert RoundNotExist();
+    function requestRandomness(uint256 ripId) external returns (uint256 requestId) {
+        Rip storage rip = ripIdToRip[ripId];
+        if (rip.stakeId == 0) revert RipNotExist();
 
-        if (round.vrfRequestStatus != VrfRequestStatus.NotRequested) revert VrfAlreadyRequested();
+        if (rip.vrfRequestStatus != VrfRequestStatus.NotRequested) revert VrfAlreadyRequested();
 
-        Config storage config = configIdToConfig[round.configId];
-        if (!_isSoldOut(round, config)) revert RoundNotSoldOut();
+        Config storage config = configIdToConfig[rip.configId];
+        if (!_isSoldOut(rip, config)) revert RipNotSoldOut();
 
         requestId = vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
@@ -107,13 +107,13 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         );
 
         if (requestId == 0) revert InvalidRequestId();
-        if (_vrfRequestToRound[requestId] != 0) revert InvalidRequestId();
+        if (_vrfRequestToRip[requestId] != 0) revert InvalidRequestId();
 
-        round.vrfRequestStatus = VrfRequestStatus.Requested;
-        _vrfRequestToRound[requestId] = roundId;
-        _roundIdToRequestTimestamp[roundId] = block.timestamp;
+        rip.vrfRequestStatus = VrfRequestStatus.Requested;
+        _vrfRequestToRip[requestId] = ripId;
+        _ripIdToRequestTimestamp[ripId] = block.timestamp;
 
-        emit RandomnessRequested(roundId, requestId);
+        emit RandomnessRequested(ripId, requestId);
     }
 
     function rawFulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
@@ -124,23 +124,23 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal {
-        uint256 roundId = _vrfRequestToRound[requestId];
+        uint256 ripId = _vrfRequestToRip[requestId];
 
-        if (roundId == 0) revert RoundNotExist();
+        if (ripId == 0) revert RipNotExist();
 
-        Round storage round = roundIdToRound[roundId];
+        Rip storage rip = ripIdToRip[ripId];
 
-        if (round.vrfRequestStatus != VrfRequestStatus.Requested) revert InvalidVrfRequestStatus();
-        if (_isVrfRequestExpired(roundId)) revert RoundExpired();
+        if (rip.vrfRequestStatus != VrfRequestStatus.Requested) revert InvalidVrfRequestStatus();
+        if (_isVrfRequestExpired(ripId)) revert RipExpired();
 
-        Config storage config = configIdToConfig[round.configId];
+        Config storage config = configIdToConfig[rip.configId];
 
-        uint64 n = config.ticketCap;
+        uint64 n = config.entryCap;
         uint256 randomWord = randomWords[0];
-        round.randomA = RipsMath.deriveCoprimeA(randomWord, n);
-        round.randomB = uint64(uint256(keccak256(abi.encode(randomWord))) % n);
-        round.vrfRequestStatus = VrfRequestStatus.Fulfilled;
+        rip.randomA = RipsMath.deriveCoprimeA(randomWord, n);
+        rip.randomB = uint64(uint256(keccak256(abi.encode(randomWord))) % n);
+        rip.vrfRequestStatus = VrfRequestStatus.Fulfilled;
 
-        emit RandomnessFulfilled(roundId, round.randomA, round.randomB);
+        emit RandomnessFulfilled(ripId, rip.randomA, rip.randomB);
     }
 }

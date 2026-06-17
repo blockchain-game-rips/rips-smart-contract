@@ -5,24 +5,24 @@ Rips_UpdateStake
 │   └── it should revert.
 ├── when the stake is deleted
 │   └── it should revert.
-├── when ticket cap is not a power of two
+├── when entry cap is not a power of two
 │   └── it should revert.
 ├── when tiers is empty
 │   └── it should revert.
 ├── when tiers exceeds max tier count
 │   └── it should revert.
-├── when a tier has min prize greater than max prize
+├── when a tier has min payout greater than max payout
 │   └── it should revert.
 ├── when tiers are not sorted by count descending
 │   └── it should revert.
-├── when total prize count does not equal ticket cap
+├── when total payout count does not equal entry cap
 │   └── it should revert.
-├── when total prize pool does not equal ticket cap times ticket cost
+├── when total payout pool does not equal entry cap times entry price
 │   └── it should revert.
 ├── when fee percent exceeds FEE_BASE
 │   └── it should revert.
 ├── when the config is valid
 │   ├── it should update the config immediately.
 │   └── it should emit a {StakeUpdated} event.
-└── when the next round is created after an update
-    └── it should use the new config for the new round.
+└── when the next rip is created after an update
+    └── it should use the new config for the new rip.

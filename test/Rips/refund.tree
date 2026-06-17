@@ -1,26 +1,26 @@
 Rips_Refund
-├── when the round does not exist
+├── when the rip does not exist
 │   └── it should revert.
 ├── when recipient is zero address
 │   └── it should revert.
-├── when the round is not expired
-│   ├── when the round is not sold out but has not passed its duration
-│   │   └── it should revert with {RoundNotExpired}.
-│   └── when the round is sold out and the VRF request has not expired
-│       └── it should revert with {RoundNotExpired}.
+├── when the rip is not expired
+│   ├── when the rip is not sold out but has not passed its duration
+│   │   └── it should revert with {RipNotExpired}.
+│   └── when the rip is sold out and the VRF request has not expired
+│       └── it should revert with {RipNotExpired}.
 ├── when the recipient has already been refunded
 │   └── it should revert.
-├── when the recipient has no tickets in the round
+├── when the recipient has no entries in the rip
 │   └── it should revert.
 ├── given the stake currency is native
-│   └── when the recipient has tickets in the round
+│   └── when the recipient has entries in the rip
 │       ├── it should mark the recipient as refunded.
 │       ├── it should transfer the ETH refund amount to the recipient.
 │       ├── when recipient is different from the caller
 │       │   └── it should transfer the ETH refund to the recipient, not the caller.
 │       └── it should emit a {RefundIssued} event.
 └── given the stake currency is an ERC20 token
-    └── when the recipient has tickets in the round
+    └── when the recipient has entries in the rip
         ├── it should mark the recipient as refunded.
         ├── it should transfer the token refund amount to the recipient.
         ├── when recipient is different from the caller

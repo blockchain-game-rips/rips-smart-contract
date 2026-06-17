@@ -1,5 +1,5 @@
-Rips_ClaimPrizes
-├── when the round is not finalized
+Rips_ClaimPayout
+├── when the rip is not finalized
 │   └── it should revert.
 ├── when recipient is zero address
 │   └── it should revert.
@@ -11,26 +11,26 @@ Rips_ClaimPrizes
 │   └── it should not transfer any funds.
 └── when there are unclaimed ranges
     ├── it should mark processed ranges as claimed.
-    ├── it should calculate correct prizes using the affine permutation.
+    ├── it should calculate correct payouts using the affine permutation.
     ├── when caller has admin role and recipient is a different address
-    │   └── it should transfer the prize to the recipient.
+    │   └── it should transfer the payout to the recipient.
     └── when caller has operator role and recipient is a different address
-        └── it should transfer the prize to the recipient.
+        └── it should transfer the payout to the recipient.
     ├── given the stake currency is native
     │   ├── when protocol fee is zero
-    │   │   ├── it should transfer the full ETH prize to the recipient.
-    │   │   └── it should emit a {PrizesClaimed} event.
+    │   │   ├── it should transfer the full ETH payout to the recipient.
+    │   │   └── it should emit a {PayoutClaimed} event.
     │   └── when protocol fee is greater than zero
     │       ├── it should transfer the fee in ETH to the fee recipient.
-    │       ├── it should transfer the remaining ETH prize to the recipient.
+    │       ├── it should transfer the remaining ETH payout to the recipient.
     │       ├── it should emit a {ProtocolFeeAccrued} event.
-    │       └── it should emit a {PrizesClaimed} event.
+    │       └── it should emit a {PayoutClaimed} event.
     └── given the stake currency is an ERC20 token
         ├── when protocol fee is zero
-        │   ├── it should transfer the full token prize to the recipient.
-        │   └── it should emit a {PrizesClaimed} event.
+        │   ├── it should transfer the full token payout to the recipient.
+        │   └── it should emit a {PayoutClaimed} event.
         └── when protocol fee is greater than zero
             ├── it should transfer the fee in tokens to the fee recipient.
-            ├── it should transfer the remaining token prize to the recipient.
+            ├── it should transfer the remaining token payout to the recipient.
             ├── it should emit a {ProtocolFeeAccrued} event.
-            └── it should emit a {PrizesClaimed} event.
+            └── it should emit a {PayoutClaimed} event.

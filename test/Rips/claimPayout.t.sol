@@ -3,14 +3,14 @@ pragma solidity ^0.8.13;
 
 import "../RipsTestBase.sol";
 
-contract Rips_ClaimPrizes is RipsTestBase {
+contract Rips_ClaimPayout is RipsTestBase {
     uint256 private constant START_INDEX = 0;
     uint256 private constant MAX_RANGES = 10;
     uint16 private constant FEE_PERCENT = 500;
-    uint256 private constant FEE_PRIZE_PER_TICKET = 0.95 ether;
+    uint256 private constant FEE_PAYOUT_PER_ENTRY = 0.95 ether;
 
     uint64 private stakeId;
-    uint256 private roundId;
+    uint256 private ripId;
 
     function setUp() public override {
         super.setUp();
@@ -21,36 +21,36 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
-            stakeId, DEFAULT_TICKET_CAP, user
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
+            stakeId, DEFAULT_ENTRY_CAP, user
         );
 
-        roundId = rips.stakeIdToCurrentRoundId(stakeId);
+        ripId = rips.stakeIdToCurrentRipId(stakeId);
     }
 
-    function _finalizeRound() private {
-        uint256 vrfRequestId = rips.requestRandomness(roundId);
+    function _finalizeRip() private {
+        uint256 vrfRequestId = rips.requestRandomness(ripId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
 
-    function _totalPrize() private pure returns (uint256) {
-        return DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST;
+    function _totalPayout() private pure returns (uint256) {
+        return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE;
     }
 
-    function _feePrizePool() private pure returns (uint256) {
-        return DEFAULT_TICKET_CAP * FEE_PRIZE_PER_TICKET;
+    function _feePayoutPool() private pure returns (uint256) {
+        return DEFAULT_ENTRY_CAP * FEE_PAYOUT_PER_ENTRY;
     }
 
     function _protocolFee() private pure returns (uint256) {
-        return DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST * FEE_PERCENT / 10_000;
+        return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE * FEE_PERCENT / 10_000;
     }
 
-    function _createFeeNativeStake() private returns (uint256 feeRoundId) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(FEE_PRIZE_PER_TICKET),
-            maxPrize: uint128(FEE_PRIZE_PER_TICKET)
+    function _createFeeNativeStake() private returns (uint256 feeRipId) {
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(FEE_PAYOUT_PER_ENTRY),
+            maxPayout: uint128(FEE_PAYOUT_PER_ENTRY)
         });
 
         vm.prank(owner);
@@ -58,64 +58,64 @@ contract Rips_ClaimPrizes is RipsTestBase {
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
+                entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
+                entryPrice: DEFAULT_ENTRY_PRICE,
                 feePercent: FEE_PERCENT
             })
         );
 
         vm.prank(user);
-        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
-            feeStakeId, DEFAULT_TICKET_CAP, user
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
+            feeStakeId, DEFAULT_ENTRY_CAP, user
         );
 
-        feeRoundId = rips.stakeIdToCurrentRoundId(feeStakeId);
-        uint256 vrfRequestId = rips.requestRandomness(feeRoundId);
+        feeRipId = rips.stakeIdToCurrentRipId(feeStakeId);
+        uint256 vrfRequestId = rips.requestRandomness(feeRipId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
 
-    function test_RevertWhen_TheRoundIsNotFinalized() external {
+    function test_RevertWhen_TheRipIsNotFinalized() external {
         vm.prank(user);
-        vm.expectRevert(IRips.RoundNotFulfilled.selector);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        vm.expectRevert(IRips.RipNotFulfilled.selector);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
     }
 
     function test_RevertWhen_RecipientIsZeroAddress() external {
-        _finalizeRound();
+        _finalizeRip();
 
         vm.prank(user);
         vm.expectRevert();
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, address(0), referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, address(0), referrer);
     }
 
     function test_RevertWhen_StartIndexIsOutOfBounds() external {
-        _finalizeRound();
+        _finalizeRip();
 
-        IRips.TicketRange[] memory ranges = rips.getUserTickets(roundId, user);
+        IRips.EntryRange[] memory ranges = rips.getUserEntries(ripId, user);
         uint256 outOfBoundsIndex = ranges.length;
 
         vm.prank(user);
         vm.expectRevert(IRips.InvalidStartIndex.selector);
-        rips.claimPrizes(roundId, outOfBoundsIndex, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, outOfBoundsIndex, MAX_RANGES, user, referrer);
     }
 
     function test_WhenAllRangesInScopeAreAlreadyClaimed() external {
-        _finalizeRound();
+        _finalizeRip();
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
 
         uint256 balanceBefore = user.balance;
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, balanceBefore);
     }
 
     modifier whenThereAreUnclaimedRanges() {
-        _finalizeRound();
+        _finalizeRip();
         _;
     }
 
@@ -124,24 +124,24 @@ contract Rips_ClaimPrizes is RipsTestBase {
         whenThereAreUnclaimedRanges
     {
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
 
-        IRips.TicketRange[] memory ranges = rips.getUserTickets(roundId, user);
+        IRips.EntryRange[] memory ranges = rips.getUserEntries(ripId, user);
         for (uint256 i = 0; i < ranges.length; i++) {
             assertTrue(ranges[i].claimed);
         }
     }
 
-    function test_WhenThereAreUnclaimedRanges_CalculatesCorrectPrizes()
+    function test_WhenThereAreUnclaimedRanges_CalculatesCorrectPayouts()
         external
         whenThereAreUnclaimedRanges
     {
         uint256 balanceBefore = user.balance;
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
 
-        assertEq(user.balance, balanceBefore + _totalPrize());
+        assertEq(user.balance, balanceBefore + _totalPayout());
     }
 
     function test_RevertWhen_CallerIsNotTheRecipientAndHasNeitherAdminNorOperatorRole()
@@ -152,7 +152,7 @@ contract Rips_ClaimPrizes is RipsTestBase {
 
         vm.prank(caller);
         vm.expectRevert(IRips.NotRecipientOrOwner.selector);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
     }
 
     function test_WhenCallerHasAdminRoleAndRecipientIsADifferentAddress()
@@ -163,9 +163,9 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 ownerBalanceBefore = owner.balance;
 
         vm.prank(owner);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
 
-        assertEq(user.balance, recipientBalanceBefore + _totalPrize());
+        assertEq(user.balance, recipientBalanceBefore + _totalPayout());
         assertEq(owner.balance, ownerBalanceBefore);
     }
 
@@ -181,9 +181,9 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 operatorBalanceBefore = operator.balance;
 
         vm.prank(operator);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
 
-        assertEq(user.balance, recipientBalanceBefore + _totalPrize());
+        assertEq(user.balance, recipientBalanceBefore + _totalPayout());
         //TODO: unnecessary assert, check Rips smart contract balance
         assertEq(operator.balance, operatorBalanceBefore);
     }
@@ -200,12 +200,12 @@ contract Rips_ClaimPrizes is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(roundId, user, referrer, DEFAULT_TICKET_CAP, _totalPrize());
+        emit IRips.PayoutClaimed(ripId, user, referrer, DEFAULT_ENTRY_CAP, _totalPayout());
 
         vm.prank(user);
-        rips.claimPrizes(roundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
 
-        assertEq(user.balance, balanceBefore + _totalPrize());
+        assertEq(user.balance, balanceBefore + _totalPayout());
     }
 
     function test_WhenProtocolFeeIsGreaterThanZero()
@@ -213,54 +213,54 @@ contract Rips_ClaimPrizes is RipsTestBase {
         whenThereAreUnclaimedRanges
         givenTheStakeCurrencyIsNative
     {
-        uint256 feeRoundId = _createFeeNativeStake();
+        uint256 feeRipId = _createFeeNativeStake();
 
         uint256 userBalanceBefore = user.balance;
 
         vm.expectEmit();
-        emit IRips.ProtocolFeeAccrued(feeRoundId, _protocolFee());
+        emit IRips.ProtocolFeeAccrued(feeRipId, _protocolFee());
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(feeRoundId, user, referrer, DEFAULT_TICKET_CAP, _feePrizePool());
+        emit IRips.PayoutClaimed(feeRipId, user, referrer, DEFAULT_ENTRY_CAP, _feePayoutPool());
 
         vm.prank(user);
-        rips.claimPrizes(feeRoundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(feeRipId, START_INDEX, MAX_RANGES, user, referrer);
 
-        assertEq(user.balance, userBalanceBefore + _feePrizePool());
+        assertEq(user.balance, userBalanceBefore + _feePayoutPool());
         assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee());
     }
 
     function test_WhenProtocolFeeIsZero_GivenTheStakeCurrencyIsAnERC20Token() external {
-        _mintAndApprove(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
+        _mintAndApprove(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
 
         uint64 erc20StakeId = _createDefaultERC20Stake();
 
         vm.prank(user);
-        rips.buyTickets(erc20StakeId, DEFAULT_TICKET_CAP, user);
+        rips.enterRip(erc20StakeId, DEFAULT_ENTRY_CAP, user);
 
-        uint256 erc20RoundId = rips.stakeIdToCurrentRoundId(erc20StakeId);
-        uint256 vrfRequestId = rips.requestRandomness(erc20RoundId);
+        uint256 erc20RipId = rips.stakeIdToCurrentRipId(erc20StakeId);
+        uint256 vrfRequestId = rips.requestRandomness(erc20RipId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(erc20RoundId, user, referrer, DEFAULT_TICKET_CAP, _totalPrize());
+        emit IRips.PayoutClaimed(erc20RipId, user, referrer, DEFAULT_ENTRY_CAP, _totalPayout());
 
         vm.prank(user);
-        rips.claimPrizes(erc20RoundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(erc20RipId, START_INDEX, MAX_RANGES, user, referrer);
 
-        assertEq(erc20.balanceOf(user), balanceBefore + _totalPrize());
+        assertEq(erc20.balanceOf(user), balanceBefore + _totalPayout());
     }
 
     function test_WhenProtocolFeeIsGreaterThanZero_GivenTheStakeCurrencyIsAnERC20Token() external {
-        _mintAndApprove(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
+        _mintAndApprove(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(FEE_PRIZE_PER_TICKET),
-            maxPrize: uint128(FEE_PRIZE_PER_TICKET)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(FEE_PAYOUT_PER_ENTRY),
+            maxPayout: uint128(FEE_PAYOUT_PER_ENTRY)
         });
 
         vm.prank(owner);
@@ -268,32 +268,32 @@ contract Rips_ClaimPrizes is RipsTestBase {
             IRips.Config({
                 currency: address(erc20),
                 tiers: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
+                entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
+                entryPrice: DEFAULT_ENTRY_PRICE,
                 feePercent: FEE_PERCENT
             })
         );
 
         vm.prank(user);
-        rips.buyTickets(feeStakeId, DEFAULT_TICKET_CAP, user);
+        rips.enterRip(feeStakeId, DEFAULT_ENTRY_CAP, user);
 
-        uint256 feeRoundId = rips.stakeIdToCurrentRoundId(feeStakeId);
-        uint256 vrfRequestId = rips.requestRandomness(feeRoundId);
+        uint256 feeRipId = rips.stakeIdToCurrentRipId(feeStakeId);
+        uint256 vrfRequestId = rips.requestRandomness(feeRipId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         uint256 userBalanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();
-        emit IRips.ProtocolFeeAccrued(feeRoundId, _protocolFee());
+        emit IRips.ProtocolFeeAccrued(feeRipId, _protocolFee());
 
         vm.expectEmit();
-        emit IRips.PrizesClaimed(feeRoundId, user, referrer, DEFAULT_TICKET_CAP, _feePrizePool());
+        emit IRips.PayoutClaimed(feeRipId, user, referrer, DEFAULT_ENTRY_CAP, _feePayoutPool());
 
         vm.prank(user);
-        rips.claimPrizes(feeRoundId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(feeRipId, START_INDEX, MAX_RANGES, user, referrer);
 
-        assertEq(erc20.balanceOf(user), userBalanceBefore + _feePrizePool());
+        assertEq(erc20.balanceOf(user), userBalanceBefore + _feePayoutPool());
         assertEq(rips.protocolFeeAccrued(address(erc20)), _protocolFee());
     }
 }

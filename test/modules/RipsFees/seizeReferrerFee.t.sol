@@ -6,18 +6,18 @@ import "../../RipsTestBase.sol";
 contract Rips_SeizeReferrerFee is RipsTestBase {
     uint16 private constant FEE_PERCENT = 500;
     uint16 private constant REFERRER_FEE_PERCENT = 2000;
-    uint256 private constant PRIZE_PER_TICKET = 0.95 ether;
+    uint256 private constant PAYOUT_PER_ENTRY = 0.95 ether;
 
     function setUp() public override {
         super.setUp();
 
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(PRIZE_PER_TICKET),
-            maxPrize: uint128(PRIZE_PER_TICKET)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(PAYOUT_PER_ENTRY),
+            maxPayout: uint128(PAYOUT_PER_ENTRY)
         });
 
         vm.startPrank(owner);
@@ -25,31 +25,31 @@ contract Rips_SeizeReferrerFee is RipsTestBase {
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
+                entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
+                entryPrice: DEFAULT_ENTRY_PRICE,
                 feePercent: FEE_PERCENT
             })
         );
         rips.setReferrerCustomFee(referrer, REFERRER_FEE_PERCENT);
         vm.stopPrank();
 
-        vm.deal(user, DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST);
+        vm.deal(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
         vm.prank(user);
-        rips.buyTickets{value: DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST}(
-            stakeId, DEFAULT_TICKET_CAP, user
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
+            stakeId, DEFAULT_ENTRY_CAP, user
         );
 
-        uint256 roundId = rips.stakeIdToCurrentRoundId(stakeId);
-        uint256 vrfRequestId = rips.requestRandomness(roundId);
+        uint256 ripId = rips.stakeIdToCurrentRipId(stakeId);
+        uint256 vrfRequestId = rips.requestRandomness(ripId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         vm.prank(user);
-        rips.claimPrizes(roundId, 0, 10, user, referrer);
+        rips.claimPayout(ripId, 0, 10, user, referrer);
     }
 
     function _protocolFee() private pure returns (uint256) {
-        return DEFAULT_TICKET_CAP * DEFAULT_TICKET_COST * FEE_PERCENT / 10_000;
+        return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE * FEE_PERCENT / 10_000;
     }
 
     function _referrerFee() private pure returns (uint256) {

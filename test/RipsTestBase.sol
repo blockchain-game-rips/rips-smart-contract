@@ -12,8 +12,8 @@ contract RipsTestBase is Test {
     uint32 internal constant VRF_CALLBACK_GAS_LIMIT = 100_000;
 
     uint16 internal constant DEFAULT_FEE_PERCENT = 0;
-    uint64 internal constant DEFAULT_TICKET_CAP = 4;
-    uint256 internal constant DEFAULT_TICKET_COST = 1 ether;
+    uint64 internal constant DEFAULT_ENTRY_CAP = 4;
+    uint256 internal constant DEFAULT_ENTRY_PRICE = 1 ether;
     uint32 internal constant DEFAULT_DURATION = 1 days;
 
     VRFCoordinatorV2_5Mock internal vrfCoordinator;
@@ -41,11 +41,11 @@ contract RipsTestBase is Test {
     }
 
     function _createDefaultStake() internal returns (uint64 stakeId) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(DEFAULT_TICKET_COST),
-            maxPrize: uint128(DEFAULT_TICKET_COST)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(DEFAULT_ENTRY_PRICE),
+            maxPayout: uint128(DEFAULT_ENTRY_PRICE)
         });
 
         vm.prank(owner);
@@ -53,9 +53,9 @@ contract RipsTestBase is Test {
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
+                entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
+                entryPrice: DEFAULT_ENTRY_PRICE,
                 feePercent: DEFAULT_FEE_PERCENT
             })
         );
@@ -68,11 +68,11 @@ contract RipsTestBase is Test {
     }
 
     function _createDefaultERC20Stake() internal returns (uint64 stakeId) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(DEFAULT_TICKET_COST),
-            maxPrize: uint128(DEFAULT_TICKET_COST)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(DEFAULT_ENTRY_PRICE),
+            maxPayout: uint128(DEFAULT_ENTRY_PRICE)
         });
 
         vm.prank(owner);
@@ -80,9 +80,9 @@ contract RipsTestBase is Test {
             IRips.Config({
                 currency: address(erc20),
                 tiers: tiers,
-                ticketCap: DEFAULT_TICKET_CAP,
+                entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
-                ticketCost: DEFAULT_TICKET_COST,
+                entryPrice: DEFAULT_ENTRY_PRICE,
                 feePercent: DEFAULT_FEE_PERCENT
             })
         );

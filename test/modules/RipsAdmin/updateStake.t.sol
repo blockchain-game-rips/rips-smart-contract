@@ -13,22 +13,22 @@ contract Rips_UpdateStake is StakeValidationSetup {
     }
 
     function _updatedConfig() private pure returns (IRips.Config memory) {
-        uint64 newTicketCap = DEFAULT_TICKET_CAP * 2;
-        uint256 newTicketCost = DEFAULT_TICKET_COST * 2;
+        uint64 newEntryCap = DEFAULT_ENTRY_CAP * 2;
+        uint256 newEntryPrice = DEFAULT_ENTRY_PRICE * 2;
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: newTicketCap,
-            minPrize: uint128(newTicketCost),
-            maxPrize: uint128(newTicketCost)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: newEntryCap,
+            minPayout: uint128(newEntryPrice),
+            maxPayout: uint128(newEntryPrice)
         });
 
         return IRips.Config({
             currency: address(0),
             tiers: tiers,
-            ticketCap: newTicketCap,
+            entryCap: newEntryCap,
             duration: DEFAULT_DURATION,
-            ticketCost: newTicketCost,
+            entryPrice: newEntryPrice,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }
@@ -60,10 +60,10 @@ contract Rips_UpdateStake is StakeValidationSetup {
         rips.updateStake(stakeId, validConfig());
     }
 
-    function test_RevertWhen_TicketCapIsNotAPowerOfTwo() external whenTheCallerIsTheOwner {
+    function test_RevertWhen_EntryCapIsNotAPowerOfTwo() external whenTheCallerIsTheOwner {
         // it should revert.
-        vm.expectRevert(IRips.TicketCapNotPowerOfTwo.selector);
-        rips.updateStake(stakeId, configWithNonPowerOfTwoTicketCap());
+        vm.expectRevert(IRips.EntryCapNotPowerOfTwo.selector);
+        rips.updateStake(stakeId, configWithNonPowerOfTwoEntryCap());
     }
 
     function test_RevertWhen_TiersIsEmpty() external whenTheCallerIsTheOwner {
@@ -78,37 +78,37 @@ contract Rips_UpdateStake is StakeValidationSetup {
         rips.updateStake(stakeId, configWithTierCountExceedsMax());
     }
 
-    function test_RevertWhen_ATierHasMinPrizeGreaterThanMaxPrize()
+    function test_RevertWhen_ATierHasMinPayoutGreaterThanMaxPayout()
         external
         whenTheCallerIsTheOwner
     {
         // it should revert.
-        vm.expectRevert(IRips.InvalidPrizeRange.selector);
-        rips.updateStake(stakeId, configWithMinPrizeGreaterThanMaxPrize());
+        vm.expectRevert(IRips.InvalidPayoutRange.selector);
+        rips.updateStake(stakeId, configWithMinPayoutGreaterThanMaxPayout());
     }
 
     function test_RevertWhen_TiersAreNotSortedByCountDescending() external whenTheCallerIsTheOwner {
         // it should revert.
-        vm.expectRevert(IRips.TiersNotSortedByCount.selector);
-        rips.updateStake(stakeId, configWithTiersNotSortedByCount());
+        vm.expectRevert(IRips.TiersNotSortedByPayoutCount.selector);
+        rips.updateStake(stakeId, configWithTiersNotSortedByPayoutCount());
     }
 
-    function test_RevertWhen_TotalPrizeCountDoesNotEqualTicketCap()
+    function test_RevertWhen_TotalPayoutCountDoesNotEqualEntryCap()
         external
         whenTheCallerIsTheOwner
     {
         // it should revert.
-        vm.expectRevert(IRips.PrizeCountMismatch.selector);
-        rips.updateStake(stakeId, configWithPrizeCountMismatch());
+        vm.expectRevert(IRips.PayoutCountMismatch.selector);
+        rips.updateStake(stakeId, configWithPayoutCountMismatch());
     }
 
-    function test_RevertWhen_TotalPrizePoolDoesNotEqualTicketCapTimesTicketCost()
+    function test_RevertWhen_TotalPayoutPoolDoesNotEqualEntryCapTimesEntryPrice()
         external
         whenTheCallerIsTheOwner
     {
         // it should revert.
-        vm.expectRevert(IRips.PrizePoolMismatch.selector);
-        rips.updateStake(stakeId, configWithPrizePoolMismatch());
+        vm.expectRevert(IRips.PayoutPoolMismatch.selector);
+        rips.updateStake(stakeId, configWithPayoutPoolMismatch());
     }
 
     function test_RevertWhen_FeePercentExceedsFEE_BASE() external whenTheCallerIsTheOwner {
@@ -130,16 +130,16 @@ contract Rips_UpdateStake is StakeValidationSetup {
 
         uint64 configId = rips.stakeIdToCurrentConfigId(stakeId);
         IRips.Config memory stored = rips.exposed_config(configId);
-        assertEq(stored.ticketCap, config.ticketCap);
-        assertEq(stored.ticketCost, config.ticketCost);
+        assertEq(stored.entryCap, config.entryCap);
+        assertEq(stored.entryPrice, config.entryPrice);
         assertEq(stored.currency, config.currency);
         assertEq(stored.duration, config.duration);
         assertEq(stored.tiers.length, config.tiers.length);
         assertEq(stored.feePercent, config.feePercent);
     }
 
-    function test_WhenTheNextRoundIsCreatedAfterAnUpdate() external whenTheCallerIsTheOwner {
-        // it should use the new config for the new round.
+    function test_WhenTheNextRipIsCreatedAfterAnUpdate() external whenTheCallerIsTheOwner {
+        // it should use the new config for the new rip.
         IRips.Config memory config = _updatedConfig();
 
         rips.updateStake(stakeId, config);
@@ -150,12 +150,12 @@ contract Rips_UpdateStake is StakeValidationSetup {
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.buyTickets{value: config.ticketCost}(stakeId, 1, user);
+        rips.enterRip{value: config.entryPrice}(stakeId, 1, user);
 
         uint64 configId = rips.stakeIdToCurrentConfigId(stakeId);
         IRips.Config memory active = rips.exposed_config(configId);
-        assertEq(active.ticketCap, config.ticketCap);
-        assertEq(active.ticketCost, config.ticketCost);
+        assertEq(active.entryCap, config.entryCap);
+        assertEq(active.entryPrice, config.entryPrice);
         assertEq(active.currency, config.currency);
         assertEq(active.duration, config.duration);
     }

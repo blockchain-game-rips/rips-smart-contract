@@ -62,31 +62,34 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
     }
 
     function _validateConfig(Config calldata config) private pure {
-        if (!RipsMath.isPowerOfTwo(config.ticketCap)) revert TicketCapNotPowerOfTwo();
+        if (!RipsMath.isPowerOfTwo(config.entryCap)) revert EntryCapNotPowerOfTwo();
         if (config.tiers.length == 0) revert InvalidTierCount();
         if (config.tiers.length > MAX_TIER_COUNT) revert InvalidTierCount();
 
-        uint256 totalPrizeCount = 0;
-        uint256 totalPrizePool = 0;
+        uint256 totalEntryCount = 0;
+        uint256 totalPayoutPool = 0;
 
         for (uint256 i = 0; i < config.tiers.length; i++) {
-            PrizeTier calldata tier = config.tiers[i];
+            PayoutTier calldata tier = config.tiers[i];
 
-            if (tier.minPrize > tier.maxPrize) revert InvalidPrizeRange();
-            if (i > 0 && tier.prizeCount > config.tiers[i - 1].prizeCount) {
-                revert TiersNotSortedByCount();
+            if (tier.minPayout > tier.maxPayout) revert InvalidPayoutRange();
+            if (tier.payoutCount == 1 && tier.minPayout != tier.maxPayout) {
+                revert InvalidPayoutRange();
+            }
+            if (i > 0 && tier.payoutCount > config.tiers[i - 1].payoutCount) {
+                revert TiersNotSortedByPayoutCount();
             }
 
-            totalPrizeCount += tier.prizeCount;
-            totalPrizePool += (uint256(tier.prizeCount)
-                    * (uint256(tier.minPrize) + uint256(tier.maxPrize))) / 2;
+            totalEntryCount += tier.payoutCount;
+            totalPayoutPool += (uint256(tier.payoutCount)
+                    * (uint256(tier.minPayout) + uint256(tier.maxPayout))) / 2;
         }
 
         if (config.feePercent > FEE_BASE) revert FeeTooHigh();
-        if (totalPrizeCount != config.ticketCap) revert PrizeCountMismatch();
-        uint256 totalRevenue = uint256(config.ticketCap) * config.ticketCost;
+        if (totalEntryCount != config.entryCap) revert PayoutCountMismatch();
+        uint256 totalRevenue = uint256(config.entryCap) * config.entryPrice;
         uint256 protocolFee = (totalRevenue * config.feePercent) / FEE_BASE;
-        if (totalPrizePool != totalRevenue - protocolFee) revert PrizePoolMismatch();
+        if (totalPayoutPool != totalRevenue - protocolFee) revert PayoutPoolMismatch();
     }
 
     function _storeConfig(Config calldata config) private returns (uint64 configId) {
@@ -94,20 +97,20 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
 
         Config storage newConfig = configIdToConfig[configId];
         newConfig.currency = config.currency;
-        newConfig.ticketCap = config.ticketCap;
+        newConfig.entryCap = config.entryCap;
         newConfig.duration = config.duration;
-        newConfig.ticketCost = config.ticketCost;
+        newConfig.entryPrice = config.entryPrice;
         newConfig.feePercent = config.feePercent;
 
         uint64 cumulative = 0;
         uint64[] storage boundaries = configIdToTierBoundaries[configId];
 
         for (uint256 i = 0; i < config.tiers.length; i++) {
-            PrizeTier calldata tier = config.tiers[i];
+            PayoutTier calldata tier = config.tiers[i];
 
             newConfig.tiers.push(tier);
 
-            cumulative += tier.prizeCount;
+            cumulative += tier.payoutCount;
             boundaries.push(cumulative);
         }
     }

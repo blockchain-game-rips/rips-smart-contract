@@ -5,37 +5,37 @@ import "../../RipsTestBase.sol";
 
 contract StakeValidationSetup is RipsTestBase {
     function validConfig() internal pure returns (IRips.Config memory) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(DEFAULT_TICKET_COST),
-            maxPrize: uint128(DEFAULT_TICKET_COST)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(DEFAULT_ENTRY_PRICE),
+            maxPayout: uint128(DEFAULT_ENTRY_PRICE)
         });
 
         return IRips.Config({
             currency: address(0),
             tiers: tiers,
-            ticketCap: DEFAULT_TICKET_CAP,
+            entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST,
+            entryPrice: DEFAULT_ENTRY_PRICE,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }
 
-    function configWithNonPowerOfTwoTicketCap() internal pure returns (IRips.Config memory) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: 3,
-            minPrize: uint128(DEFAULT_TICKET_COST),
-            maxPrize: uint128(DEFAULT_TICKET_COST)
+    function configWithNonPowerOfTwoEntryCap() internal pure returns (IRips.Config memory) {
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: 3,
+            minPayout: uint128(DEFAULT_ENTRY_PRICE),
+            maxPayout: uint128(DEFAULT_ENTRY_PRICE)
         });
 
         return IRips.Config({
             currency: address(0),
             tiers: tiers,
-            ticketCap: 3,
+            entryCap: 3,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST,
+            entryPrice: DEFAULT_ENTRY_PRICE,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }
@@ -43,64 +43,64 @@ contract StakeValidationSetup is RipsTestBase {
     function configWithInvalidTierCount() internal pure returns (IRips.Config memory) {
         return IRips.Config({
             currency: address(0),
-            tiers: new IRips.PrizeTier[](0),
-            ticketCap: DEFAULT_TICKET_CAP,
+            tiers: new IRips.PayoutTier[](0),
+            entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST,
+            entryPrice: DEFAULT_ENTRY_PRICE,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }
 
-    function configWithMinPrizeGreaterThanMaxPrize() internal pure returns (IRips.Config memory) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP), minPrize: 2 ether, maxPrize: 1 ether
+    function configWithMinPayoutGreaterThanMaxPayout() internal pure returns (IRips.Config memory) {
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP), minPayout: 2 ether, maxPayout: 1 ether
         });
 
         return IRips.Config({
             currency: address(0),
             tiers: tiers,
-            ticketCap: DEFAULT_TICKET_CAP,
+            entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST,
+            entryPrice: DEFAULT_ENTRY_PRICE,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }
 
-    function configWithPrizeCountMismatch() internal pure returns (IRips.Config memory) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP - 1),
-            minPrize: uint128(DEFAULT_TICKET_COST),
-            maxPrize: uint128(DEFAULT_TICKET_COST)
+    function configWithPayoutCountMismatch() internal pure returns (IRips.Config memory) {
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP - 1),
+            minPayout: uint128(DEFAULT_ENTRY_PRICE),
+            maxPayout: uint128(DEFAULT_ENTRY_PRICE)
         });
 
         return IRips.Config({
             currency: address(0),
             tiers: tiers,
-            ticketCap: DEFAULT_TICKET_CAP,
+            entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST,
+            entryPrice: DEFAULT_ENTRY_PRICE,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }
 
-    function configWithPrizePoolMismatch() internal pure returns (IRips.Config memory) {
-        uint256 wrongPrize = DEFAULT_TICKET_COST + 1;
+    function configWithPayoutPoolMismatch() internal pure returns (IRips.Config memory) {
+        uint256 wrongPayout = DEFAULT_ENTRY_PRICE + 1;
 
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](1);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP),
-            minPrize: uint128(wrongPrize),
-            maxPrize: uint128(wrongPrize)
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(wrongPayout),
+            maxPayout: uint128(wrongPayout)
         });
 
         return IRips.Config({
             currency: address(0),
             tiers: tiers,
-            ticketCap: DEFAULT_TICKET_CAP,
+            entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST,
+            entryPrice: DEFAULT_ENTRY_PRICE,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }
@@ -110,10 +110,10 @@ contract StakeValidationSetup is RipsTestBase {
 
         return IRips.Config({
             currency: address(0),
-            tiers: new IRips.PrizeTier[](tierCount),
-            ticketCap: DEFAULT_TICKET_CAP,
+            tiers: new IRips.PayoutTier[](tierCount),
+            entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST,
+            entryPrice: DEFAULT_ENTRY_PRICE,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }
@@ -123,25 +123,25 @@ contract StakeValidationSetup is RipsTestBase {
         config.feePercent = uint16(10001);
     }
 
-    function configWithTiersNotSortedByCount() internal pure returns (IRips.Config memory) {
-        IRips.PrizeTier[] memory tiers = new IRips.PrizeTier[](2);
-        tiers[0] = IRips.PrizeTier({
-            prizeCount: 1,
-            minPrize: uint128(DEFAULT_TICKET_COST * 3),
-            maxPrize: uint128(DEFAULT_TICKET_COST * 3)
+    function configWithTiersNotSortedByPayoutCount() internal pure returns (IRips.Config memory) {
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](2);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: 1,
+            minPayout: uint128(DEFAULT_ENTRY_PRICE * 3),
+            maxPayout: uint128(DEFAULT_ENTRY_PRICE * 3)
         });
-        tiers[1] = IRips.PrizeTier({
-            prizeCount: uint64(DEFAULT_TICKET_CAP - 1),
-            minPrize: uint128(DEFAULT_TICKET_COST),
-            maxPrize: uint128(DEFAULT_TICKET_COST)
+        tiers[1] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP - 1),
+            minPayout: uint128(DEFAULT_ENTRY_PRICE),
+            maxPayout: uint128(DEFAULT_ENTRY_PRICE)
         });
 
         return IRips.Config({
             currency: address(0),
             tiers: tiers,
-            ticketCap: DEFAULT_TICKET_CAP,
+            entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
-            ticketCost: DEFAULT_TICKET_COST,
+            entryPrice: DEFAULT_ENTRY_PRICE,
             feePercent: DEFAULT_FEE_PERCENT
         });
     }

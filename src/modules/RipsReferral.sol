@@ -65,12 +65,12 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         address referrer,
         address currency,
         uint256 protocolFee,
-        uint256 ticketRevenue
+        uint256 entryRevenue
     ) internal returns (uint256 referrerFee) {
         if (referrer == address(0)) return 0;
 
         ReferrerState storage referrerStats =
-            _resolveReferrerState(referrer, currency, ticketRevenue);
+            _resolveReferrerState(referrer, currency, entryRevenue);
 
         uint16 customFeePercent = referrerCustomFee[referrer];
         if (customFeePercent > 0) {
@@ -84,7 +84,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         referrerFee = (protocolFee * effectiveFeePercent) / FEE_BASE;
     }
 
-    function _resolveReferrerState(address referrer, address currency, uint256 ticketRevenue)
+    function _resolveReferrerState(address referrer, address currency, uint256 entryRevenue)
         private
         returns (ReferrerState storage)
     {
@@ -95,7 +95,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
         if (periodStartTimestamp == 0) {
             referrerStats.periodStartTimestamp = nowTimestamp;
-            referrerStats.periodVolume = ticketRevenue;
+            referrerStats.periodVolume = entryRevenue;
 
             emit ReferralStateUpdated(referrer, currency, referrerStats);
             return referrerStats;
@@ -110,13 +110,13 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
             referrerStats.activeFeePercent = _resolveTierFeePercent(currency, volumeInPrevPeriod);
             referrerStats.periodStartTimestamp += periodsElapsed * REFERRAL_PERIOD;
-            referrerStats.periodVolume = ticketRevenue;
+            referrerStats.periodVolume = entryRevenue;
 
             emit ReferralStateUpdated(referrer, currency, referrerStats);
             return referrerStats;
         }
 
-        referrerStats.periodVolume += ticketRevenue;
+        referrerStats.periodVolume += entryRevenue;
 
         emit ReferralStateUpdated(referrer, currency, referrerStats);
         return referrerStats;

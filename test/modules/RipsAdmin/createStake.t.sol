@@ -16,9 +16,9 @@ contract Rips_CreateStake is StakeValidationSetup {
         vm.stopPrank();
     }
 
-    function test_RevertWhen_TicketCapIsNotAPowerOfTwo() external whenTheCallerIsTheOwner {
-        vm.expectRevert(IRips.TicketCapNotPowerOfTwo.selector);
-        rips.createStake(configWithNonPowerOfTwoTicketCap());
+    function test_RevertWhen_EntryCapIsNotAPowerOfTwo() external whenTheCallerIsTheOwner {
+        vm.expectRevert(IRips.EntryCapNotPowerOfTwo.selector);
+        rips.createStake(configWithNonPowerOfTwoEntryCap());
     }
 
     function test_RevertWhen_TiersIsEmpty() external whenTheCallerIsTheOwner {
@@ -31,33 +31,33 @@ contract Rips_CreateStake is StakeValidationSetup {
         rips.createStake(configWithTierCountExceedsMax());
     }
 
-    function test_RevertWhen_ATierHasMinPrizeGreaterThanMaxPrize()
+    function test_RevertWhen_ATierHasMinPayoutGreaterThanMaxPayout()
         external
         whenTheCallerIsTheOwner
     {
-        vm.expectRevert(IRips.InvalidPrizeRange.selector);
-        rips.createStake(configWithMinPrizeGreaterThanMaxPrize());
+        vm.expectRevert(IRips.InvalidPayoutRange.selector);
+        rips.createStake(configWithMinPayoutGreaterThanMaxPayout());
     }
 
     function test_RevertWhen_TiersAreNotSortedByCountDescending() external whenTheCallerIsTheOwner {
-        vm.expectRevert(IRips.TiersNotSortedByCount.selector);
-        rips.createStake(configWithTiersNotSortedByCount());
+        vm.expectRevert(IRips.TiersNotSortedByPayoutCount.selector);
+        rips.createStake(configWithTiersNotSortedByPayoutCount());
     }
 
-    function test_RevertWhen_TotalPrizeCountDoesNotEqualTicketCap()
+    function test_RevertWhen_TotalPayoutCountDoesNotEqualEntryCap()
         external
         whenTheCallerIsTheOwner
     {
-        vm.expectRevert(IRips.PrizeCountMismatch.selector);
-        rips.createStake(configWithPrizeCountMismatch());
+        vm.expectRevert(IRips.PayoutCountMismatch.selector);
+        rips.createStake(configWithPayoutCountMismatch());
     }
 
-    function test_RevertWhen_TotalPrizePoolDoesNotEqualTicketCapTimesTicketCost()
+    function test_RevertWhen_TotalPayoutPoolDoesNotEqualEntryCapTimesEntryPrice()
         external
         whenTheCallerIsTheOwner
     {
-        vm.expectRevert(IRips.PrizePoolMismatch.selector);
-        rips.createStake(configWithPrizePoolMismatch());
+        vm.expectRevert(IRips.PayoutPoolMismatch.selector);
+        rips.createStake(configWithPayoutPoolMismatch());
     }
 
     function test_RevertWhen_FeePercentExceedsFEE_BASE() external whenTheCallerIsTheOwner {
@@ -84,8 +84,8 @@ contract Rips_CreateStake is StakeValidationSetup {
         assertNotEq(configId, 0);
 
         IRips.Config memory config = rips.exposed_config(configId);
-        assertEq(config.ticketCap, DEFAULT_TICKET_CAP);
-        assertEq(config.ticketCost, DEFAULT_TICKET_COST);
+        assertEq(config.entryCap, DEFAULT_ENTRY_CAP);
+        assertEq(config.entryPrice, DEFAULT_ENTRY_PRICE);
         assertEq(config.feePercent, DEFAULT_FEE_PERCENT);
     }
 }

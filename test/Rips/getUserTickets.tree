@@ -1,5 +1,0 @@
-Rips_GetUserTickets
-├── when the user has no tickets in the round
-│   └── it should return an empty array.
-└── when the user has tickets in the round
-    └── it should return the ticket ranges for the user.
