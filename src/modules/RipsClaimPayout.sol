@@ -81,9 +81,9 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
         PayoutTier[] memory tiers = config.tiers;
         uint64[] memory bounds = configIdToTierBoundaries[rip.configId];
 
-        //TODO: fix overflow
-        uint256 endIndex = startIndex + maxRanges;
-        if (endIndex > ranges.length) endIndex = ranges.length;
+        uint256 available = ranges.length - startIndex;
+        uint256 rangesToProcess = maxRanges > available ? available : maxRanges;
+        uint256 endIndex = startIndex + rangesToProcess;
 
         for (uint256 i = startIndex; i < endIndex; i++) {
             if (ranges[i].claimed) continue;
