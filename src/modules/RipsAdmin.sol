@@ -17,40 +17,40 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         _unpause();
     }
 
-    function createStake(Config calldata config)
+    function createPreset(Config calldata config)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
-        returns (uint64 stakeId)
+        returns (uint64 presetId)
     {
-        stakeId = _nextStakeId++;
+        presetId = _nextPresetId++;
 
-        uint64 configId = _applyConfig(stakeId, config);
+        uint64 configId = _applyConfig(presetId, config);
 
-        emit StakeCreated(stakeId, configId);
+        emit PresetCreated(presetId, configId);
     }
 
-    function updateStake(uint64 stakeId, Config calldata config)
+    function updatePreset(uint64 presetId, Config calldata config)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        if (isStakeDeleted[stakeId]) revert StakeNotExist();
-        if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
+        if (isPresetDeleted[presetId]) revert PresetNotExist();
+        if (presetIdToCurrentConfigId[presetId] == 0) revert PresetNotExist();
 
-        uint64 configId = _applyConfig(stakeId, config);
+        uint64 configId = _applyConfig(presetId, config);
 
-        emit StakeUpdated(stakeId, configId);
+        emit PresetUpdated(presetId, configId);
     }
 
-    function deleteStake(uint64 stakeId) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (isStakeDeleted[stakeId]) revert StakeNotExist();
-        if (stakeIdToCurrentConfigId[stakeId] == 0) revert StakeNotExist();
+    function deletePreset(uint64 presetId) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (isPresetDeleted[presetId]) revert PresetNotExist();
+        if (presetIdToCurrentConfigId[presetId] == 0) revert PresetNotExist();
 
-        isStakeDeleted[stakeId] = true;
+        isPresetDeleted[presetId] = true;
 
-        emit StakeDeleted(stakeId);
+        emit PresetDeleted(presetId);
     }
 
-    function _applyConfig(uint64 stakeId, Config calldata config)
+    function _applyConfig(uint64 presetId, Config calldata config)
         internal
         returns (uint64 configId)
     {
@@ -58,7 +58,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
 
         configId = _storeConfig(config);
 
-        stakeIdToCurrentConfigId[stakeId] = configId;
+        presetIdToCurrentConfigId[presetId] = configId;
     }
 
     function _validateConfig(Config calldata config) private pure {

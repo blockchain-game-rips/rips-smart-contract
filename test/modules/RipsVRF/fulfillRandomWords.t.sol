@@ -11,7 +11,7 @@ contract Rips_FulfillRandomWords is RipsTestBase {
     uint64 private constant ENTRY_CAP = 2;
     uint256 private constant ENTRY_PRICE = 1 ether;
 
-    uint64 private stakeId;
+    uint64 private presetId;
     uint256 private ripId;
     uint256 private vrfRequestId;
 
@@ -28,7 +28,7 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         });
 
         vm.prank(owner);
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -41,9 +41,9 @@ contract Rips_FulfillRandomWords is RipsTestBase {
 
         vm.deal(user, ENTRY_CAP * ENTRY_PRICE);
         vm.prank(user);
-        rips.enterRip{value: ENTRY_CAP * ENTRY_PRICE}(stakeId, ENTRY_CAP, user);
+        rips.enterRip{value: ENTRY_CAP * ENTRY_PRICE}(presetId, ENTRY_CAP, user);
 
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        ripId = rips.presetIdToCurrentRipId(presetId);
         vrfRequestId = rips.requestRandomness(ripId);
     }
 

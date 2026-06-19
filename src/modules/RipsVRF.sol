@@ -86,7 +86,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
 
     function requestRandomness(uint256 ripId) external returns (uint256 requestId) {
         Rip storage rip = ripIdToRip[ripId];
-        if (rip.stakeId == 0) revert RipNotExist();
+        if (rip.presetId == 0) revert RipNotExist();
 
         if (rip.vrfRequestStatus != VrfRequestStatus.NotRequested) revert VrfAlreadyRequested();
 

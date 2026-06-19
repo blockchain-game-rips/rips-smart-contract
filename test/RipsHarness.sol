@@ -49,8 +49,8 @@ contract RipsHarness is Rips {
         return _ripIdToRequestTimestamp[ripId];
     }
 
-    function exposed_nextStakeId() external view returns (uint64) {
-        return _nextStakeId;
+    function exposed_nextPresetId() external view returns (uint64) {
+        return _nextPresetId;
     }
 
     function exposed_nextRipId() external view returns (uint256) {

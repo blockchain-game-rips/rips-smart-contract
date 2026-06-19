@@ -32,17 +32,17 @@ contract Deploy is Script {
         Rips ripsContract = new Rips(vrfCoordinator, subscriptionId, keyHash, callbackGasLimit);
 
         rips = address(ripsContract);
-        _createDefaultStakes(ripsContract);
+        _createDefaultPresets(ripsContract);
 
         vm.stopBroadcast();
     }
 
-    function _createDefaultStakes(Rips rips) internal returns (uint64 stakeId1, uint64 stakeId2) {
-        stakeId1 = _createDefaultStake1(rips);
-        stakeId2 = _createDefaultStake2(rips);
+    function _createDefaultPresets(Rips rips) internal returns (uint64 presetId1, uint64 presetId2) {
+        presetId1 = _createDefaultPreset1(rips);
+        presetId2 = _createDefaultPreset2(rips);
     }
 
-    function _createDefaultStake1(Rips rips) internal returns (uint64 stakeId) {
+    function _createDefaultPreset1(Rips rips) internal returns (uint64 presetId) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](3);
 
         tiers[0] =
@@ -54,7 +54,7 @@ contract Deploy is Script {
         tiers[2] =
             IRips.PayoutTier({payoutCount: 1, minPayout: 0.0018 ether, maxPayout: 0.0018 ether});
 
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -66,7 +66,7 @@ contract Deploy is Script {
         );
     }
 
-    function _createDefaultStake2(Rips rips) internal returns (uint64 stakeId) {
+    function _createDefaultPreset2(Rips rips) internal returns (uint64 presetId) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](3);
 
         tiers[0] =
@@ -78,7 +78,7 @@ contract Deploy is Script {
         tiers[2] =
             IRips.PayoutTier({payoutCount: 1, minPayout: 0.0036 ether, maxPayout: 0.0036 ether});
 
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,

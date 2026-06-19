@@ -16,7 +16,7 @@ Rips_ClaimPayout
     │   └── it should transfer the payout to the recipient.
     └── when caller has operator role and recipient is a different address
         └── it should transfer the payout to the recipient.
-    ├── given the stake currency is native
+    ├── given the preset currency is native
     │   ├── when protocol fee is zero
     │   │   ├── it should transfer the full ETH payout to the recipient.
     │   │   └── it should emit a {PayoutClaimed} event.
@@ -25,7 +25,7 @@ Rips_ClaimPayout
     │       ├── it should transfer the remaining ETH payout to the recipient.
     │       ├── it should emit a {ProtocolFeeAccrued} event.
     │       └── it should emit a {PayoutClaimed} event.
-    └── given the stake currency is an ERC20 token
+    └── given the preset currency is an ERC20 token
         ├── when protocol fee is zero
         │   ├── it should transfer the full token payout to the recipient.
         │   └── it should emit a {PayoutClaimed} event.

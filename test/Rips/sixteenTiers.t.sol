@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "../RipsTestBase.sol";
 
-// 16-tier stake, entryCap = 1024, entryPrice = 1 ether
+// 16-tier preset, entryCap = 1024, entryPrice = 1 ether
 // Equal 64 entries per tier, linearly increasing payouts.
 // avg_i = (2i+1)/16 ether, spread ±30%, totalPool = 1024 ether
 contract Rips_SixteenTiers is RipsTestBase {
@@ -15,7 +15,7 @@ contract Rips_SixteenTiers is RipsTestBase {
     uint128 private constant MN_UNIT = 43_750_000_000_000_000;
     uint128 private constant MX_UNIT = 81_250_000_000_000_000;
 
-    uint64 private stakeId;
+    uint64 private presetId;
     uint256 private ripId;
 
     function setUp() public override {
@@ -36,7 +36,7 @@ contract Rips_SixteenTiers is RipsTestBase {
         }
 
         vm.prank(owner);
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -52,8 +52,8 @@ contract Rips_SixteenTiers is RipsTestBase {
 
     function _buyAllEntries() private {
         vm.prank(user);
-        rips.enterRip{value: ENTRY_CAP * ENTRY_PRICE}(stakeId, ENTRY_CAP, user);
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        rips.enterRip{value: ENTRY_CAP * ENTRY_PRICE}(presetId, ENTRY_CAP, user);
+        ripId = rips.presetIdToCurrentRipId(presetId);
     }
 
     function _finalizeRip() private {
@@ -81,8 +81,8 @@ contract Rips_SixteenTiers is RipsTestBase {
         uint64 entriesToBuy = ENTRY_CAP / 2;
 
         vm.prank(user);
-        rips.enterRip{value: entriesToBuy * ENTRY_PRICE}(stakeId, entriesToBuy, user);
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        rips.enterRip{value: entriesToBuy * ENTRY_PRICE}(presetId, entriesToBuy, user);
+        ripId = rips.presetIdToCurrentRipId(presetId);
 
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 

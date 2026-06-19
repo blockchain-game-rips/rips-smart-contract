@@ -6,19 +6,19 @@ import "../RipsTestBase.sol";
 contract Rips_Refund is RipsTestBase {
     uint64 private constant ENTRIES_BOUGHT = 2;
 
-    uint64 private stakeId;
+    uint64 private presetId;
     uint256 private ripId;
 
     function setUp() public override {
         super.setUp();
 
-        stakeId = _createDefaultStake();
+        presetId = _createDefaultPreset();
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.enterRip{value: ENTRIES_BOUGHT * DEFAULT_ENTRY_PRICE}(stakeId, ENTRIES_BOUGHT, user);
+        rips.enterRip{value: ENTRIES_BOUGHT * DEFAULT_ENTRY_PRICE}(presetId, ENTRIES_BOUGHT, user);
 
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        ripId = rips.presetIdToCurrentRipId(presetId);
     }
 
     function _expectedRefundAmount() private pure returns (uint256) {
@@ -53,7 +53,7 @@ contract Rips_Refund is RipsTestBase {
         vm.deal(user, (DEFAULT_ENTRY_CAP - ENTRIES_BOUGHT) * DEFAULT_ENTRY_PRICE);
         vm.prank(user);
         rips.enterRip{value: (DEFAULT_ENTRY_CAP - ENTRIES_BOUGHT) * DEFAULT_ENTRY_PRICE}(
-            stakeId, DEFAULT_ENTRY_CAP - ENTRIES_BOUGHT, user
+            presetId, DEFAULT_ENTRY_CAP - ENTRIES_BOUGHT, user
         );
 
         rips.requestRandomness(ripId);
@@ -86,7 +86,7 @@ contract Rips_Refund is RipsTestBase {
         rips.refund(ripId, noEntries);
     }
 
-    modifier givenTheStakeCurrencyIsNative() {
+    modifier givenThePresetCurrencyIsNative() {
         _;
     }
 
@@ -97,7 +97,7 @@ contract Rips_Refund is RipsTestBase {
 
     function test_WhenTheRecipientHasEntriesInTheRip()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
         whenTheRecipientHasEntriesInTheRip
     {
         uint256 balanceBefore = user.balance;
@@ -114,7 +114,7 @@ contract Rips_Refund is RipsTestBase {
 
     function test_WhenRecipientIsDifferentFromTheCaller()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
         whenTheRecipientHasEntriesInTheRip
     {
         address caller = makeAddr("caller");
@@ -129,15 +129,15 @@ contract Rips_Refund is RipsTestBase {
         assertEq(caller.balance, callerBalanceBefore);
     }
 
-    modifier givenTheStakeCurrencyIsAnERC20Token() {
+    modifier givenThePresetCurrencyIsAnERC20Token() {
         _mintAndApprove(user, ENTRIES_BOUGHT * DEFAULT_ENTRY_PRICE);
 
-        uint64 erc20StakeId = _createDefaultERC20Stake();
+        uint64 erc20PresetId = _createDefaultERC20Preset();
 
         vm.prank(user);
-        rips.enterRip(erc20StakeId, ENTRIES_BOUGHT, user);
+        rips.enterRip(erc20PresetId, ENTRIES_BOUGHT, user);
 
-        ripId = rips.stakeIdToCurrentRipId(erc20StakeId);
+        ripId = rips.presetIdToCurrentRipId(erc20PresetId);
 
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
         _;
@@ -145,7 +145,7 @@ contract Rips_Refund is RipsTestBase {
 
     function test_WhenTheRecipientHasEntriesInTheRip_GivenERC20()
         external
-        givenTheStakeCurrencyIsAnERC20Token
+        givenThePresetCurrencyIsAnERC20Token
     {
         uint256 balanceBefore = erc20.balanceOf(user);
 
@@ -161,7 +161,7 @@ contract Rips_Refund is RipsTestBase {
 
     function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20()
         external
-        givenTheStakeCurrencyIsAnERC20Token
+        givenThePresetCurrencyIsAnERC20Token
     {
         address caller = makeAddr("caller");
 

@@ -21,7 +21,7 @@ contract Rips_SeizeReferrerFee is RipsTestBase {
         });
 
         vm.startPrank(owner);
-        uint64 stakeId = rips.createStake(
+        uint64 presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -37,10 +37,10 @@ contract Rips_SeizeReferrerFee is RipsTestBase {
         vm.deal(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
         vm.prank(user);
         rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            stakeId, DEFAULT_ENTRY_CAP, user
+            presetId, DEFAULT_ENTRY_CAP, user
         );
 
-        uint256 ripId = rips.stakeIdToCurrentRipId(stakeId);
+        uint256 ripId = rips.presetIdToCurrentRipId(presetId);
         uint256 vrfRequestId = rips.requestRandomness(ripId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 

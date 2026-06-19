@@ -10,7 +10,7 @@ abstract contract RipsRefund is RipsUtils {
         if (recipient == address(0)) revert ZeroAddress();
 
         Rip storage rip = ripIdToRip[ripId];
-        if (rip.stakeId == 0) revert RipNotExist();
+        if (rip.presetId == 0) revert RipNotExist();
 
         Config storage config = configIdToConfig[rip.configId];
 

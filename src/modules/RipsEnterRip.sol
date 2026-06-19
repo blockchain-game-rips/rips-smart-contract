@@ -11,7 +11,7 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
 
     uint64 public constant MAX_ENTRIES_PER_RANGE = 1000;
 
-    function enterRip(uint64 stakeId, uint64 entryCount, address recipient)
+    function enterRip(uint64 presetId, uint64 entryCount, address recipient)
         external
         payable
         whenNotPaused
@@ -19,7 +19,7 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
         if (recipient == address(0)) revert ZeroAddress();
         if (entryCount == 0) revert ZeroEntries();
 
-        (uint256 ripId, Rip storage rip, Config storage config) = _resolveRipAndConfig(stakeId);
+        (uint256 ripId, Rip storage rip, Config storage config) = _resolveRipAndConfig(presetId);
 
         uint64 toBuy = _getEntriesToBuy(rip, config, entryCount);
 
@@ -32,11 +32,11 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
         }
     }
 
-    function _resolveRipAndConfig(uint64 stakeId)
+    function _resolveRipAndConfig(uint64 presetId)
         private
         returns (uint256 ripId, Rip storage rip, Config storage config)
     {
-        ripId = stakeIdToCurrentRipId[stakeId];
+        ripId = presetIdToCurrentRipId[presetId];
 
         if (ripId != 0) {
             rip = ripIdToRip[ripId];
@@ -48,38 +48,38 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
             }
         }
 
-        if (isStakeDeleted[stakeId]) revert StakeNotExist();
+        if (isPresetDeleted[presetId]) revert PresetNotExist();
 
-        // stake is fresh, no rip yet
+        // preset is fresh, no rip yet
         if (ripId == 0) {
-            uint64 configId = stakeIdToCurrentConfigId[stakeId];
+            uint64 configId = presetIdToCurrentConfigId[presetId];
 
             // entryCap is guaranteed non-zero by isPowerOfTwo validation
-            if (configIdToConfig[configId].entryCap == 0) revert StakeNotExist();
+            if (configIdToConfig[configId].entryCap == 0) revert PresetNotExist();
         }
 
         // rip is sold out or expired
-        return _createRip(stakeId);
+        return _createRip(presetId);
     }
 
-    function _createRip(uint64 stakeId)
+    function _createRip(uint64 presetId)
         private
         returns (uint256 ripId, Rip storage rip, Config storage config)
     {
         ripId = _nextRipId++;
         rip = ripIdToRip[ripId];
 
-        uint64 configId = stakeIdToCurrentConfigId[stakeId];
+        uint64 configId = presetIdToCurrentConfigId[presetId];
         config = configIdToConfig[configId];
 
-        rip.stakeId = uint64(stakeId);
+        rip.presetId = uint64(presetId);
         rip.configId = uint64(configId);
         rip.startTime = uint40(block.timestamp);
         rip.vrfRequestStatus = VrfRequestStatus.NotRequested;
 
-        stakeIdToCurrentRipId[stakeId] = ripId;
+        presetIdToCurrentRipId[presetId] = ripId;
 
-        emit RipCreated(ripId, stakeId, configId);
+        emit RipCreated(ripId, presetId, configId);
     }
 
     function _getEntriesToBuy(Rip storage rip, Config storage config, uint64 entryCount)

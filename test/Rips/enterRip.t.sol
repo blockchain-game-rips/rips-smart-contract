@@ -4,14 +4,14 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_EnterRip is RipsTestBase {
-    uint64 private stakeId;
+    uint64 private presetId;
     uint256 private ripId;
     uint64 private entriesToBuy;
 
     function setUp() public override {
         super.setUp();
 
-        stakeId = _createDefaultStake();
+        presetId = _createDefaultPreset();
         ripId = rips.exposed_nextRipId(); // rip is created lazily on first enterRip
 
         vm.deal(user, 100 ether);
@@ -23,62 +23,62 @@ contract Rips_EnterRip is RipsTestBase {
 
         vm.prank(user);
         vm.expectRevert();
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(stakeId, 1, user);
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(presetId, 1, user);
     }
 
     function test_RevertWhen_RecipientIsZeroAddress() external {
         vm.prank(user);
         vm.expectRevert();
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(stakeId, 1, address(0));
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(presetId, 1, address(0));
     }
 
-    function test_RevertWhen_TheStakeDoesNotExist() external {
-        uint64 nonExistentStakeId = 999;
+    function test_RevertWhen_ThePresetDoesNotExist() external {
+        uint64 nonExistentPresetId = 999;
 
         vm.prank(user);
-        vm.expectRevert(IRips.StakeNotExist.selector);
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(nonExistentStakeId, 1, user);
+        vm.expectRevert(IRips.PresetNotExist.selector);
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(nonExistentPresetId, 1, user);
     }
 
-    function test_RevertWhen_TheActiveRipHasExpiredAndTheStakeIsDeleted() external {
+    function test_RevertWhen_TheActiveRipHasExpiredAndThePresetIsDeleted() external {
         vm.prank(owner);
-        rips.deleteStake(stakeId);
+        rips.deletePreset(presetId);
 
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         vm.prank(user);
-        vm.expectRevert(IRips.StakeNotExist.selector);
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(stakeId, 1, user);
+        vm.expectRevert(IRips.PresetNotExist.selector);
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(presetId, 1, user);
     }
 
-    function test_WhenTheActiveRipHasExpiredAndTheStakeIsNotDeleted() external {
+    function test_WhenTheActiveRipHasExpiredAndThePresetIsNotDeleted() external {
         // establish rip 1
         vm.prank(user);
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(stakeId, 1, user);
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(presetId, 1, user);
+        ripId = rips.presetIdToCurrentRipId(presetId);
 
         vm.warp(block.timestamp + DEFAULT_DURATION + 1);
 
         uint256 expectedNewRipId = rips.exposed_nextRipId();
-        uint64 expectedConfigId = rips.stakeIdToCurrentConfigId(stakeId);
+        uint64 expectedConfigId = rips.presetIdToCurrentConfigId(presetId);
 
         vm.expectEmit();
-        emit IRips.RipCreated(expectedNewRipId, stakeId, expectedConfigId);
+        emit IRips.RipCreated(expectedNewRipId, presetId, expectedConfigId);
 
         vm.prank(user);
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(stakeId, 1, user);
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(presetId, 1, user);
 
-        uint256 newRipId = rips.stakeIdToCurrentRipId(stakeId);
+        uint256 newRipId = rips.presetIdToCurrentRipId(presetId);
         assertNotEq(newRipId, ripId);
     }
 
     function test_RevertWhen_EntryCountIsZero() external {
         vm.prank(user);
         vm.expectRevert(IRips.ZeroEntries.selector);
-        rips.enterRip{value: 0}(stakeId, 0, user);
+        rips.enterRip{value: 0}(presetId, 0, user);
     }
 
-    modifier givenTheStakeCurrencyIsNative() {
+    modifier givenThePresetCurrencyIsNative() {
         _;
     }
 
@@ -92,22 +92,22 @@ contract Rips_EnterRip is RipsTestBase {
         _;
     }
 
-    function test_RevertWhen_ThePaymentAmountIsIncorrect() external givenTheStakeCurrencyIsNative {
+    function test_RevertWhen_ThePaymentAmountIsIncorrect() external givenThePresetCurrencyIsNative {
         vm.prank(user);
         vm.expectRevert(IRips.IncorrectPayment.selector);
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE - 1}(stakeId, 1, user);
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE - 1}(presetId, 1, user);
     }
 
     function test_WhenRequestedEntriesAreFewerThanAvailable_GivenNative()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
         whenRequestedEntriesAreFewerThanAvailable
     {
         vm.expectEmit();
         emit IRips.RipEntered(ripId, user, entriesToBuy, 0);
 
         vm.prank(user);
-        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(stakeId, entriesToBuy, user);
+        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(presetId, entriesToBuy, user);
 
         IRips.Rip memory rip = rips.exposed_rip(ripId);
         assertEq(rip.entriesSold, entriesToBuy);
@@ -120,13 +120,13 @@ contract Rips_EnterRip is RipsTestBase {
 
     function test_WhenRecipientIsDifferentFromTheCaller()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
         whenRequestedEntriesAreFewerThanAvailable
     {
         address recipient = makeAddr("recipient");
 
         vm.prank(user);
-        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(stakeId, entriesToBuy, recipient);
+        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(presetId, entriesToBuy, recipient);
 
         IRips.EntryRange[] memory recipientRanges = rips.getUserEntries(ripId, recipient);
         assertEq(recipientRanges.length, 1);
@@ -138,7 +138,7 @@ contract Rips_EnterRip is RipsTestBase {
 
     function test_WhenEntryCountExceedsMAX_ENTRIES_PER_RANGE()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
         whenRequestedEntriesAreFewerThanAvailable
     {
         uint64 largeEntryCap = 2048;
@@ -152,7 +152,7 @@ contract Rips_EnterRip is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint64 largeStakeId = rips.createStake(
+        uint64 largePresetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -166,9 +166,9 @@ contract Rips_EnterRip is RipsTestBase {
         entriesToBuy = 1500;
 
         vm.prank(user);
-        rips.enterRip{value: entriesToBuy * entryPrice}(largeStakeId, entriesToBuy, user);
+        rips.enterRip{value: entriesToBuy * entryPrice}(largePresetId, entriesToBuy, user);
 
-        uint256 largeRipId = rips.stakeIdToCurrentRipId(largeStakeId);
+        uint256 largeRipId = rips.presetIdToCurrentRipId(largePresetId);
         IRips.EntryRange[] memory ranges = rips.getUserEntries(largeRipId, user);
         assertEq(ranges.length, 2);
         assertEq(ranges[0].count, 1000);
@@ -177,70 +177,70 @@ contract Rips_EnterRip is RipsTestBase {
 
     function test_WhenRequestedEntriesEqualTheRemainingCapacity()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
         whenRequestedEntriesEqualTheRemainingCapacity
     {
         vm.expectEmit();
         emit IRips.RipEntered(ripId, user, entriesToBuy, 0);
 
         vm.prank(user);
-        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(stakeId, entriesToBuy, user);
+        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(presetId, entriesToBuy, user);
 
         IRips.Rip memory rip = rips.exposed_rip(ripId);
         assertEq(rip.entriesSold, DEFAULT_ENTRY_CAP);
         assertEq(uint256(rip.vrfRequestStatus), uint256(IRips.VrfRequestStatus.NotRequested));
     }
 
-    function test_GivenTheStakeIsNotDeleted()
+    function test_GivenThePresetIsNotDeleted()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
         whenRequestedEntriesEqualTheRemainingCapacity
     {
         // fill rip 1 completely
         vm.prank(user);
-        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(stakeId, entriesToBuy, user);
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(presetId, entriesToBuy, user);
+        ripId = rips.presetIdToCurrentRipId(presetId);
 
         // buying again triggers creation of rip 2
         uint256 expectedNewRipId = rips.exposed_nextRipId();
 
         vm.prank(user);
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(stakeId, 1, user);
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(presetId, 1, user);
 
-        uint256 newActiveRip = rips.stakeIdToCurrentRipId(stakeId);
+        uint256 newActiveRip = rips.presetIdToCurrentRipId(presetId);
         assertEq(newActiveRip, expectedNewRipId);
         assertNotEq(newActiveRip, ripId);
     }
 
-    function test_GivenTheStakeIsDeleted()
+    function test_GivenThePresetIsDeleted()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
         whenRequestedEntriesEqualTheRemainingCapacity
     {
         // fill rip 1 completely
         vm.prank(user);
-        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(stakeId, entriesToBuy, user);
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(presetId, entriesToBuy, user);
+        ripId = rips.presetIdToCurrentRipId(presetId);
 
         vm.prank(owner);
-        rips.deleteStake(stakeId);
+        rips.deletePreset(presetId);
 
-        // buying again on a sold-out deleted stake should revert — no new rip created
+        // buying again on a sold-out deleted preset should revert — no new rip created
         vm.prank(user);
-        vm.expectRevert(IRips.StakeNotExist.selector);
-        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(stakeId, 1, user);
+        vm.expectRevert(IRips.PresetNotExist.selector);
+        rips.enterRip{value: DEFAULT_ENTRY_PRICE}(presetId, 1, user);
 
         // mapping still points to the sold-out rip, not a new one
-        assertEq(rips.stakeIdToCurrentRipId(stakeId), ripId);
+        assertEq(rips.presetIdToCurrentRipId(presetId), ripId);
     }
 
     function test_WhenRequestedEntriesExceedAvailableEntries()
         external
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
     {
         uint64 initialBuy = DEFAULT_ENTRY_CAP - 1;
         vm.prank(user);
-        rips.enterRip{value: initialBuy * DEFAULT_ENTRY_PRICE}(stakeId, initialBuy, user);
+        rips.enterRip{value: initialBuy * DEFAULT_ENTRY_PRICE}(presetId, initialBuy, user);
 
         entriesToBuy = 3;
         uint64 availableEntries = DEFAULT_ENTRY_CAP - initialBuy;
@@ -253,7 +253,7 @@ contract Rips_EnterRip is RipsTestBase {
         emit IRips.RipEntered(ripId, user, availableEntries, initialBuy);
 
         vm.prank(user);
-        rips.enterRip{value: payment}(stakeId, entriesToBuy, user);
+        rips.enterRip{value: payment}(presetId, entriesToBuy, user);
 
         IRips.Rip memory rip = rips.exposed_rip(ripId);
         assertEq(rip.entriesSold, DEFAULT_ENTRY_CAP);
@@ -262,23 +262,23 @@ contract Rips_EnterRip is RipsTestBase {
         assertEq(user.balance, balanceBefore - payment + expectedRefund);
     }
 
-    modifier givenTheStakeCurrencyIsAnERC20Token() {
-        stakeId = _createDefaultERC20Stake();
+    modifier givenThePresetCurrencyIsAnERC20Token() {
+        presetId = _createDefaultERC20Preset();
         _mintAndApprove(user, 100 ether);
         // ripId is set after first enterRip since rip is created lazily
         ripId = rips.exposed_nextRipId();
         _;
     }
 
-    function test_RevertWhen_ETHIsSent() external givenTheStakeCurrencyIsAnERC20Token {
+    function test_RevertWhen_ETHIsSent() external givenThePresetCurrencyIsAnERC20Token {
         vm.prank(user);
         vm.expectRevert(IRips.EthSentForERC20.selector);
-        rips.enterRip{value: 1}(stakeId, 1, user);
+        rips.enterRip{value: 1}(presetId, 1, user);
     }
 
     function test_WhenRequestedEntriesAreFewerThanAvailable()
         external
-        givenTheStakeCurrencyIsAnERC20Token
+        givenThePresetCurrencyIsAnERC20Token
         whenRequestedEntriesAreFewerThanAvailable
     {
         uint256 expectedCost = entriesToBuy * DEFAULT_ENTRY_PRICE;
@@ -288,7 +288,7 @@ contract Rips_EnterRip is RipsTestBase {
         emit IRips.RipEntered(ripId, user, entriesToBuy, 0);
 
         vm.prank(user);
-        rips.enterRip(stakeId, entriesToBuy, user);
+        rips.enterRip(presetId, entriesToBuy, user);
 
         assertEq(erc20.balanceOf(user), balanceBefore - expectedCost);
 
@@ -302,13 +302,13 @@ contract Rips_EnterRip is RipsTestBase {
 
     function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20()
         external
-        givenTheStakeCurrencyIsAnERC20Token
+        givenThePresetCurrencyIsAnERC20Token
         whenRequestedEntriesAreFewerThanAvailable
     {
         address recipient = makeAddr("recipient");
 
         vm.prank(user);
-        rips.enterRip(stakeId, entriesToBuy, recipient);
+        rips.enterRip(presetId, entriesToBuy, recipient);
 
         IRips.EntryRange[] memory recipientRanges = rips.getUserEntries(ripId, recipient);
         assertEq(recipientRanges.length, 1);
@@ -320,7 +320,7 @@ contract Rips_EnterRip is RipsTestBase {
 
     function test_WhenEntryCountExceedsMAX_ENTRIES_PER_RANGE_GivenERC20()
         external
-        givenTheStakeCurrencyIsAnERC20Token
+        givenThePresetCurrencyIsAnERC20Token
         whenRequestedEntriesAreFewerThanAvailable
     {
         uint64 largeEntryCap = 2048;
@@ -334,7 +334,7 @@ contract Rips_EnterRip is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint64 largeStakeId = rips.createStake(
+        uint64 largePresetId = rips.createPreset(
             IRips.Config({
                 currency: address(erc20),
                 tiers: tiers,
@@ -348,9 +348,9 @@ contract Rips_EnterRip is RipsTestBase {
         entriesToBuy = 1500;
 
         vm.prank(user);
-        rips.enterRip(largeStakeId, entriesToBuy, user);
+        rips.enterRip(largePresetId, entriesToBuy, user);
 
-        uint256 largeRipId = rips.stakeIdToCurrentRipId(largeStakeId);
+        uint256 largeRipId = rips.presetIdToCurrentRipId(largePresetId);
         IRips.EntryRange[] memory ranges = rips.getUserEntries(largeRipId, user);
         assertEq(ranges.length, 2);
         assertEq(ranges[0].count, 1000);
@@ -359,7 +359,7 @@ contract Rips_EnterRip is RipsTestBase {
 
     function test_WhenRequestedEntriesEqualTheRemainingCapacity_GivenERC20()
         external
-        givenTheStakeCurrencyIsAnERC20Token
+        givenThePresetCurrencyIsAnERC20Token
         whenRequestedEntriesEqualTheRemainingCapacity
     {
         uint256 expectedCost = DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE;
@@ -369,7 +369,7 @@ contract Rips_EnterRip is RipsTestBase {
         emit IRips.RipEntered(ripId, user, entriesToBuy, 0);
 
         vm.prank(user);
-        rips.enterRip(stakeId, entriesToBuy, user);
+        rips.enterRip(presetId, entriesToBuy, user);
 
         assertEq(erc20.balanceOf(user), balanceBefore - expectedCost);
 
@@ -380,11 +380,11 @@ contract Rips_EnterRip is RipsTestBase {
 
     function test_WhenRequestedEntriesExceedAvailableEntries_GivenERC20()
         external
-        givenTheStakeCurrencyIsAnERC20Token
+        givenThePresetCurrencyIsAnERC20Token
     {
         uint64 initialBuy = DEFAULT_ENTRY_CAP - 1;
         vm.prank(user);
-        rips.enterRip(stakeId, initialBuy, user);
+        rips.enterRip(presetId, initialBuy, user);
 
         entriesToBuy = 3;
         uint64 availableEntries = DEFAULT_ENTRY_CAP - initialBuy;
@@ -395,7 +395,7 @@ contract Rips_EnterRip is RipsTestBase {
         emit IRips.RipEntered(ripId, user, availableEntries, initialBuy);
 
         vm.prank(user);
-        rips.enterRip(stakeId, entriesToBuy, user);
+        rips.enterRip(presetId, entriesToBuy, user);
 
         assertEq(erc20.balanceOf(user), balanceBefore - expectedCost);
 

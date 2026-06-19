@@ -1,0 +1,11 @@
+Rips_DeletePreset
+├── when the caller is not the owner
+│   └── it should revert.
+└── when the caller is the owner
+    ├── when the preset does not exist
+    │   └── it should revert.
+    ├── when the preset is already deleted
+    │   └── it should revert.
+    └── when the preset is not deleted
+        ├── it should mark the preset as deleted.
+        └── it should emit a {PresetDeleted} event.

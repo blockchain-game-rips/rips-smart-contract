@@ -11,7 +11,7 @@ contract Rips_ClaimPayout_Referrer is RipsTestBase {
     uint256 private constant CUSTOM_FEE_PERCENT = 2000; // 20%
     uint256 private constant PAYOUT_PER_ENTRY = 0.95 ether;
 
-    uint64 private stakeId;
+    uint64 private presetId;
     uint256 private ripId;
 
     function setUp() public override {
@@ -19,20 +19,20 @@ contract Rips_ClaimPayout_Referrer is RipsTestBase {
 
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
-        stakeId = _createFeeStake();
+        presetId = _createFeePreset();
 
         vm.deal(user, 100 ether);
         vm.prank(user);
         rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            stakeId, DEFAULT_ENTRY_CAP, user
+            presetId, DEFAULT_ENTRY_CAP, user
         );
 
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        ripId = rips.presetIdToCurrentRipId(presetId);
         uint256 vrfRequestId = rips.requestRandomness(ripId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
 
-    function _createFeeStake() private returns (uint64) {
+    function _createFeePreset() private returns (uint64) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
             payoutCount: uint64(DEFAULT_ENTRY_CAP),
@@ -41,7 +41,7 @@ contract Rips_ClaimPayout_Referrer is RipsTestBase {
         });
 
         vm.prank(owner);
-        return rips.createStake(
+        return rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,

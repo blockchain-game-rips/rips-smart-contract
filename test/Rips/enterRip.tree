@@ -3,16 +3,16 @@ Rips_EnterRip
 │   └── it should revert.
 ├── when recipient is zero address
 │   └── it should revert.
-├── when the stake does not exist
+├── when the preset does not exist
 │   └── it should revert.
-├── when the active rip has expired and the stake is deleted
+├── when the active rip has expired and the preset is deleted
 │   └── it should revert.
-├── when the active rip has expired and the stake is not deleted
+├── when the active rip has expired and the preset is not deleted
 │   ├── it should create a new rip.
 │   └── it should emit a {RipCreated} event.
 ├── when entry count is zero
 │   └── it should revert.
-├── given the stake currency is native
+├── given the preset currency is native
 │   ├── when the payment amount is incorrect
 │   │   └── it should revert.
 │   ├── when requested entries are fewer than available
@@ -27,16 +27,16 @@ Rips_EnterRip
 │   │   ├── it should purchase all requested entries.
 │   │   ├── it should set rip status to SoldOut.
 │   │   ├── it should emit a {RipEntered} event.
-│   │   ├── given the stake is not deleted
-│   │   │   └── it should create a new rip for the stake.
-│   │   └── given the stake is deleted
+│   │   ├── given the preset is not deleted
+│   │   │   └── it should create a new rip for the preset.
+│   │   └── given the preset is deleted
 │   │       └── it should clear the active rip mapping.
 │   └── when requested entries exceed available entries
 │       ├── it should purchase only the available entries.
 │       ├── it should set rip status to SoldOut.
 │       ├── it should refund excess ETH to the caller. TODO: fix test - to recipient
 │       └── it should emit a {RipEntered} event.
-└── given the stake currency is an ERC20 token
+└── given the preset currency is an ERC20 token
     ├── when ETH is sent
     │   └── it should revert.
     ├── when requested entries are fewer than available

@@ -40,7 +40,7 @@ contract RipsTestBase is Test {
         erc20 = new ERC20Mock();
     }
 
-    function _createDefaultStake() internal returns (uint64 stakeId) {
+    function _createDefaultPreset() internal returns (uint64 presetId) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
             payoutCount: uint64(DEFAULT_ENTRY_CAP),
@@ -49,7 +49,7 @@ contract RipsTestBase is Test {
         });
 
         vm.prank(owner);
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -67,7 +67,7 @@ contract RipsTestBase is Test {
         erc20.approve(address(rips), type(uint256).max);
     }
 
-    function _createDefaultERC20Stake() internal returns (uint64 stakeId) {
+    function _createDefaultERC20Preset() internal returns (uint64 presetId) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
             payoutCount: uint64(DEFAULT_ENTRY_CAP),
@@ -76,7 +76,7 @@ contract RipsTestBase is Test {
         });
 
         vm.prank(owner);
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(erc20),
                 tiers: tiers,

@@ -9,7 +9,7 @@ interface IRips {
     }
 
     struct Rip {
-        uint64 stakeId;
+        uint64 presetId;
         uint64 configId;
         uint40 startTime;
         uint64 entriesSold;
@@ -61,7 +61,7 @@ interface IRips {
     error TiersNotSortedByPayoutCount();
     error PayoutCountMismatch();
     error PayoutPoolMismatch();
-    error StakeNotExist();
+    error PresetNotExist();
     error ZeroEntries();
     error IncorrectPayment();
     error RipNotSoldOut();
@@ -82,11 +82,11 @@ interface IRips {
     error ZeroSubscriptionId();
     error InvalidRequestId();
 
-    event StakeCreated(uint64 indexed stakeId, uint64 configId);
-    event StakeUpdated(uint64 indexed stakeId, uint64 configId);
-    event StakeDeleted(uint64 indexed stakeId);
+    event PresetCreated(uint64 indexed presetId, uint64 configId);
+    event PresetUpdated(uint64 indexed presetId, uint64 configId);
+    event PresetDeleted(uint64 indexed presetId);
 
-    event RipCreated(uint256 indexed ripId, uint64 indexed stakeId, uint64 configId);
+    event RipCreated(uint256 indexed ripId, uint64 indexed presetId, uint64 configId);
 
     event RipEntered(
         uint256 indexed ripId, address indexed user, uint64 entryCount, uint256 startEntryIndex
@@ -122,7 +122,7 @@ interface IRips {
     );
     event ReferrerCustomFeeUpdated(address indexed referrer, uint16 customFeePercent);
 
-    function enterRip(uint64 stakeId, uint64 entryCount, address recipient) external payable;
+    function enterRip(uint64 presetId, uint64 entryCount, address recipient) external payable;
 
     function claimPayout(
         uint256 ripId,
@@ -134,11 +134,11 @@ interface IRips {
 
     function refund(uint256 ripId, address recipient) external;
 
-    function createStake(Config calldata config) external returns (uint64 stakeId);
+    function createPreset(Config calldata config) external returns (uint64 presetId);
 
-    function updateStake(uint64 stakeId, Config calldata config) external;
+    function updatePreset(uint64 presetId, Config calldata config) external;
 
-    function deleteStake(uint64 stakeId) external;
+    function deletePreset(uint64 presetId) external;
 
     function requestRandomness(uint256 ripId) external returns (uint256 requestId);
 

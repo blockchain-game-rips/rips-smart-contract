@@ -4,8 +4,8 @@ A prize protocol where users buy tickets for rounds, winners are selected via Ch
 
 ## Overview
 
-- **Stakes** define round configurations (ticket price, cap, duration, prize tiers)
-- **Rounds** are created automatically per stake; users buy tickets within a round
+- **Presets** define rip configurations (ticket price, cap, duration, prize tiers)
+- **Rips** are created automatically per preset; users buy tickets within a rip
 - **Chainlink VRF** provides verifiable randomness to finalize rounds
 - **Prize tiers** support linear interpolation between min/max prizes
 - **Refunds** are available for expired rounds that never filled

@@ -78,7 +78,7 @@ contract Rips_RequestRandomness is RipsTestBase {
     uint256 private constant ENTRY_PRICE = 1 ether;
     uint256 private constant EXPECTED_FIRST_REQUEST_ID = 1;
 
-    uint64 private stakeId;
+    uint64 private presetId;
     uint256 private soldOutRipId;
     uint256 private activeRipId;
 
@@ -93,7 +93,7 @@ contract Rips_RequestRandomness is RipsTestBase {
         });
 
         vm.startPrank(owner);
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -107,13 +107,13 @@ contract Rips_RequestRandomness is RipsTestBase {
 
         vm.deal(user, ENTRY_CAP * ENTRY_PRICE);
         vm.prank(user);
-        rips.enterRip{value: ENTRY_CAP * ENTRY_PRICE}(stakeId, ENTRY_CAP, user);
+        rips.enterRip{value: ENTRY_CAP * ENTRY_PRICE}(presetId, ENTRY_CAP, user);
 
-        soldOutRipId = rips.stakeIdToCurrentRipId(stakeId);
+        soldOutRipId = rips.presetIdToCurrentRipId(presetId);
 
-        // create a second stake and enter one entry to initialize the rip (but not sell out)
+        // create a second preset and enter one entry to initialize the rip (but not sell out)
         vm.prank(owner);
-        uint64 stakeId2 = rips.createStake(
+        uint64 presetId2 = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -125,8 +125,8 @@ contract Rips_RequestRandomness is RipsTestBase {
         );
         vm.deal(user, ENTRY_PRICE);
         vm.prank(user);
-        rips.enterRip{value: ENTRY_PRICE}(stakeId2, 1, user);
-        activeRipId = rips.stakeIdToCurrentRipId(stakeId2);
+        rips.enterRip{value: ENTRY_PRICE}(presetId2, 1, user);
+        activeRipId = rips.presetIdToCurrentRipId(presetId2);
     }
 
     function test_RevertWhen_TheRipDoesNotExist() external {
@@ -173,15 +173,15 @@ contract Rips_RequestRandomness is RipsTestBase {
         rips.requestRandomness(soldOutRipId);
 
         // create a second sold-out rip
-        uint64 stakeId2 = _createDefaultStake();
+        uint64 presetId2 = _createDefaultPreset();
 
         vm.deal(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
         vm.prank(user);
         rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            stakeId2, DEFAULT_ENTRY_CAP, user
+            presetId2, DEFAULT_ENTRY_CAP, user
         );
 
-        uint256 secondRipId = rips.stakeIdToCurrentRipId(stakeId2);
+        uint256 secondRipId = rips.presetIdToCurrentRipId(presetId2);
 
         vm.expectRevert(IRips.InvalidRequestId.selector);
         rips.requestRandomness(secondRipId);

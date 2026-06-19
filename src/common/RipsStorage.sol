@@ -10,7 +10,7 @@ abstract contract RipsStorage is IRips {
     mapping(address referrer => mapping(address currency => uint256 amount)) public
         referrerFeeAccrued;
 
-    uint64 internal _nextStakeId = 1;
+    uint64 internal _nextPresetId = 1;
     uint256 internal _nextRipId = 1;
     uint64 internal _nextConfigId = 1;
 
@@ -19,9 +19,9 @@ abstract contract RipsStorage is IRips {
 
     mapping(uint256 ripId => Rip rip) public ripIdToRip;
 
-    mapping(uint64 stakeId => uint64 configId) public stakeIdToCurrentConfigId;
-    mapping(uint64 stakeId => uint256 ripId) public stakeIdToCurrentRipId;
-    mapping(uint64 stakeId => bool deleted) public isStakeDeleted;
+    mapping(uint64 presetId => uint64 configId) public presetIdToCurrentConfigId;
+    mapping(uint64 presetId => uint256 ripId) public presetIdToCurrentRipId;
+    mapping(uint64 presetId => bool deleted) public isPresetDeleted;
 
     mapping(uint256 ripId => mapping(address buyer => EntryRange[] ranges)) internal userEntries;
     mapping(uint256 ripId => mapping(address buyer => uint64 entryCount)) public userEntryCount;

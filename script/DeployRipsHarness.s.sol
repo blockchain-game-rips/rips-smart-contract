@@ -34,7 +34,7 @@ contract DeployRips is Script {
 
         coordinatorContract.addConsumer(subscriptionId, address(ripsContract));
 
-        _createDefaultStakes(ripsContract);
+        _createDefaultPresets(ripsContract);
 
         vm.stopBroadcast();
 
@@ -43,15 +43,15 @@ contract DeployRips is Script {
         console.log("rips:", rips);
     }
 
-    function _createDefaultStakes(RipsHarness rips)
+    function _createDefaultPresets(RipsHarness rips)
         internal
-        returns (uint64 stakeId1, uint64 stakeId2)
+        returns (uint64 presetId1, uint64 presetId2)
     {
-        stakeId1 = _createDefaultStake1(rips);
-        stakeId2 = _createDefaultStake2(rips);
+        presetId1 = _createDefaultPreset1(rips);
+        presetId2 = _createDefaultPreset2(rips);
     }
 
-    function _createDefaultStake1(RipsHarness rips) internal returns (uint64 stakeId) {
+    function _createDefaultPreset1(RipsHarness rips) internal returns (uint64 presetId) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](3);
 
         tiers[0] =
@@ -63,7 +63,7 @@ contract DeployRips is Script {
         tiers[2] =
             IRips.PayoutTier({payoutCount: 1, minPayout: 0.018 ether, maxPayout: 0.018 ether});
 
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -75,7 +75,7 @@ contract DeployRips is Script {
         );
     }
 
-    function _createDefaultStake2(RipsHarness rips) internal returns (uint64 stakeId) {
+    function _createDefaultPreset2(RipsHarness rips) internal returns (uint64 presetId) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](3);
 
         tiers[0] =
@@ -87,7 +87,7 @@ contract DeployRips is Script {
         tiers[2] =
             IRips.PayoutTier({payoutCount: 1, minPayout: 0.036 ether, maxPayout: 0.036 ether});
 
-        stakeId = rips.createStake(
+        presetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,

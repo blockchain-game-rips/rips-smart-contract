@@ -9,7 +9,7 @@ contract Rips_ClaimPayout is RipsTestBase {
     uint16 private constant FEE_PERCENT = 500;
     uint256 private constant FEE_PAYOUT_PER_ENTRY = 0.95 ether;
 
-    uint64 private stakeId;
+    uint64 private presetId;
     uint256 private ripId;
 
     function setUp() public override {
@@ -17,15 +17,15 @@ contract Rips_ClaimPayout is RipsTestBase {
 
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 100 ether);
 
-        stakeId = _createDefaultStake();
+        presetId = _createDefaultPreset();
 
         vm.deal(user, 100 ether);
         vm.prank(user);
         rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            stakeId, DEFAULT_ENTRY_CAP, user
+            presetId, DEFAULT_ENTRY_CAP, user
         );
 
-        ripId = rips.stakeIdToCurrentRipId(stakeId);
+        ripId = rips.presetIdToCurrentRipId(presetId);
     }
 
     function _finalizeRip() private {
@@ -45,7 +45,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE * FEE_PERCENT / 10_000;
     }
 
-    function _createFeeNativeStake() private returns (uint256 feeRipId) {
+    function _createFeeNativePreset() private returns (uint256 feeRipId) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
             payoutCount: uint64(DEFAULT_ENTRY_CAP),
@@ -54,7 +54,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint64 feeStakeId = rips.createStake(
+        uint64 feePresetId = rips.createPreset(
             IRips.Config({
                 currency: address(0),
                 tiers: tiers,
@@ -67,10 +67,10 @@ contract Rips_ClaimPayout is RipsTestBase {
 
         vm.prank(user);
         rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            feeStakeId, DEFAULT_ENTRY_CAP, user
+            feePresetId, DEFAULT_ENTRY_CAP, user
         );
 
-        feeRipId = rips.stakeIdToCurrentRipId(feeStakeId);
+        feeRipId = rips.presetIdToCurrentRipId(feePresetId);
         uint256 vrfRequestId = rips.requestRandomness(feeRipId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
@@ -188,14 +188,14 @@ contract Rips_ClaimPayout is RipsTestBase {
         assertEq(operator.balance, operatorBalanceBefore);
     }
 
-    modifier givenTheStakeCurrencyIsNative() {
+    modifier givenThePresetCurrencyIsNative() {
         _;
     }
 
     function test_WhenProtocolFeeIsZero()
         external
         whenThereAreUnclaimedRanges
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
     {
         uint256 balanceBefore = user.balance;
 
@@ -211,9 +211,9 @@ contract Rips_ClaimPayout is RipsTestBase {
     function test_WhenProtocolFeeIsGreaterThanZero()
         external
         whenThereAreUnclaimedRanges
-        givenTheStakeCurrencyIsNative
+        givenThePresetCurrencyIsNative
     {
-        uint256 feeRipId = _createFeeNativeStake();
+        uint256 feeRipId = _createFeeNativePreset();
 
         uint256 userBalanceBefore = user.balance;
 
@@ -230,15 +230,15 @@ contract Rips_ClaimPayout is RipsTestBase {
         assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee());
     }
 
-    function test_WhenProtocolFeeIsZero_GivenTheStakeCurrencyIsAnERC20Token() external {
+    function test_WhenProtocolFeeIsZero_GivenThePresetCurrencyIsAnERC20Token() external {
         _mintAndApprove(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
 
-        uint64 erc20StakeId = _createDefaultERC20Stake();
+        uint64 erc20PresetId = _createDefaultERC20Preset();
 
         vm.prank(user);
-        rips.enterRip(erc20StakeId, DEFAULT_ENTRY_CAP, user);
+        rips.enterRip(erc20PresetId, DEFAULT_ENTRY_CAP, user);
 
-        uint256 erc20RipId = rips.stakeIdToCurrentRipId(erc20StakeId);
+        uint256 erc20RipId = rips.presetIdToCurrentRipId(erc20PresetId);
         uint256 vrfRequestId = rips.requestRandomness(erc20RipId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
@@ -253,7 +253,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         assertEq(erc20.balanceOf(user), balanceBefore + _totalPayout());
     }
 
-    function test_WhenProtocolFeeIsGreaterThanZero_GivenTheStakeCurrencyIsAnERC20Token() external {
+    function test_WhenProtocolFeeIsGreaterThanZero_GivenThePresetCurrencyIsAnERC20Token() external {
         _mintAndApprove(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
 
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
@@ -264,7 +264,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         });
 
         vm.prank(owner);
-        uint64 feeStakeId = rips.createStake(
+        uint64 feePresetId = rips.createPreset(
             IRips.Config({
                 currency: address(erc20),
                 tiers: tiers,
@@ -276,9 +276,9 @@ contract Rips_ClaimPayout is RipsTestBase {
         );
 
         vm.prank(user);
-        rips.enterRip(feeStakeId, DEFAULT_ENTRY_CAP, user);
+        rips.enterRip(feePresetId, DEFAULT_ENTRY_CAP, user);
 
-        uint256 feeRipId = rips.stakeIdToCurrentRipId(feeStakeId);
+        uint256 feeRipId = rips.presetIdToCurrentRipId(feePresetId);
         uint256 vrfRequestId = rips.requestRandomness(feeRipId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
