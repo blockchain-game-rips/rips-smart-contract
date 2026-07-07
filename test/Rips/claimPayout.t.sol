@@ -61,7 +61,7 @@ contract Rips_ClaimPayout is RipsTestBase {
                 entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
                 entryPrice: DEFAULT_ENTRY_PRICE,
-                feePercent: FEE_PERCENT
+                feeBps: FEE_PERCENT
             })
         );
 
@@ -271,7 +271,7 @@ contract Rips_ClaimPayout is RipsTestBase {
                 entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
                 entryPrice: DEFAULT_ENTRY_PRICE,
-                feePercent: FEE_PERCENT
+                feeBps: FEE_PERCENT
             })
         );
 

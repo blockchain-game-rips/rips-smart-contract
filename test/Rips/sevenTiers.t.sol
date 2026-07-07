@@ -43,7 +43,7 @@ contract Rips_SevenTiers is RipsTestBase {
                 entryCap: ENTRY_CAP,
                 duration: DEFAULT_DURATION,
                 entryPrice: ENTRY_PRICE,
-                feePercent: 0
+                feeBps: 0
             })
         );
 

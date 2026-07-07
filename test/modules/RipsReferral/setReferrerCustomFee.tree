@@ -7,5 +7,5 @@ Rips_SetReferrerCustomFee
     ├── when the fee is greater than FEE_BASE
     │   └── it should revert.
     └── when inputs are valid
-        ├── it should update the referrer's customFeePercent.
+        ├── it should update the referrer's customFeeBps.
         └── it should emit a {ReferrerCustomFeeUpdated} event.

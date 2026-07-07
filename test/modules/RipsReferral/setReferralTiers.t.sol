@@ -10,8 +10,8 @@ contract Rips_SetReferralTiers is RipsTestBase {
 
     function _validTiers() private pure returns (IRips.ReferralTier[] memory tiers) {
         tiers = new IRips.ReferralTier[](2);
-        tiers[0] = IRips.ReferralTier({minVolume: 1 ether, feePercent: 500});
-        tiers[1] = IRips.ReferralTier({minVolume: 10 ether, feePercent: 1000});
+        tiers[0] = IRips.ReferralTier({minVolume: 1 ether, feeBps: 500});
+        tiers[1] = IRips.ReferralTier({minVolume: 10 ether, feeBps: 1000});
     }
 
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
@@ -34,7 +34,7 @@ contract Rips_SetReferralTiers is RipsTestBase {
         IRips.ReferralTier[] memory tiers = new IRips.ReferralTier[](maxCount + 1);
 
         for (uint256 i = 0; i < tiers.length; i++) {
-            tiers[i] = IRips.ReferralTier({minVolume: uint128(i + 1) * 1 ether, feePercent: 100});
+            tiers[i] = IRips.ReferralTier({minVolume: uint128(i + 1) * 1 ether, feeBps: 100});
         }
 
         vm.expectRevert(IRips.ReferralTierCountExceeded.selector);
@@ -46,8 +46,8 @@ contract Rips_SetReferralTiers is RipsTestBase {
         whenTheCallerIsTheOwner
     {
         IRips.ReferralTier[] memory tiers = new IRips.ReferralTier[](2);
-        tiers[0] = IRips.ReferralTier({minVolume: 10 ether, feePercent: 1000});
-        tiers[1] = IRips.ReferralTier({minVolume: 1 ether, feePercent: 500});
+        tiers[0] = IRips.ReferralTier({minVolume: 10 ether, feeBps: 1000});
+        tiers[1] = IRips.ReferralTier({minVolume: 1 ether, feeBps: 500});
 
         vm.expectRevert(IRips.ReferralTiersNotSorted.selector);
         rips.setReferralTiers(CURRENCY, tiers);
@@ -55,8 +55,8 @@ contract Rips_SetReferralTiers is RipsTestBase {
 
     function test_RevertWhen_TiersHaveDuplicateMinVolumeValues() external whenTheCallerIsTheOwner {
         IRips.ReferralTier[] memory tiers = new IRips.ReferralTier[](2);
-        tiers[0] = IRips.ReferralTier({minVolume: 1 ether, feePercent: 500});
-        tiers[1] = IRips.ReferralTier({minVolume: 1 ether, feePercent: 1000});
+        tiers[0] = IRips.ReferralTier({minVolume: 1 ether, feeBps: 500});
+        tiers[1] = IRips.ReferralTier({minVolume: 1 ether, feeBps: 1000});
 
         vm.expectRevert(IRips.ReferralTiersNotSorted.selector);
         rips.setReferralTiers(CURRENCY, tiers);
@@ -76,19 +76,19 @@ contract Rips_SetReferralTiers is RipsTestBase {
         IRips.ReferralTier[] memory stored = rips.getReferralTiers(CURRENCY);
 
         assertEq(stored[0].minVolume, tiers[0].minVolume);
-        assertEq(stored[0].feePercent, tiers[0].feePercent);
+        assertEq(stored[0].feeBps, tiers[0].feeBps);
         assertEq(stored[1].minVolume, tiers[1].minVolume);
-        assertEq(stored[1].feePercent, tiers[1].feePercent);
+        assertEq(stored[1].feeBps, tiers[1].feeBps);
     }
 
     function test_WhenTiersAreSetForDifferentCurrencies() external whenTheCallerIsTheOwner {
         address currencyB = makeAddr("currencyB");
 
         IRips.ReferralTier[] memory tiersA = new IRips.ReferralTier[](1);
-        tiersA[0] = IRips.ReferralTier({minVolume: 1 ether, feePercent: 500});
+        tiersA[0] = IRips.ReferralTier({minVolume: 1 ether, feeBps: 500});
 
         IRips.ReferralTier[] memory tiersB = new IRips.ReferralTier[](1);
-        tiersB[0] = IRips.ReferralTier({minVolume: 5 ether, feePercent: 1000});
+        tiersB[0] = IRips.ReferralTier({minVolume: 5 ether, feeBps: 1000});
 
         rips.setReferralTiers(CURRENCY, tiersA);
         rips.setReferralTiers(currencyB, tiersB);

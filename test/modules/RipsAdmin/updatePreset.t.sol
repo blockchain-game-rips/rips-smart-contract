@@ -29,7 +29,7 @@ contract Rips_UpdatePreset is PresetValidationSetup {
             entryCap: newEntryCap,
             duration: DEFAULT_DURATION,
             entryPrice: newEntryPrice,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -135,7 +135,7 @@ contract Rips_UpdatePreset is PresetValidationSetup {
         assertEq(stored.currency, config.currency);
         assertEq(stored.duration, config.duration);
         assertEq(stored.tiers.length, config.tiers.length);
-        assertEq(stored.feePercent, config.feePercent);
+        assertEq(stored.feeBps, config.feeBps);
     }
 
     function test_WhenTheNextRipIsCreatedAfterAnUpdate() external whenTheCallerIsTheOwner {

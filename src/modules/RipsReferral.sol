@@ -8,34 +8,34 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
     uint256 public constant MAX_REFERRAL_TIER_COUNT = 10;
     uint40 public constant REFERRAL_PERIOD = 30 days;
 
-    uint16 public defaultReferralFee;
+    uint16 public defaultReferralFeeBps;
 
-    mapping(address referrer => uint16 customFeePercent) public referrerCustomFee;
+    mapping(address referrer => uint16 customFeeBps) public referrerCustomFee;
     mapping(address referrer => mapping(address currency => ReferrerState)) public
         referrerToReferrerState;
     mapping(address currency => ReferralTier[]) internal _referralTiers;
 
-    function setDefaultReferralFee(uint16 newDefaultReferralFee)
+    function setDefaultReferralFee(uint16 newDefaultReferralFeeBps)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        if (newDefaultReferralFee > FEE_BASE) revert FeeTooHigh();
+        if (newDefaultReferralFeeBps > FEE_BASE) revert FeeTooHigh();
 
-        defaultReferralFee = newDefaultReferralFee;
+        defaultReferralFeeBps = newDefaultReferralFeeBps;
 
-        emit DefaultReferralFeeUpdated(newDefaultReferralFee);
+        emit DefaultReferralFeeUpdated(newDefaultReferralFeeBps);
     }
 
-    function setReferrerCustomFee(address referrer, uint16 customFeePercent)
+    function setReferrerCustomFee(address referrer, uint16 customFeeBps)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         if (referrer == address(0)) revert ZeroAddress();
-        if (customFeePercent > FEE_BASE) revert FeeTooHigh();
+        if (customFeeBps > FEE_BASE) revert FeeTooHigh();
 
-        referrerCustomFee[referrer] = customFeePercent;
+        referrerCustomFee[referrer] = customFeeBps;
 
-        emit ReferrerCustomFeeUpdated(referrer, customFeePercent);
+        emit ReferrerCustomFeeUpdated(referrer, customFeeBps);
     }
 
     function setReferralTiers(address currency, ReferralTier[] calldata tiers)
@@ -72,16 +72,16 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         ReferrerState storage referrerStats =
             _resolveReferrerState(referrer, currency, entryRevenue);
 
-        uint16 customFeePercent = referrerCustomFee[referrer];
-        if (customFeePercent > 0) {
-            return (protocolFee * customFeePercent) / FEE_BASE;
+        uint16 customFeeBps = referrerCustomFee[referrer];
+        if (customFeeBps > 0) {
+            return (protocolFee * customFeeBps) / FEE_BASE;
         }
 
-        uint16 activeFeePercent = referrerStats.activeFeePercent;
-        uint16 effectiveFeePercent =
-            activeFeePercent > defaultReferralFee ? activeFeePercent : defaultReferralFee;
+        uint16 activeFeeBps = referrerStats.activeFeeBps;
+        uint16 effectiveFeeBps =
+            activeFeeBps > defaultReferralFeeBps ? activeFeeBps : defaultReferralFeeBps;
 
-        referrerFee = (protocolFee * effectiveFeePercent) / FEE_BASE;
+        referrerFee = (protocolFee * effectiveFeeBps) / FEE_BASE;
     }
 
     function _resolveReferrerState(address referrer, address currency, uint256 entryRevenue)
@@ -108,7 +108,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
 
             uint256 volumeInPrevPeriod = isConsecutivePeriod ? referrerStats.periodVolume : 0;
 
-            referrerStats.activeFeePercent = _resolveTierFeePercent(currency, volumeInPrevPeriod);
+            referrerStats.activeFeeBps = _resolveTierFeeBps(currency, volumeInPrevPeriod);
             referrerStats.periodStartTimestamp += periodsElapsed * REFERRAL_PERIOD;
             referrerStats.periodVolume = entryRevenue;
 
@@ -122,10 +122,10 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         return referrerStats;
     }
 
-    function _resolveTierFeePercent(address currency, uint256 volume)
+    function _resolveTierFeeBps(address currency, uint256 volume)
         private
         view
-        returns (uint16 feePercent)
+        returns (uint16 feeBps)
     {
         ReferralTier[] storage tiers = _referralTiers[currency];
 
@@ -133,7 +133,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
             ReferralTier storage tier = tiers[i - 1];
 
             if (volume >= tier.minVolume) {
-                return tier.feePercent;
+                return tier.feeBps;
             }
         }
     }

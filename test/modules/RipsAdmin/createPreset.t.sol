@@ -86,6 +86,6 @@ contract Rips_CreatePreset is PresetValidationSetup {
         IRips.Config memory config = rips.exposed_config(configId);
         assertEq(config.entryCap, DEFAULT_ENTRY_CAP);
         assertEq(config.entryPrice, DEFAULT_ENTRY_PRICE);
-        assertEq(config.feePercent, DEFAULT_FEE_PERCENT);
+        assertEq(config.feeBps, DEFAULT_FEE_PERCENT);
     }
 }

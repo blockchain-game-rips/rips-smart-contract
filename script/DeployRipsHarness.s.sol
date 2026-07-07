@@ -70,7 +70,7 @@ contract DeployRips is Script {
                 entryCap: 8,
                 duration: 5 minutes,
                 entryPrice: 0.005 ether,
-                feePercent: DEFAULT_FEE_PERCENT
+                feeBps: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -94,7 +94,7 @@ contract DeployRips is Script {
                 entryCap: 8,
                 duration: 5 minutes,
                 entryPrice: 0.01 ether,
-                feePercent: DEFAULT_FEE_PERCENT
+                feeBps: DEFAULT_FEE_PERCENT
             })
         );
     }

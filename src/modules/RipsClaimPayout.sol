@@ -44,7 +44,7 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
         address currency = config.currency;
 
         uint256 entryRevenue = entryCount * config.entryPrice;
-        uint256 protocolFee = (entryRevenue * config.feePercent) / FEE_BASE;
+        uint256 protocolFee = (entryRevenue * config.feeBps) / FEE_BASE;
 
         // even if protocolFee == 0, update referrer volume
         uint256 referrerFee = _collectReferrerFee(referrer, currency, protocolFee, entryRevenue);

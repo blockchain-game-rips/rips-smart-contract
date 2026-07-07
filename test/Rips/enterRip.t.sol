@@ -159,7 +159,7 @@ contract Rips_EnterRip is RipsTestBase {
                 entryCap: largeEntryCap,
                 duration: DEFAULT_DURATION,
                 entryPrice: entryPrice,
-                feePercent: 0
+                feeBps: 0
             })
         );
 
@@ -341,7 +341,7 @@ contract Rips_EnterRip is RipsTestBase {
                 entryCap: largeEntryCap,
                 duration: DEFAULT_DURATION,
                 entryPrice: entryPrice,
-                feePercent: 0
+                feeBps: 0
             })
         );
 
@@ -362,7 +362,8 @@ contract Rips_EnterRip is RipsTestBase {
         givenThePresetCurrencyIsAnERC20Token
         whenRequestedEntriesEqualTheRemainingCapacity
     {
-        uint256 expectedCost = DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE;
+        uint256 expectedCost =
+            DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE;
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();

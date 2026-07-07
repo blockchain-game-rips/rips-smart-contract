@@ -48,7 +48,7 @@ contract Rips_ClaimPayout_Referrer is RipsTestBase {
                 entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
                 entryPrice: DEFAULT_ENTRY_PRICE,
-                feePercent: PROTOCOL_FEE_PERCENT
+                feeBps: PROTOCOL_FEE_PERCENT
             })
         );
     }
@@ -61,8 +61,8 @@ contract Rips_ClaimPayout_Referrer is RipsTestBase {
         return _entryRevenue() * PROTOCOL_FEE_PERCENT / 10_000;
     }
 
-    function _referrerFeeFrom(uint256 feePercent) private pure returns (uint256) {
-        return _protocolFee() * feePercent / 10_000;
+    function _referrerFeeFrom(uint256 feeBps) private pure returns (uint256) {
+        return _protocolFee() * feeBps / 10_000;
     }
 
     function _claim() private {

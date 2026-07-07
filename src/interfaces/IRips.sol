@@ -30,7 +30,7 @@ interface IRips {
         uint64 entryCap;
         uint32 duration;
         uint256 entryPrice;
-        uint16 feePercent;
+        uint16 feeBps;
     }
 
     struct EntryRange {
@@ -40,14 +40,14 @@ interface IRips {
     }
 
     struct ReferrerState {
-        uint16 activeFeePercent;
+        uint16 activeFeeBps;
         uint40 periodStartTimestamp;
         uint256 periodVolume;
     }
 
     struct ReferralTier {
         uint128 minVolume;
-        uint16 feePercent;
+        uint16 feeBps;
     }
 
     error ZeroAddress();
@@ -114,13 +114,13 @@ interface IRips {
     event ReferrerFeeSeized(address indexed referrer, address indexed currency, uint256 amount);
     event ReferrerFreezeUpdated(address indexed referrer, bool frozen);
     event ReferralTiersUpdated(address indexed currency, ReferralTier[] tiers);
-    event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
+    event DefaultReferralFeeUpdated(uint16 newDefaultReferralFeeBps);
     event ReferralFeeAccrued(uint256 indexed ripId, address indexed referrer, uint256 amount);
     event ProtocolFeeAccrued(uint256 indexed ripId, uint256 amount);
     event ReferralStateUpdated(
         address indexed referrer, address indexed currency, ReferrerState referrerState
     );
-    event ReferrerCustomFeeUpdated(address indexed referrer, uint16 customFeePercent);
+    event ReferrerCustomFeeUpdated(address indexed referrer, uint16 customFeeBps);
 
     function enterRip(uint64 presetId, uint64 entryCount, address recipient) external payable;
 
@@ -146,9 +146,9 @@ interface IRips {
 
     function setReferralTiers(address currency, ReferralTier[] calldata tiers) external;
 
-    function setDefaultReferralFee(uint16 newDefaultReferralFee) external;
+    function setDefaultReferralFee(uint16 newDefaultReferralFeeBps) external;
 
-    function setReferrerCustomFee(address referrer, uint16 customFeePercent) external;
+    function setReferrerCustomFee(address referrer, uint16 customFeeBps) external;
 
     function withdrawProtocolFee(address currency) external;
 

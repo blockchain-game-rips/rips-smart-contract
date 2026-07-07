@@ -37,7 +37,10 @@ contract Deploy is Script {
         vm.stopBroadcast();
     }
 
-    function _createDefaultPresets(Rips rips) internal returns (uint64 presetId1, uint64 presetId2) {
+    function _createDefaultPresets(Rips rips)
+        internal
+        returns (uint64 presetId1, uint64 presetId2)
+    {
         presetId1 = _createDefaultPreset1(rips);
         presetId2 = _createDefaultPreset2(rips);
     }
@@ -61,7 +64,7 @@ contract Deploy is Script {
                 entryCap: 8,
                 duration: 5 minutes,
                 entryPrice: 0.0005 ether,
-                feePercent: DEFAULT_FEE_PERCENT
+                feeBps: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -85,7 +88,7 @@ contract Deploy is Script {
                 entryCap: 8,
                 duration: 5 minutes,
                 entryPrice: 0.001 ether,
-                feePercent: DEFAULT_FEE_PERCENT
+                feeBps: DEFAULT_FEE_PERCENT
             })
         );
     }

@@ -100,7 +100,7 @@ contract Rips_RequestRandomness is RipsTestBase {
                 entryCap: ENTRY_CAP,
                 duration: 1 days,
                 entryPrice: ENTRY_PRICE,
-                feePercent: 0
+                feeBps: 0
             })
         );
         vm.stopPrank();
@@ -120,7 +120,7 @@ contract Rips_RequestRandomness is RipsTestBase {
                 entryCap: ENTRY_CAP,
                 duration: 1 days,
                 entryPrice: ENTRY_PRICE,
-                feePercent: 0
+                feeBps: 0
             })
         );
         vm.deal(user, ENTRY_PRICE);

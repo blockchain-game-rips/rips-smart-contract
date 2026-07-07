@@ -30,7 +30,7 @@ contract Rips_WithdrawReferrerFee is RipsTestBase {
                 entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
                 entryPrice: DEFAULT_ENTRY_PRICE,
-                feePercent: FEE_PERCENT
+                feeBps: FEE_PERCENT
             })
         );
         rips.setReferrerCustomFee(referrer, REFERRER_FEE_PERCENT);

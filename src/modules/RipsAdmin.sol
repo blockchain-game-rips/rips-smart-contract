@@ -85,10 +85,10 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
                     * (uint256(tier.minPayout) + uint256(tier.maxPayout))) / 2;
         }
 
-        if (config.feePercent > FEE_BASE) revert FeeTooHigh();
+        if (config.feeBps > FEE_BASE) revert FeeTooHigh();
         if (totalEntryCount != config.entryCap) revert PayoutCountMismatch();
         uint256 totalRevenue = uint256(config.entryCap) * config.entryPrice;
-        uint256 protocolFee = (totalRevenue * config.feePercent) / FEE_BASE;
+        uint256 protocolFee = (totalRevenue * config.feeBps) / FEE_BASE;
         if (totalPayoutPool != totalRevenue - protocolFee) revert PayoutPoolMismatch();
     }
 
@@ -100,7 +100,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         newConfig.entryCap = config.entryCap;
         newConfig.duration = config.duration;
         newConfig.entryPrice = config.entryPrice;
-        newConfig.feePercent = config.feePercent;
+        newConfig.feeBps = config.feeBps;
 
         uint64 cumulative = 0;
         uint64[] storage boundaries = configIdToTierBoundaries[configId];

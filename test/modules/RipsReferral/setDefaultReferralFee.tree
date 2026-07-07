@@ -5,5 +5,5 @@ Rips_SetDefaultReferralFee
     ├── when the fee is greater than FEE_BASE
     │   └── it should revert.
     └── when the fee is valid
-        ├── it should update defaultReferralFee.
+        ├── it should update defaultReferralFeeBps.
         └── it should emit a {DefaultReferralFeeUpdated} event.

@@ -56,7 +56,7 @@ contract RipsTestBase is Test {
                 entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
                 entryPrice: DEFAULT_ENTRY_PRICE,
-                feePercent: DEFAULT_FEE_PERCENT
+                feeBps: DEFAULT_FEE_PERCENT
             })
         );
     }
@@ -83,7 +83,7 @@ contract RipsTestBase is Test {
                 entryCap: DEFAULT_ENTRY_CAP,
                 duration: DEFAULT_DURATION,
                 entryPrice: DEFAULT_ENTRY_PRICE,
-                feePercent: DEFAULT_FEE_PERCENT
+                feeBps: DEFAULT_FEE_PERCENT
             })
         );
     }

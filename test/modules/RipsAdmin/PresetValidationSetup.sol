@@ -18,7 +18,7 @@ contract PresetValidationSetup is RipsTestBase {
             entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
             entryPrice: DEFAULT_ENTRY_PRICE,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -36,7 +36,7 @@ contract PresetValidationSetup is RipsTestBase {
             entryCap: 3,
             duration: DEFAULT_DURATION,
             entryPrice: DEFAULT_ENTRY_PRICE,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -47,7 +47,7 @@ contract PresetValidationSetup is RipsTestBase {
             entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
             entryPrice: DEFAULT_ENTRY_PRICE,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -63,7 +63,7 @@ contract PresetValidationSetup is RipsTestBase {
             entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
             entryPrice: DEFAULT_ENTRY_PRICE,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -81,7 +81,7 @@ contract PresetValidationSetup is RipsTestBase {
             entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
             entryPrice: DEFAULT_ENTRY_PRICE,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -101,7 +101,7 @@ contract PresetValidationSetup is RipsTestBase {
             entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
             entryPrice: DEFAULT_ENTRY_PRICE,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 
@@ -114,13 +114,13 @@ contract PresetValidationSetup is RipsTestBase {
             entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
             entryPrice: DEFAULT_ENTRY_PRICE,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 
     function configWithFeeTooHigh() internal pure returns (IRips.Config memory config) {
         config = validConfig();
-        config.feePercent = uint16(10001);
+        config.feeBps = uint16(10001);
     }
 
     function configWithTiersNotSortedByPayoutCount() internal pure returns (IRips.Config memory) {
@@ -142,7 +142,7 @@ contract PresetValidationSetup is RipsTestBase {
             entryCap: DEFAULT_ENTRY_CAP,
             duration: DEFAULT_DURATION,
             entryPrice: DEFAULT_ENTRY_PRICE,
-            feePercent: DEFAULT_FEE_PERCENT
+            feeBps: DEFAULT_FEE_PERCENT
         });
     }
 }

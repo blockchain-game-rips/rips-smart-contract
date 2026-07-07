@@ -38,8 +38,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
     function _setTiers() internal {
         IRips.ReferralTier[] memory tiers = new IRips.ReferralTier[](2);
-        tiers[0] = IRips.ReferralTier({minVolume: TIER_LOW_MIN_VOLUME, feePercent: TIER_LOW_FEE});
-        tiers[1] = IRips.ReferralTier({minVolume: TIER_HIGH_MIN_VOLUME, feePercent: TIER_HIGH_FEE});
+        tiers[0] = IRips.ReferralTier({minVolume: TIER_LOW_MIN_VOLUME, feeBps: TIER_LOW_FEE});
+        tiers[1] = IRips.ReferralTier({minVolume: TIER_HIGH_MIN_VOLUME, feeBps: TIER_HIGH_FEE});
 
         vm.prank(owner);
         rips.setReferralTiers(CURRENCY, tiers);
@@ -75,7 +75,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         _advanceToNextPeriod();
 
-        // custom fee is set — activeFeePercent is still resolved from tiers but ignored for fee calc
+        // custom fee is set — activeFeeBps is still resolved from tiers but ignored for fee calc
         _setCustomFee(referrer, CUSTOM_FEE);
 
         uint256 expectedFee = (PROTOCOL_FEE * CUSTOM_FEE) / rips.FEE_BASE();
@@ -85,7 +85,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: TIER_HIGH_FEE,
+                activeFeeBps: TIER_HIGH_FEE,
                 periodStartTimestamp: 2 * periodStart,
                 periodVolume: ENTRY_REVENUE
             })
@@ -98,7 +98,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(stats.periodVolume, ENTRY_REVENUE);
-        assertEq(stats.activeFeePercent, TIER_HIGH_FEE);
+        assertEq(stats.activeFeeBps, TIER_HIGH_FEE);
         assertEq(rips.referrerCustomFee(referrer), CUSTOM_FEE);
     }
 
@@ -117,9 +117,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0,
-                periodStartTimestamp: 2 * periodStart,
-                periodVolume: ENTRY_REVENUE
+                activeFeeBps: 0, periodStartTimestamp: 2 * periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
@@ -168,7 +166,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0, periodStartTimestamp: periodStart, periodVolume: ENTRY_REVENUE
+                activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
@@ -179,7 +177,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(stats.periodVolume, ENTRY_REVENUE);
-        assertEq(stats.activeFeePercent, 0);
+        assertEq(stats.activeFeeBps, 0);
     }
 
     function test_WhenDefaultFeeIsSetAndReferrerHasNoPriorActivity() external {
@@ -195,7 +193,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0, periodStartTimestamp: periodStart, periodVolume: ENTRY_REVENUE
+                activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
@@ -206,7 +204,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(stats.periodVolume, ENTRY_REVENUE);
-        assertEq(stats.activeFeePercent, 0);
+        assertEq(stats.activeFeeBps, 0);
     }
 
     function test_WhenReferrerCurrentPeriodVolumeCrossesATierThreshold() external {
@@ -226,9 +224,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0,
-                periodStartTimestamp: periodStart,
-                periodVolume: volumeAboveTier
+                activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: volumeAboveTier
             })
         );
 
@@ -240,7 +236,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(stats.periodVolume, volumeAboveTier);
         // active fee is not updated mid-period; tier is only applied next period
-        assertEq(stats.activeFeePercent, 0);
+        assertEq(stats.activeFeeBps, 0);
     }
 
     function test_WhenReferrersPreviousPeriodVolumeReachedATierThreshold() external {
@@ -264,7 +260,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: TIER_HIGH_FEE,
+                activeFeeBps: TIER_HIGH_FEE,
                 periodStartTimestamp: 2 * periodStart,
                 periodVolume: ENTRY_REVENUE
             })
@@ -276,7 +272,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(fee, expectedFee);
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(stats.activeFeePercent, TIER_HIGH_FEE);
+        assertEq(stats.activeFeeBps, TIER_HIGH_FEE);
     }
 
     function test_WhenActiveFeePercentIsBelowDefaultFeePercent() external {
@@ -302,7 +298,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: TIER_LOW_FEE,
+                activeFeeBps: TIER_LOW_FEE,
                 periodStartTimestamp: 2 * periodStart,
                 periodVolume: ENTRY_REVENUE
             })
@@ -331,7 +327,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         IRips.ReferrerState memory statsAfterPeriod2 =
             rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(statsAfterPeriod2.activeFeePercent, TIER_LOW_FEE);
+        assertEq(statsAfterPeriod2.activeFeeBps, TIER_LOW_FEE);
         assertEq(statsAfterPeriod2.periodVolume, volumeAboveTier);
 
         _advanceToNextPeriod();
@@ -342,7 +338,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: TIER_LOW_FEE,
+                activeFeeBps: TIER_LOW_FEE,
                 periodStartTimestamp: 3 * periodStart,
                 periodVolume: ENTRY_REVENUE
             })
@@ -352,7 +348,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
         IRips.ReferrerState memory statsAfterPeriod3 =
             rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(statsAfterPeriod3.activeFeePercent, TIER_LOW_FEE);
+        assertEq(statsAfterPeriod3.activeFeeBps, TIER_LOW_FEE);
         assertEq(statsAfterPeriod3.periodVolume, ENTRY_REVENUE);
     }
 
@@ -381,16 +377,14 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0,
-                periodStartTimestamp: 4 * periodStart,
-                periodVolume: ENTRY_REVENUE
+                activeFeeBps: 0, periodStartTimestamp: 4 * periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
         rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
         IRips.ReferrerState memory stats = rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(stats.activeFeePercent, 0);
+        assertEq(stats.activeFeeBps, 0);
         assertEq(stats.periodVolume, ENTRY_REVENUE);
         assertEq(stats.periodStartTimestamp, 4 * periodStart);
     }
@@ -418,7 +412,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: TIER_HIGH_FEE,
+                activeFeeBps: TIER_HIGH_FEE,
                 periodStartTimestamp: 2 * periodStart,
                 periodVolume: ENTRY_REVENUE
             })
@@ -429,7 +423,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(feeA, (PROTOCOL_FEE * TIER_HIGH_FEE) / rips.FEE_BASE());
 
         IRips.ReferrerState memory statsA = rips.exposed_referrerStats(referrer, CURRENCY);
-        assertEq(statsA.activeFeePercent, TIER_HIGH_FEE);
+        assertEq(statsA.activeFeeBps, TIER_HIGH_FEE);
 
         // referrer B: still in their first period — no previous period volume yet, default fee applies
         // B's period started at block.timestamp when they first appeared (2 * periodStart + 1)
@@ -439,7 +433,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrerB,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeePercent: 0,
+                activeFeeBps: 0,
                 periodStartTimestamp: referrerBPeriodStart,
                 periodVolume: volumeAboveHighTier + ENTRY_REVENUE
             })
@@ -450,7 +444,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         assertEq(feeB, (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE());
 
         IRips.ReferrerState memory statsB = rips.exposed_referrerStats(referrerB, CURRENCY);
-        assertEq(statsB.activeFeePercent, 0);
+        assertEq(statsB.activeFeeBps, 0);
     }
 
     function test_WhenTwoCurrenciesHaveIndependentVolumeTracking() external {
@@ -462,10 +456,10 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         address currencyB = makeAddr("currencyB");
 
         IRips.ReferralTier[] memory tiersA = new IRips.ReferralTier[](1);
-        tiersA[0] = IRips.ReferralTier({minVolume: TIER_HIGH_MIN_VOLUME, feePercent: TIER_HIGH_FEE});
+        tiersA[0] = IRips.ReferralTier({minVolume: TIER_HIGH_MIN_VOLUME, feeBps: TIER_HIGH_FEE});
 
         IRips.ReferralTier[] memory tiersB = new IRips.ReferralTier[](1);
-        tiersB[0] = IRips.ReferralTier({minVolume: TIER_LOW_MIN_VOLUME, feePercent: TIER_LOW_FEE});
+        tiersB[0] = IRips.ReferralTier({minVolume: TIER_LOW_MIN_VOLUME, feeBps: TIER_LOW_FEE});
 
         vm.startPrank(owner);
         rips.setReferralTiers(currencyA, tiersA);
@@ -491,7 +485,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         IRips.ReferrerState memory statsA = rips.exposed_referrerStats(referrer, currencyA);
         IRips.ReferrerState memory statsB = rips.exposed_referrerStats(referrer, currencyB);
 
-        assertEq(statsA.activeFeePercent, TIER_HIGH_FEE);
-        assertEq(statsB.activeFeePercent, 0);
+        assertEq(statsA.activeFeeBps, TIER_HIGH_FEE);
+        assertEq(statsB.activeFeeBps, 0);
     }
 }

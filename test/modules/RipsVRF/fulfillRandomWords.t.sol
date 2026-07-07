@@ -35,7 +35,7 @@ contract Rips_FulfillRandomWords is RipsTestBase {
                 entryCap: ENTRY_CAP,
                 duration: 1 days,
                 entryPrice: ENTRY_PRICE,
-                feePercent: 0
+                feeBps: 0
             })
         );
 

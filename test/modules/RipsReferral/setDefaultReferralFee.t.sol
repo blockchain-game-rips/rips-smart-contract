@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "../../RipsTestBase.sol";
 
 contract Rips_SetDefaultReferralFee is RipsTestBase {
-    event DefaultReferralFeeUpdated(uint16 newDefaultReferralFee);
+    event DefaultReferralFeeUpdated(uint16 newDefaultReferralFeeBps);
 
     function test_RevertWhen_TheCallerIsNotTheOwner() external {
         vm.prank(user);
@@ -31,6 +31,6 @@ contract Rips_SetDefaultReferralFee is RipsTestBase {
 
         rips.setDefaultReferralFee(newFee);
 
-        assertEq(rips.defaultReferralFee(), newFee);
+        assertEq(rips.defaultReferralFeeBps(), newFee);
     }
 }
