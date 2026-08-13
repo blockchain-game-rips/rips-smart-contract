@@ -123,6 +123,25 @@ contract PresetValidationSetup is RipsTestBase {
         config.feeBps = uint16(10001);
     }
 
+    function configWithZeroPayoutCountTier() internal pure returns (IRips.Config memory) {
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](2);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP),
+            minPayout: uint128(DEFAULT_ENTRY_PRICE),
+            maxPayout: uint128(DEFAULT_ENTRY_PRICE)
+        });
+        tiers[1] = IRips.PayoutTier({payoutCount: 0, minPayout: 0, maxPayout: 0});
+
+        return IRips.Config({
+            currency: address(0),
+            tiers: tiers,
+            entryCap: DEFAULT_ENTRY_CAP,
+            duration: DEFAULT_DURATION,
+            entryPrice: DEFAULT_ENTRY_PRICE,
+            feeBps: DEFAULT_FEE_PERCENT
+        });
+    }
+
     function configWithTiersNotSortedByPayoutCount() internal pure returns (IRips.Config memory) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](2);
         tiers[0] = IRips.PayoutTier({

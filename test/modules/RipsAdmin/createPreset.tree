@@ -11,6 +11,8 @@ Rips_CreatePreset
 │   └── it should revert.
 ├── when tiers are not sorted by count descending
 │   └── it should revert.
+├── when a tier has a zero payout count
+│   └── it should revert.
 ├── when total payout count does not equal entry cap
 │   └── it should revert.
 ├── when total payout pool does not equal entry cap times entry price

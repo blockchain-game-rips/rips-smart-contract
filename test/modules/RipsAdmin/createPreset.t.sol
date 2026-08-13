@@ -44,11 +44,16 @@ contract Rips_CreatePreset is PresetValidationSetup {
         rips.createPreset(configWithTiersNotSortedByPayoutCount());
     }
 
+    function test_RevertWhen_ATierHasAZeroPayoutCount() external whenTheCallerIsTheOwner {
+        vm.expectRevert(IRips.InvalidPayoutCount.selector);
+        rips.createPreset(configWithZeroPayoutCountTier());
+    }
+
     function test_RevertWhen_TotalPayoutCountDoesNotEqualEntryCap()
         external
         whenTheCallerIsTheOwner
     {
-        vm.expectRevert(IRips.PayoutCountMismatch.selector);
+        vm.expectRevert(IRips.InvalidPayoutCount.selector);
         rips.createPreset(configWithPayoutCountMismatch());
     }
 
