@@ -72,6 +72,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         for (uint256 i = 0; i < config.tiers.length; i++) {
             PayoutTier calldata tier = config.tiers[i];
 
+            if (tier.payoutCount == 0) revert InvalidPayoutCount();
             if (tier.minPayout > tier.maxPayout) revert InvalidPayoutRange();
             if (tier.payoutCount == 1 && tier.minPayout != tier.maxPayout) {
                 revert InvalidPayoutRange();
