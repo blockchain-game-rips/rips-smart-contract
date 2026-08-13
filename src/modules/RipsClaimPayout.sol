@@ -27,7 +27,7 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
         (uint64 entryCount, uint256 totalPayout) =
             _accumulateClaimedPayouts(ranges, startIndex, maxRanges, rip, config);
 
-        if (totalPayout > 0) {
+        if (entryCount > 0) {
             _distributePayout(ripId, rip, recipient, referrer, entryCount, totalPayout);
         }
     }
@@ -63,7 +63,9 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
             }
         }
 
-        _transfer(currency, recipient, payout);
+        if (payout > 0) {
+            _transfer(currency, recipient, payout);
+        }
 
         emit PayoutClaimed(ripId, recipient, referrer, entryCount, payout);
     }
