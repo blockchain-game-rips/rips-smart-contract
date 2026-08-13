@@ -28,7 +28,7 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
         uint256 nativeExcess = _receivePayment(config, toBuy, msg.sender);
 
         if (nativeExcess > 0) {
-            _sendNative(recipient, nativeExcess);
+            _sendNative(msg.sender, nativeExcess);
         }
     }
 
