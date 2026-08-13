@@ -51,6 +51,8 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         delete _referralTiers[currency];
 
         for (uint256 i = 0; i < tiers.length; i++) {
+            if (tiers[i].feeBps > FEE_BASE) revert FeeTooHigh();
+
             _referralTiers[currency].push(tiers[i]);
         }
 
