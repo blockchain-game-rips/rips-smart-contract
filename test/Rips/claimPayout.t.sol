@@ -6,8 +6,12 @@ import "../RipsTestBase.sol";
 contract Rips_ClaimPayout is RipsTestBase {
     uint256 private constant START_INDEX = 0;
     uint256 private constant MAX_RANGES = 10;
+    uint16 private constant FEE_BASE = 10_000;
     uint16 private constant FEE_PERCENT = 500;
     uint256 private constant FEE_PAYOUT_PER_ENTRY = 0.95 ether;
+
+    uint16 private constant FULL_FEE_PERCENT = FEE_BASE;
+    uint128 private constant ZERO_PAYOUT = 0;
 
     uint64 private presetId;
     uint256 private ripId;
@@ -42,7 +46,7 @@ contract Rips_ClaimPayout is RipsTestBase {
     }
 
     function _protocolFee() private pure returns (uint256) {
-        return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE * FEE_PERCENT / 10_000;
+        return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE * FEE_PERCENT / FEE_BASE;
     }
 
     function _createFeeNativePreset() private returns (uint256 feeRipId) {
@@ -72,6 +76,42 @@ contract Rips_ClaimPayout is RipsTestBase {
 
         feeRipId = rips.presetIdToCurrentRipId(feePresetId);
         uint256 vrfRequestId = rips.requestRandomness(feeRipId);
+        vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
+    }
+
+    function _zeroPayoutEntryRevenue() private pure returns (uint256) {
+        return DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE;
+    }
+
+    function _zeroPayoutProtocolFee() private pure returns (uint256) {
+        return _zeroPayoutEntryRevenue() * FULL_FEE_PERCENT / FEE_BASE;
+    }
+
+    function _createZeroPayoutPreset() private returns (uint256 zeroPayoutRipId) {
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP), minPayout: ZERO_PAYOUT, maxPayout: ZERO_PAYOUT
+        });
+
+        vm.prank(owner);
+        uint64 zeroPayoutPresetId = rips.createPreset(
+            IRips.Config({
+                currency: address(0),
+                tiers: tiers,
+                entryCap: DEFAULT_ENTRY_CAP,
+                duration: DEFAULT_DURATION,
+                entryPrice: DEFAULT_ENTRY_PRICE,
+                feeBps: FULL_FEE_PERCENT
+            })
+        );
+
+        vm.prank(user);
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
+            zeroPayoutPresetId, DEFAULT_ENTRY_CAP, user
+        );
+
+        zeroPayoutRipId = rips.presetIdToCurrentRipId(zeroPayoutPresetId);
+        uint256 vrfRequestId = rips.requestRandomness(zeroPayoutRipId);
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
 
@@ -142,6 +182,35 @@ contract Rips_ClaimPayout is RipsTestBase {
         rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
 
         assertEq(user.balance, balanceBefore + _totalPayout());
+    }
+
+    function test_WhenEveryClaimedEntryHasZeroPayout() external {
+        uint256 zeroPayoutRipId = _createZeroPayoutPreset();
+
+        uint256 userBalanceBefore = user.balance;
+
+        vm.prank(user);
+        rips.claimPayout(zeroPayoutRipId, START_INDEX, MAX_RANGES, user, referrer);
+
+        assertEq(user.balance, userBalanceBefore, "recipient should receive no payout");
+
+        assertEq(
+            rips.protocolFeeAccrued(address(0)),
+            _zeroPayoutProtocolFee(),
+            "protocol fee should be accrued for zero-payout entries"
+        );
+
+        IRips.EntryRange[] memory ranges = rips.getUserEntries(zeroPayoutRipId, user);
+        for (uint256 i = 0; i < ranges.length; i++) {
+            assertTrue(ranges[i].claimed, "ranges should be marked as claimed");
+        }
+
+        IRips.ReferrerState memory referrerState = rips.exposed_referrerStats(referrer, address(0));
+        assertEq(
+            referrerState.periodVolume,
+            _zeroPayoutEntryRevenue(),
+            "referrer period volume should be credited"
+        );
     }
 
     function test_RevertWhen_CallerIsNotTheRecipientAndHasNeitherAdminNorOperatorRole()

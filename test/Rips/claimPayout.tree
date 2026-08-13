@@ -12,6 +12,10 @@ Rips_ClaimPayout
 └── when there are unclaimed ranges
     ├── it should mark processed ranges as claimed.
     ├── it should calculate correct payouts using the affine permutation.
+    ├── when every claimed entry has zero payout
+    │   ├── it should accrue the protocol fee for those entries.
+    │   ├── it should mark the ranges as claimed.
+    │   └── it should credit the referrer period volume.
     ├── when caller has admin role and recipient is a different address
     │   └── it should transfer the payout to the recipient.
     └── when caller has operator role and recipient is a different address
