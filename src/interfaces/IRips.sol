@@ -59,7 +59,7 @@ interface IRips {
     error InvalidTierCount();
     error InvalidPayoutRange();
     error TiersNotSortedByPayoutCount();
-    error PayoutCountMismatch();
+    error InvalidPayoutCount();
     error PayoutPoolMismatch();
     error PresetNotExist();
     error ZeroEntries();
