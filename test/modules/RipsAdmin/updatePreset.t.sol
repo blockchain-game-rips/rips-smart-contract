@@ -98,7 +98,7 @@ contract Rips_UpdatePreset is PresetValidationSetup {
         whenTheCallerIsTheOwner
     {
         // it should revert.
-        vm.expectRevert(IRips.PayoutCountMismatch.selector);
+        vm.expectRevert(IRips.InvalidPayoutCount.selector);
         rips.updatePreset(presetId, configWithPayoutCountMismatch());
     }
 

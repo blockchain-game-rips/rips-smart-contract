@@ -86,7 +86,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         }
 
         if (config.feeBps > FEE_BASE) revert FeeTooHigh();
-        if (totalEntryCount != config.entryCap) revert PayoutCountMismatch();
+        if (totalEntryCount != config.entryCap) revert InvalidPayoutCount();
         uint256 totalRevenue = uint256(config.entryCap) * config.entryPrice;
         uint256 protocolFee = (totalRevenue * config.feeBps) / FEE_BASE;
         if (totalPayoutPool != totalRevenue - protocolFee) revert PayoutPoolMismatch();
