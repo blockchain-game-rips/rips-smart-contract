@@ -262,6 +262,37 @@ contract Rips_EnterRip is RipsTestBase {
         assertEq(user.balance, balanceBefore - payment + expectedRefund);
     }
 
+    function test_WhenRecipientIsDifferentFromTheCaller_WhenRequestedEntriesExceedAvailableEntries()
+        external
+        givenThePresetCurrencyIsNative
+    {
+        uint64 initialBuy = DEFAULT_ENTRY_CAP - 1;
+        vm.prank(user);
+        rips.enterRip{value: initialBuy * DEFAULT_ENTRY_PRICE}(presetId, initialBuy, user);
+
+        address recipient = makeAddr("recipient");
+
+        entriesToBuy = 3;
+        uint64 availableEntries = DEFAULT_ENTRY_CAP - initialBuy;
+        uint256 payment = entriesToBuy * DEFAULT_ENTRY_PRICE;
+        uint256 expectedSpent = availableEntries * DEFAULT_ENTRY_PRICE;
+
+        uint256 balanceBefore = user.balance;
+
+        vm.prank(user);
+        rips.enterRip{value: payment}(presetId, entriesToBuy, recipient);
+
+        IRips.Rip memory rip = rips.exposed_rip(ripId);
+        assertEq(rip.entriesSold, DEFAULT_ENTRY_CAP);
+
+        IRips.EntryRange[] memory recipientRanges = rips.getUserEntries(ripId, recipient);
+        assertEq(recipientRanges.length, 1);
+        assertEq(recipientRanges[0].count, availableEntries);
+
+        assertEq(user.balance, balanceBefore - expectedSpent);
+        assertEq(recipient.balance, 0);
+    }
+
     modifier givenThePresetCurrencyIsAnERC20Token() {
         presetId = _createDefaultERC20Preset();
         _mintAndApprove(user, 100 ether);

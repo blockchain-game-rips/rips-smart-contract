@@ -34,8 +34,10 @@ Rips_EnterRip
 │   └── when requested entries exceed available entries
 │       ├── it should purchase only the available entries.
 │       ├── it should set rip status to SoldOut.
-│       ├── it should refund excess ETH to the caller. TODO: fix test - to recipient
-│       └── it should emit a {RipEntered} event.
+│       ├── it should refund excess ETH to the caller.
+│       ├── it should emit a {RipEntered} event.
+│       └── when recipient is different from the caller
+│           └── it should refund excess ETH to the payer, not the recipient.
 └── given the preset currency is an ERC20 token
     ├── when ETH is sent
     │   └── it should revert.
