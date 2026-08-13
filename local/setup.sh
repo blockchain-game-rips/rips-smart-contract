@@ -44,9 +44,22 @@ VRF_COORDINATOR="$COORDINATOR_ADDRESS" VRF_SUBSCRIPTION_ID="$SUBSCRIPTION_ID" \
 RIPS_BROADCAST="$REPO_DIR/broadcast/DeployRips.s.sol/$CHAIN_ID/run-latest.json"
 RIPS_ADDRESS=$(jq -r '.transactions[] | select(.transactionType == "CREATE") | .contractAddress' "$RIPS_BROADCAST" | head -1)
 
+echo "Deploying conduit..."
+RIPS="$RIPS_ADDRESS" \
+    forge script script/DeployConduit.s.sol:DeployConduit \
+    --rpc-url "$RPC_URL" \
+    --broadcast \
+    --sender "$DEPLOYER_ADDRESS" \
+    --private-key "$DEPLOYER_PRIVATE_KEY" \
+    2>&1 | tail -5
+
+CONDUIT_BROADCAST="$REPO_DIR/broadcast/DeployConduit.s.sol/$CHAIN_ID/run-latest.json"
+CONDUIT_ADDRESS=$(jq -r '.transactions[] | select(.transactionType == "CREATE") | .contractAddress' "$CONDUIT_BROADCAST" | head -1)
+
 cat >"$STATE_DIR/deployments.json" <<EOF
 {
   "rips": "$RIPS_ADDRESS",
+  "conduit": "$CONDUIT_ADDRESS",
   "vrfCoordinator": "$COORDINATOR_ADDRESS",
   "subscriptionId": "$SUBSCRIPTION_ID"
 }
@@ -54,6 +67,7 @@ EOF
 
 echo "Done."
 echo "  rips:           $RIPS_ADDRESS"
+echo "  conduit:        $CONDUIT_ADDRESS"
 echo "  vrfCoordinator: $COORDINATOR_ADDRESS"
 echo "  subscriptionId: $SUBSCRIPTION_ID"
 echo "  state:          $STATE_DIR/"
