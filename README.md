@@ -48,6 +48,14 @@ Output: `local/state/deployments.json` with `rips`, `vrfCoordinator`, and `subsc
 
 Known to the team and accepted. Not valid audit findings. `DEFAULT_ADMIN_ROLE` and `OPERATOR_ROLE` are trusted to act honestly and stay available.
 
+### A claimer can pass their own address as the referrer
+
+`claimPayout` takes `referrer` as a free argument, and `_collectReferrerFee` only rejects the zero address. Anyone claiming for themselves can therefore name themselves as the referrer and take back the referral share of the protocol fee on their own entries, and credit their own `periodVolume` toward a higher referral tier. Nobody else's payout or fee is touched — the loss is limited to part of the fee that claimer paid. `OPERATOR_ROLE` can claim on any user's behalf and pick the referrer independently, so it can direct the referral share of every claim to an address of its choosing; that role is trusted.
+
+There is nothing to recover, because no funds are ever stuck or taken from another account. Once an abusing address is spotted, an admin calls `setReferrerFrozen` to block its `withdrawReferrerFee`, then `seizeReferrerFee` to move the accrued balance to `feeRecipient`. Both act on one address at a time, so someone who keeps switching addresses keeps earning until each new one is caught — they are a response to abuse, not a guard on the referral system.
+
+We accept this rather than fix it. Whoever claims decides who gets the referral credit, and that is the intended behaviour — the user chooses whether to use a referrer at all. Rejecting `referrer == recipient` would not close it either: the same person just claims from one address and names a second one they control. A trusted-referrer list has the same hole, since a user can register themselves. In practice entries come through our own frontends, which pass the correct referrer; a user who builds the transaction by hand only reduces the fee they themselves paid.
+
 ### Sold-out rip is stuck if `requestRandomness` reverts
 
 When `requestRandomness` reverts inside Chainlink — a drained subscription, a de-registered consumer, a failing coordinator — a sold-out rip can neither draw a winner nor become refundable, and its funds stay locked. Only an admin can resolve this; users cannot recover on their own.
