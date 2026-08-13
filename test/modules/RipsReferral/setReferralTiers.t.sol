@@ -62,6 +62,14 @@ contract Rips_SetReferralTiers is RipsTestBase {
         rips.setReferralTiers(CURRENCY, tiers);
     }
 
+    function test_RevertWhen_ATierFeeBpsExceedsFeeBase() external whenTheCallerIsTheOwner {
+        IRips.ReferralTier[] memory tiers = new IRips.ReferralTier[](1);
+        tiers[0] = IRips.ReferralTier({minVolume: 1 ether, feeBps: uint16(rips.FEE_BASE()) + 1});
+
+        vm.expectRevert(IRips.FeeTooHigh.selector);
+        rips.setReferralTiers(CURRENCY, tiers);
+    }
+
     function test_WhenTiersAreValid() external whenTheCallerIsTheOwner {
         IRips.ReferralTier[] memory tiers = _validTiers();
 

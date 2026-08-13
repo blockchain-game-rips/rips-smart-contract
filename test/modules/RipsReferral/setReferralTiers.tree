@@ -8,6 +8,8 @@ Rips_SetReferralTiers
     │   └── it should revert.
     ├── when tiers have duplicate minVolume values
     │   └── it should revert.
+    ├── when a tier feeBps exceeds FEE_BASE
+    │   └── it should revert.
     ├── when tiers are valid
     │   ├── it should replace any previously stored tiers for that currency.
     │   └── it should emit a {ReferralTiersUpdated} event with the currency.
