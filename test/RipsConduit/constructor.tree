@@ -1,0 +1,10 @@
+RipsConduit_Constructor
+├── when the address does not claim the rips interface
+│   ├── given the address is the zero address
+│   │   └── it should revert.
+│   ├── given the address has no code
+│   │   └── it should revert.
+│   └── given the address is an unrelated contract
+│       └── it should revert.
+└── when the address claims the rips interface
+    └── it should store the rips address.

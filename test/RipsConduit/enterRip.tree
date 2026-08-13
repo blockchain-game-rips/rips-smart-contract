@@ -1,0 +1,12 @@
+RipsConduit_EnterRip
+├── when the payment covers every requested entry
+│   ├── it should credit the entries to the recipient.
+│   └── it should leave no balance in the conduit.
+├── when requested entries exceed available entries
+│   ├── it should purchase only the available entries for the recipient.
+│   ├── it should forward the excess to the recipient.
+│   └── it should emit an {ExcessForwarded} event.
+├── when the conduit holds a stranded balance
+│   └── it should forward the stranded balance along with the excess.
+└── when the recipient rejects native currency
+    └── it should revert.
