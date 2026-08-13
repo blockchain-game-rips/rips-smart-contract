@@ -38,6 +38,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         vrfSubscriptionId = vrfSubscriptionId_;
         vrfKeyHash = vrfKeyHash_;
         callbackGasLimit = callbackGasLimit_;
+        // Base coordinator accepts 0; other chains may require a nonzero minimum.
         vrfRequestConfirmations = 0;
         _grantRole(VRF_COORDINATOR_ROLE, vrfCoordinator_);
     }
