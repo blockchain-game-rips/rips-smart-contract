@@ -6,7 +6,7 @@ import {RipsUtils} from "../common/RipsUtils.sol";
 abstract contract RipsRefund is RipsUtils {
     mapping(uint256 ripId => mapping(address user => bool refunded)) public hasRefunded;
 
-    function refund(uint256 ripId, address recipient) external {
+    function refund(uint256 ripId, address recipient) external nonReentrant {
         if (recipient == address(0)) revert ZeroAddress();
 
         Rip storage rip = ripIdToRip[ripId];

@@ -15,6 +15,7 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
         external
         payable
         whenNotPaused
+        nonReentrant
     {
         if (recipient == address(0)) revert ZeroAddress();
         if (entryCount == 0) revert ZeroEntries();

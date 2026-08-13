@@ -8,7 +8,6 @@ import {RipsVrf} from "./modules/RipsVRF.sol";
 import {RipsEnterRip} from "./modules/RipsEnterRip.sol";
 import {RipsClaimPayout} from "./modules/RipsClaimPayout.sol";
 import {RipsRefund} from "./modules/RipsRefund.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract Rips is
     RipsAdmin,
@@ -17,8 +16,7 @@ contract Rips is
     RipsVrf,
     RipsEnterRip,
     RipsClaimPayout,
-    RipsRefund,
-    ReentrancyGuard
+    RipsRefund
 {
     constructor(
         address vrfCoordinator,

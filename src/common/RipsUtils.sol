@@ -5,8 +5,9 @@ import {RipsStorage} from "./RipsStorage.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-abstract contract RipsUtils is RipsStorage, AccessControl {
+abstract contract RipsUtils is RipsStorage, AccessControl, ReentrancyGuard {
     uint256 public constant FEE_BASE = 10000;
 
     using SafeERC20 for IERC20;

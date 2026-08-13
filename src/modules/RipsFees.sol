@@ -24,7 +24,7 @@ abstract contract RipsFees is RipsUtils {
         emit FeeRecipientUpdated(newRecipient);
     }
 
-    function withdrawProtocolFee(address currency) external {
+    function withdrawProtocolFee(address currency) external nonReentrant {
         if (!_isPrivileged(msg.sender)) {
             revert AccessControlUnauthorizedAccount(msg.sender, OPERATOR_ROLE);
         }
@@ -52,6 +52,7 @@ abstract contract RipsFees is RipsUtils {
     function seizeReferrerFee(address referrer, address currency)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
+        nonReentrant
     {
         if (referrer == address(0)) revert ZeroAddress();
 
@@ -65,7 +66,7 @@ abstract contract RipsFees is RipsUtils {
         emit ReferrerFeeSeized(referrer, currency, amount);
     }
 
-    function withdrawReferrerFee(address referrer, address currency) external {
+    function withdrawReferrerFee(address referrer, address currency) external nonReentrant {
         if (referrer == address(0)) revert ZeroAddress();
         if (isReferrerFrozen[referrer]) revert ReferrerFrozen();
 

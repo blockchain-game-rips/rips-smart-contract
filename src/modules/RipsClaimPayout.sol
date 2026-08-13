@@ -12,7 +12,7 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
         uint256 maxRanges,
         address recipient,
         address referrer
-    ) external {
+    ) external nonReentrant {
         if (recipient == address(0)) revert ZeroAddress();
         if (msg.sender != recipient && !_isPrivileged(msg.sender)) revert NotRecipientOrOwner();
 
