@@ -13,3 +13,4 @@ docs/
 # Local dev state
 local/state/
 
+.tmp/
