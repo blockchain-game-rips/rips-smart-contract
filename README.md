@@ -43,3 +43,15 @@ make local
 ```
 
 Output: `local/state/deployments.json` with `rips`, `vrfCoordinator`, and `subscriptionId`.
+
+## Known Issues & Accepted Risks
+
+Known to the team and accepted. Not valid audit findings. `DEFAULT_ADMIN_ROLE` and `OPERATOR_ROLE` are trusted to act honestly and stay available.
+
+### Sold-out rip is stuck if `requestRandomness` reverts
+
+When `requestRandomness` reverts inside Chainlink — a drained subscription, a de-registered consumer, a failing coordinator — a sold-out rip can neither draw a winner nor become refundable, and its funds stay locked. Only an admin can resolve this; users cannot recover on their own.
+
+Recovery is always available. `requestRandomness` is permissionless and writes no state before the external call, so once an admin corrects the cause with `updateVrfSubscriptionId`, `setCoordinator`, or `updateVrfRequestConfirmations`, anyone can call it again.
+
+We accept this rather than fix it. Nothing in the contract leads here; it takes an outright Chainlink failure. An automatic refund would mean gating `requestRandomness` behind a one-way switch, since otherwise randomness could still be fulfilled while refunds are draining — meaningful complexity in the payout path to cover a case that should never happen.
