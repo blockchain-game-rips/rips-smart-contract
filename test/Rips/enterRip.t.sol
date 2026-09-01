@@ -4,6 +4,9 @@ pragma solidity ^0.8.13;
 import "../RipsTestBase.sol";
 
 contract Rips_EnterRip is RipsTestBase {
+    // spills past one full chunk without filling a second
+    uint64 private constant REMAINDER_ENTRIES = 24;
+
     uint64 private presetId;
     uint256 private ripId;
     uint64 private entriesToBuy;
@@ -163,7 +166,7 @@ contract Rips_EnterRip is RipsTestBase {
             })
         );
 
-        entriesToBuy = 1500;
+        entriesToBuy = uint64(rips.MAX_ENTRIES_PER_CHUNK()) + REMAINDER_ENTRIES;
 
         vm.prank(user);
         rips.enterRip{value: entriesToBuy * entryPrice}(largePresetId, entriesToBuy, user);
@@ -171,8 +174,8 @@ contract Rips_EnterRip is RipsTestBase {
         uint256 largeRipId = rips.presetIdToCurrentRipId(largePresetId);
         IRips.EntryChunk[] memory chunks = rips.getUserEntries(largeRipId, user);
         assertEq(chunks.length, 2);
-        assertEq(chunks[0].count, 1000);
-        assertEq(chunks[1].count, 500);
+        assertEq(chunks[0].count, rips.MAX_ENTRIES_PER_CHUNK());
+        assertEq(chunks[1].count, REMAINDER_ENTRIES);
     }
 
     function test_WhenRequestedEntriesEqualTheRemainingCapacity()
@@ -376,7 +379,7 @@ contract Rips_EnterRip is RipsTestBase {
             })
         );
 
-        entriesToBuy = 1500;
+        entriesToBuy = uint64(rips.MAX_ENTRIES_PER_CHUNK()) + REMAINDER_ENTRIES;
 
         vm.prank(user);
         rips.enterRip(largePresetId, entriesToBuy, user);
@@ -384,8 +387,8 @@ contract Rips_EnterRip is RipsTestBase {
         uint256 largeRipId = rips.presetIdToCurrentRipId(largePresetId);
         IRips.EntryChunk[] memory chunks = rips.getUserEntries(largeRipId, user);
         assertEq(chunks.length, 2);
-        assertEq(chunks[0].count, 1000);
-        assertEq(chunks[1].count, 500);
+        assertEq(chunks[0].count, rips.MAX_ENTRIES_PER_CHUNK());
+        assertEq(chunks[1].count, REMAINDER_ENTRIES);
     }
 
     function test_WhenRequestedEntriesEqualTheRemainingCapacity_GivenERC20()

@@ -27,8 +27,10 @@ contract Rips_CreatePreset is PresetValidationSetup {
     }
 
     function test_RevertWhen_TiersExceedsMaxTierCount() external whenTheCallerIsTheOwner {
+        IRips.Config memory config = configWithTierCountExceedsMax();
+
         vm.expectRevert(IRips.InvalidTierCount.selector);
-        rips.createPreset(configWithTierCountExceedsMax());
+        rips.createPreset(config);
     }
 
     function test_RevertWhen_ATierHasMinPayoutGreaterThanMaxPayout()

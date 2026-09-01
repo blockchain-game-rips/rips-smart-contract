@@ -74,8 +74,10 @@ contract Rips_UpdatePreset is PresetValidationSetup {
 
     function test_RevertWhen_TiersExceedsMaxTierCount() external whenTheCallerIsTheOwner {
         // it should revert.
+        IRips.Config memory config = configWithTierCountExceedsMax();
+
         vm.expectRevert(IRips.InvalidTierCount.selector);
-        rips.updatePreset(presetId, configWithTierCountExceedsMax());
+        rips.updatePreset(presetId, config);
     }
 
     function test_RevertWhen_ATierHasMinPayoutGreaterThanMaxPayout()

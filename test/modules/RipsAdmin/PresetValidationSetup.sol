@@ -105,8 +105,8 @@ contract PresetValidationSetup is RipsTestBase {
         });
     }
 
-    function configWithTierCountExceedsMax() internal pure returns (IRips.Config memory) {
-        uint256 tierCount = 21;
+    function configWithTierCountExceedsMax() internal view returns (IRips.Config memory) {
+        uint256 tierCount = rips.MAX_TIER_COUNT() + 1;
 
         return IRips.Config({
             currency: address(0),
