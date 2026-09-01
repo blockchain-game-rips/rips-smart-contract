@@ -3,14 +3,19 @@ pragma solidity ^0.8.13;
 
 import "../RipsTestBase.sol";
 
-// 16-tier preset, entryCap = 1024, entryPrice = 1 ether
-// Equal 64 entries per tier, linearly increasing payouts.
-// avg_i = (2i+1)/16 ether, spread ±30%, totalPool = 1024 ether
-contract Rips_SixteenTiers is RipsTestBase {
-    uint64 private constant ENTRY_CAP = 1024;
+// The most expensive preset the protocol allows: the largest tier count, and an
+// entryCap large enough that a buyer fills many whole chunks.
+// Equal entries per tier, linearly increasing payouts:
+// tier i averages (2i+1)/TIER_COUNT ether with a +/-30% spread,
+// so the tiers together pay out exactly ENTRY_CAP ether.
+contract Rips_MaxPreset is RipsTestBase {
+    uint64 private constant ENTRY_CAP = 8192;
     uint256 private constant ENTRY_PRICE = 1 ether;
     uint256 private constant TIER_COUNT = 16;
     uint256 private constant ENTRIES_PER_TIER = ENTRY_CAP / TIER_COUNT;
+
+    // a claim of one full chunk must stay well inside a block on Base
+    uint256 private constant MAX_CLAIM_GAS_PER_CHUNK = 3_000_000;
 
     uint128 private constant MN_UNIT = 43_750_000_000_000_000;
     uint128 private constant MX_UNIT = 81_250_000_000_000_000;
@@ -22,6 +27,8 @@ contract Rips_SixteenTiers is RipsTestBase {
         super.setUp();
 
         vrfCoordinator.fundSubscription(vrfSubscriptionId, 1000 ether);
+
+        assertEq(TIER_COUNT, rips.MAX_TIER_COUNT());
 
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](TIER_COUNT);
 
@@ -61,23 +68,35 @@ contract Rips_SixteenTiers is RipsTestBase {
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
     }
 
-    function test_ClaimPayout_SixteenTiers() external {
+    function test_ClaimPayout_MaxPreset() external {
         _buyAllEntries();
         _finalizeRip();
 
         uint256 balanceBefore = user.balance;
 
-        vm.prank(user);
-        rips.claimPayout(ripId, 0, 2, user, referrer);
-
-        assertGt(user.balance, balanceBefore);
-
         IRips.EntryChunk[] memory chunks = rips.getUserEntries(ripId, user);
-        assertTrue(chunks[0].claimed);
-        assertTrue(chunks[1].claimed);
+
+        for (uint256 i = 0; i < chunks.length; i++) {
+            uint256 gasBefore = gasleft();
+
+            vm.prank(user);
+            rips.claimPayout(ripId, i, 1, user, referrer);
+
+            assertLt(gasBefore - gasleft(), MAX_CLAIM_GAS_PER_CHUNK);
+        }
+
+        // the buyer owns every entry, so the whole pool is theirs and no fee is taken,
+        // up to the per-entry rounding dust of the payout curve
+        assertApproxEqAbs(user.balance - balanceBefore, ENTRY_CAP * ENTRY_PRICE, ENTRY_CAP);
+
+        IRips.EntryChunk[] memory claimedChunks = rips.getUserEntries(ripId, user);
+
+        for (uint256 i = 0; i < claimedChunks.length; i++) {
+            assertTrue(claimedChunks[i].claimed);
+        }
     }
 
-    function test_Refund_SixteenTiers() external {
+    function test_Refund_MaxPreset() external {
         uint64 entriesToBuy = ENTRY_CAP / 2;
 
         vm.prank(user);
