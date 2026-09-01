@@ -16,8 +16,8 @@ contract Rips_GetUserEntries is RipsTestBase {
     function test_WhenTheUserHasNoEntriesInTheRip() external {
         // rip doesn't exist yet — no entries bought — empty array expected
         uint256 nextRipId = rips.exposed_nextRipId();
-        IRips.EntryRange[] memory ranges = rips.getUserEntries(nextRipId, user);
-        assertEq(ranges.length, 0);
+        IRips.EntryChunk[] memory chunks = rips.getUserEntries(nextRipId, user);
+        assertEq(chunks.length, 0);
     }
 
     function test_WhenTheUserHasEntriesInTheRip() external {
@@ -28,10 +28,10 @@ contract Rips_GetUserEntries is RipsTestBase {
         rips.enterRip{value: entryCount * DEFAULT_ENTRY_PRICE}(presetId, entryCount, user);
 
         ripId = rips.presetIdToCurrentRipId(presetId);
-        IRips.EntryRange[] memory ranges = rips.getUserEntries(ripId, user);
-        assertEq(ranges.length, 1);
-        assertEq(ranges[0].start, 0);
-        assertEq(ranges[0].count, entryCount);
-        assertFalse(ranges[0].claimed);
+        IRips.EntryChunk[] memory chunks = rips.getUserEntries(ripId, user);
+        assertEq(chunks.length, 1);
+        assertEq(chunks[0].start, 0);
+        assertEq(chunks[0].count, entryCount);
+        assertFalse(chunks[0].claimed);
     }
 }

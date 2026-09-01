@@ -23,7 +23,8 @@ abstract contract RipsStorage is IRips {
     mapping(uint64 presetId => uint256 ripId) public presetIdToCurrentRipId;
     mapping(uint64 presetId => bool deleted) public isPresetDeleted;
 
-    mapping(uint256 ripId => mapping(address buyer => EntryRange[] ranges)) internal userEntries;
+    mapping(uint256 ripId => mapping(address buyer => EntryChunk[] chunks)) internal
+        userEntryChunks;
     mapping(uint256 ripId => mapping(address buyer => uint64 entryCount)) public userEntryCount;
 
     mapping(uint256 ripId => uint256 requestTimestamp) internal _ripIdToRequestTimestamp;

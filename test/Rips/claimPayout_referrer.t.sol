@@ -5,7 +5,7 @@ import "../RipsTestBase.sol";
 
 contract Rips_ClaimPayout_Referrer is RipsTestBase {
     uint256 private constant START_INDEX = 0;
-    uint256 private constant MAX_RANGES = 10;
+    uint256 private constant MAX_CHUNKS = 10;
     uint16 private constant PROTOCOL_FEE_PERCENT = 500; // 5%
     uint256 private constant DEFAULT_REFERRAL_FEE = 300; // 3%
     uint256 private constant CUSTOM_FEE_PERCENT = 2000; // 20%
@@ -67,12 +67,12 @@ contract Rips_ClaimPayout_Referrer is RipsTestBase {
 
     function _claim() private {
         vm.prank(user);
-        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, referrer);
+        rips.claimPayout(ripId, START_INDEX, MAX_CHUNKS, user, referrer);
     }
 
     function test_GivenReferrerIsZeroAddress() external {
         vm.prank(user);
-        rips.claimPayout(ripId, START_INDEX, MAX_RANGES, user, address(0));
+        rips.claimPayout(ripId, START_INDEX, MAX_CHUNKS, user, address(0));
 
         assertEq(rips.protocolFeeAccrued(address(0)), _protocolFee());
         assertEq(rips.referrerFeeAccrued(referrer, address(0)), 0);

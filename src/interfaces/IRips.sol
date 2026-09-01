@@ -33,7 +33,7 @@ interface IRips {
         uint16 feeBps;
     }
 
-    struct EntryRange {
+    struct EntryChunk {
         uint64 start;
         uint64 count;
         bool claimed;
@@ -127,7 +127,7 @@ interface IRips {
     function claimPayout(
         uint256 ripId,
         uint256 startIndex,
-        uint256 maxRanges,
+        uint256 maxChunks,
         address recipient,
         address referrer
     ) external;
@@ -142,7 +142,10 @@ interface IRips {
 
     function requestRandomness(uint256 ripId) external returns (uint256 requestId);
 
-    function getUserEntries(uint256 ripId, address user) external view returns (EntryRange[] memory);
+    function getUserEntries(uint256 ripId, address user)
+        external
+        view
+        returns (EntryChunk[] memory);
 
     function setReferralTiers(address currency, ReferralTier[] calldata tiers) external;
 

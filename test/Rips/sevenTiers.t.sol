@@ -72,8 +72,8 @@ contract Rips_SevenTiers is RipsTestBase {
 
         assertGt(user.balance, balanceBefore);
 
-        IRips.EntryRange[] memory ranges = rips.getUserEntries(ripId, user);
-        assertTrue(ranges[0].claimed);
+        IRips.EntryChunk[] memory chunks = rips.getUserEntries(ripId, user);
+        assertTrue(chunks[0].claimed);
     }
 
     function test_Refund_SevenTiers() external {

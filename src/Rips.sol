@@ -38,8 +38,8 @@ contract Rips is
     function getUserEntries(uint256 ripId, address user)
         external
         view
-        returns (EntryRange[] memory)
+        returns (EntryChunk[] memory)
     {
-        return userEntries[ripId][user];
+        return userEntryChunks[ripId][user];
     }
 }

@@ -9,7 +9,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 abstract contract RipsEnterRip is RipsUtils, Pausable {
     using SafeERC20 for IERC20;
 
-    uint64 public constant MAX_ENTRIES_PER_RANGE = 1000;
+    uint64 public constant MAX_ENTRIES_PER_CHUNK = 1000;
 
     function enterRip(uint64 presetId, uint64 entryCount, address recipient)
         external
@@ -103,26 +103,27 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
 
         rip.entriesSold += entriesToBuy;
 
-        _storeEntryRanges(ripId, recipient, startEntry, entriesToBuy);
+        _storeEntryChunks(ripId, recipient, startEntry, entriesToBuy);
 
         emit RipEntered(ripId, recipient, entriesToBuy, startEntry);
     }
 
-    function _storeEntryRanges(uint256 ripId, address buyer, uint64 startEntry, uint64 entryCount)
+    function _storeEntryChunks(uint256 ripId, address buyer, uint64 startEntry, uint64 entryCount)
         private
     {
-        EntryRange[] storage ranges = userEntries[ripId][buyer];
+        EntryChunk[] storage chunks = userEntryChunks[ripId][buyer];
         uint64 remaining = entryCount;
         uint64 currentStart = startEntry;
 
         while (remaining > 0) {
-            uint64 rangeSize = remaining > MAX_ENTRIES_PER_RANGE ? MAX_ENTRIES_PER_RANGE : remaining;
+            uint64 chunkSize =
+                remaining > MAX_ENTRIES_PER_CHUNK ? MAX_ENTRIES_PER_CHUNK : remaining;
 
-            ranges.push(
-                EntryRange({start: uint64(currentStart), count: uint64(rangeSize), claimed: false})
+            chunks.push(
+                EntryChunk({start: uint64(currentStart), count: uint64(chunkSize), claimed: false})
             );
-            currentStart += rangeSize;
-            remaining -= rangeSize;
+            currentStart += chunkSize;
+            remaining -= chunkSize;
         }
 
         userEntryCount[ripId][buyer] += entryCount;

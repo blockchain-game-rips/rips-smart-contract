@@ -112,10 +112,10 @@ contract Rips_EnterRip is RipsTestBase {
         IRips.Rip memory rip = rips.exposed_rip(ripId);
         assertEq(rip.entriesSold, entriesToBuy);
 
-        IRips.EntryRange[] memory ranges = rips.getUserEntries(ripId, user);
-        assertEq(ranges.length, 1);
-        assertEq(ranges[0].start, 0);
-        assertEq(ranges[0].count, entriesToBuy);
+        IRips.EntryChunk[] memory chunks = rips.getUserEntries(ripId, user);
+        assertEq(chunks.length, 1);
+        assertEq(chunks[0].start, 0);
+        assertEq(chunks[0].count, entriesToBuy);
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller()
@@ -128,15 +128,15 @@ contract Rips_EnterRip is RipsTestBase {
         vm.prank(user);
         rips.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(presetId, entriesToBuy, recipient);
 
-        IRips.EntryRange[] memory recipientRanges = rips.getUserEntries(ripId, recipient);
-        assertEq(recipientRanges.length, 1);
-        assertEq(recipientRanges[0].count, entriesToBuy);
+        IRips.EntryChunk[] memory recipientChunks = rips.getUserEntries(ripId, recipient);
+        assertEq(recipientChunks.length, 1);
+        assertEq(recipientChunks[0].count, entriesToBuy);
 
-        IRips.EntryRange[] memory callerRanges = rips.getUserEntries(ripId, user);
-        assertEq(callerRanges.length, 0);
+        IRips.EntryChunk[] memory callerChunks = rips.getUserEntries(ripId, user);
+        assertEq(callerChunks.length, 0);
     }
 
-    function test_WhenEntryCountExceedsMAX_ENTRIES_PER_RANGE()
+    function test_WhenEntryCountExceedsMAX_ENTRIES_PER_CHUNK()
         external
         givenThePresetCurrencyIsNative
         whenRequestedEntriesAreFewerThanAvailable
@@ -169,10 +169,10 @@ contract Rips_EnterRip is RipsTestBase {
         rips.enterRip{value: entriesToBuy * entryPrice}(largePresetId, entriesToBuy, user);
 
         uint256 largeRipId = rips.presetIdToCurrentRipId(largePresetId);
-        IRips.EntryRange[] memory ranges = rips.getUserEntries(largeRipId, user);
-        assertEq(ranges.length, 2);
-        assertEq(ranges[0].count, 1000);
-        assertEq(ranges[1].count, 500);
+        IRips.EntryChunk[] memory chunks = rips.getUserEntries(largeRipId, user);
+        assertEq(chunks.length, 2);
+        assertEq(chunks[0].count, 1000);
+        assertEq(chunks[1].count, 500);
     }
 
     function test_WhenRequestedEntriesEqualTheRemainingCapacity()
@@ -285,9 +285,9 @@ contract Rips_EnterRip is RipsTestBase {
         IRips.Rip memory rip = rips.exposed_rip(ripId);
         assertEq(rip.entriesSold, DEFAULT_ENTRY_CAP);
 
-        IRips.EntryRange[] memory recipientRanges = rips.getUserEntries(ripId, recipient);
-        assertEq(recipientRanges.length, 1);
-        assertEq(recipientRanges[0].count, availableEntries);
+        IRips.EntryChunk[] memory recipientChunks = rips.getUserEntries(ripId, recipient);
+        assertEq(recipientChunks.length, 1);
+        assertEq(recipientChunks[0].count, availableEntries);
 
         assertEq(user.balance, balanceBefore - expectedSpent);
         assertEq(recipient.balance, 0);
@@ -326,9 +326,9 @@ contract Rips_EnterRip is RipsTestBase {
         IRips.Rip memory rip = rips.exposed_rip(ripId);
         assertEq(rip.entriesSold, entriesToBuy);
 
-        IRips.EntryRange[] memory ranges = rips.getUserEntries(ripId, user);
-        assertEq(ranges.length, 1);
-        assertEq(ranges[0].count, entriesToBuy);
+        IRips.EntryChunk[] memory chunks = rips.getUserEntries(ripId, user);
+        assertEq(chunks.length, 1);
+        assertEq(chunks[0].count, entriesToBuy);
     }
 
     function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20()
@@ -341,15 +341,15 @@ contract Rips_EnterRip is RipsTestBase {
         vm.prank(user);
         rips.enterRip(presetId, entriesToBuy, recipient);
 
-        IRips.EntryRange[] memory recipientRanges = rips.getUserEntries(ripId, recipient);
-        assertEq(recipientRanges.length, 1);
-        assertEq(recipientRanges[0].count, entriesToBuy);
+        IRips.EntryChunk[] memory recipientChunks = rips.getUserEntries(ripId, recipient);
+        assertEq(recipientChunks.length, 1);
+        assertEq(recipientChunks[0].count, entriesToBuy);
 
-        IRips.EntryRange[] memory callerRanges = rips.getUserEntries(ripId, user);
-        assertEq(callerRanges.length, 0);
+        IRips.EntryChunk[] memory callerChunks = rips.getUserEntries(ripId, user);
+        assertEq(callerChunks.length, 0);
     }
 
-    function test_WhenEntryCountExceedsMAX_ENTRIES_PER_RANGE_GivenERC20()
+    function test_WhenEntryCountExceedsMAX_ENTRIES_PER_CHUNK_GivenERC20()
         external
         givenThePresetCurrencyIsAnERC20Token
         whenRequestedEntriesAreFewerThanAvailable
@@ -382,10 +382,10 @@ contract Rips_EnterRip is RipsTestBase {
         rips.enterRip(largePresetId, entriesToBuy, user);
 
         uint256 largeRipId = rips.presetIdToCurrentRipId(largePresetId);
-        IRips.EntryRange[] memory ranges = rips.getUserEntries(largeRipId, user);
-        assertEq(ranges.length, 2);
-        assertEq(ranges[0].count, 1000);
-        assertEq(ranges[1].count, 500);
+        IRips.EntryChunk[] memory chunks = rips.getUserEntries(largeRipId, user);
+        assertEq(chunks.length, 2);
+        assertEq(chunks[0].count, 1000);
+        assertEq(chunks[1].count, 500);
     }
 
     function test_WhenRequestedEntriesEqualTheRemainingCapacity_GivenERC20()

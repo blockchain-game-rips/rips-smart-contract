@@ -9,7 +9,7 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
     function claimPayout(
         uint256 ripId,
         uint256 startIndex,
-        uint256 maxRanges,
+        uint256 maxChunks,
         address recipient,
         address referrer
     ) external nonReentrant {
@@ -19,13 +19,13 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
         Rip storage rip = ripIdToRip[ripId];
         if (rip.vrfRequestStatus != VrfRequestStatus.Fulfilled) revert RipNotFulfilled();
 
-        EntryRange[] storage ranges = userEntries[ripId][recipient];
-        if (startIndex >= ranges.length) revert InvalidStartIndex();
+        EntryChunk[] storage chunks = userEntryChunks[ripId][recipient];
+        if (startIndex >= chunks.length) revert InvalidStartIndex();
 
         Config storage config = configIdToConfig[rip.configId];
 
         (uint64 entryCount, uint256 totalPayout) =
-            _accumulateClaimedPayouts(ranges, startIndex, maxRanges, rip, config);
+            _accumulateClaimedPayouts(chunks, startIndex, maxChunks, rip, config);
 
         if (entryCount > 0) {
             _distributePayout(ripId, rip, recipient, referrer, entryCount, totalPayout);
@@ -71,9 +71,9 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
     }
 
     function _accumulateClaimedPayouts(
-        EntryRange[] storage ranges,
+        EntryChunk[] storage chunks,
         uint256 startIndex,
-        uint256 maxRanges,
+        uint256 maxChunks,
         Rip storage rip,
         Config storage config
     ) private returns (uint64 entryCount, uint256 totalPayout) {
@@ -83,25 +83,25 @@ abstract contract RipsClaimPayout is RipsUtils, RipsReferral {
         PayoutTier[] memory tiers = config.tiers;
         uint64[] memory bounds = configIdToTierBoundaries[rip.configId];
 
-        uint256 available = ranges.length - startIndex;
-        uint256 rangesToProcess = maxRanges > available ? available : maxRanges;
-        uint256 endIndex = startIndex + rangesToProcess;
+        uint256 available = chunks.length - startIndex;
+        uint256 chunksToProcess = maxChunks > available ? available : maxChunks;
+        uint256 endIndex = startIndex + chunksToProcess;
 
         for (uint256 i = startIndex; i < endIndex; i++) {
-            if (ranges[i].claimed) continue;
+            if (chunks[i].claimed) continue;
 
-            uint256 rangeStart = ranges[i].start;
-            uint64 count = ranges[i].count;
+            uint256 chunkStart = chunks[i].start;
+            uint64 count = chunks[i].count;
 
             for (uint256 j = 0; j < count; j++) {
                 totalPayout += RipsMath.calculateEntryPayout(
-                    rangeStart + j + 1, a, b, n, tiers, bounds
+                    chunkStart + j + 1, a, b, n, tiers, bounds
                 );
             }
 
             entryCount += count;
 
-            ranges[i].claimed = true;
+            chunks[i].claimed = true;
         }
     }
 }

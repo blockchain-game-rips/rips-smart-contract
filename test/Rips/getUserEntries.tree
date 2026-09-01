@@ -2,4 +2,4 @@ Rips_GetUserEntries
 ├── when the user has no entries in the rip
 │   └── it should return an empty array.
 └── when the user has entries in the rip
-    └── it should return the entry ranges for the user.
+    └── it should return the entry chunks for the user.

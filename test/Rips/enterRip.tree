@@ -17,12 +17,12 @@ Rips_EnterRip
 │   │   └── it should revert.
 │   ├── when requested entries are fewer than available
 │   │   ├── it should update entries sold count.
-│   │   ├── it should store entry ranges for the recipient.
+│   │   ├── it should store entry chunks for the recipient.
 │   │   ├── it should emit a {RipEntered} event.
 │   │   ├── when recipient is different from the caller
-│   │   │   └── it should store entry ranges for the recipient, not the caller.
-│   │   └── when entry count exceeds MAX_ENTRIES_PER_RANGE
-│   │       └── it should split into multiple entry ranges.
+│   │   │   └── it should store entry chunks for the recipient, not the caller.
+│   │   └── when entry count exceeds MAX_ENTRIES_PER_CHUNK
+│   │       └── it should split into multiple entry chunks.
 │   ├── when requested entries equal the remaining capacity
 │   │   ├── it should purchase all requested entries.
 │   │   ├── it should set rip status to SoldOut.
@@ -44,12 +44,12 @@ Rips_EnterRip
     ├── when requested entries are fewer than available
     │   ├── it should pull exactly toBuy * entryPrice tokens from the caller.
     │   ├── it should update entries sold count.
-    │   ├── it should store entry ranges for the recipient.
+    │   ├── it should store entry chunks for the recipient.
     │   ├── it should emit a {RipEntered} event.
     │   ├── when recipient is different from the caller
-    │   │   └── it should store entry ranges for the recipient, not the caller.
-    │   └── when entry count exceeds MAX_ENTRIES_PER_RANGE
-    │       └── it should split into multiple entry ranges.
+    │   │   └── it should store entry chunks for the recipient, not the caller.
+    │   └── when entry count exceeds MAX_ENTRIES_PER_CHUNK
+    │       └── it should split into multiple entry chunks.
     ├── when requested entries equal the remaining capacity
     │   ├── it should purchase all requested entries.
     │   ├── it should pull exactly entryCap * entryPrice tokens from the caller.
