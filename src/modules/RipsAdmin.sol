@@ -7,7 +7,9 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {RipsUtils} from "../common/RipsUtils.sol";
 
 abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
-    uint256 public constant MAX_TIER_COUNT = 20;
+    // more tiers than any preset needs, and the other half of the claim gas budget
+    // described on MAX_ENTRIES_PER_CHUNK
+    uint256 public constant MAX_TIER_COUNT = 16;
 
     function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();

@@ -9,7 +9,9 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 abstract contract RipsEnterRip is RipsUtils, Pausable {
     using SafeERC20 for IERC20;
 
-    uint64 public constant MAX_ENTRIES_PER_CHUNK = 1000;
+    // a chunk claims atomically, and that claim costs entries x tiers, so this cap
+    // and MAX_TIER_COUNT are chosen as a pair; test/Rips/maxPreset.t.sol holds the budget
+    uint64 public constant MAX_ENTRIES_PER_CHUNK = 128;
 
     function enterRip(uint64 presetId, uint64 entryCount, address recipient)
         external
