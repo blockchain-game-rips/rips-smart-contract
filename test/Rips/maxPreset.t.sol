@@ -17,6 +17,9 @@ contract Rips_MaxPreset is RipsTestBase {
     // a claim of one full chunk must stay well inside a block on Base
     uint256 private constant MAX_CLAIM_GAS_PER_CHUNK = 3_000_000;
 
+    // leaves plenty of chunks behind, so the second claim can overshoot the remainder
+    uint256 private constant FIRST_CLAIM_CHUNKS = 3;
+
     uint128 private constant MN_UNIT = 43_750_000_000_000_000;
     uint128 private constant MX_UNIT = 81_250_000_000_000_000;
 
@@ -80,7 +83,7 @@ contract Rips_MaxPreset is RipsTestBase {
             uint256 gasBefore = gasleft();
 
             vm.prank(user);
-            rips.claimPayout(ripId, i, 1, user, referrer);
+            rips.claimPayout(ripId, 1, user, referrer);
 
             assertLt(gasBefore - gasleft(), MAX_CLAIM_GAS_PER_CHUNK);
         }
@@ -89,11 +92,34 @@ contract Rips_MaxPreset is RipsTestBase {
         // up to the per-entry rounding dust of the payout curve
         assertApproxEqAbs(user.balance - balanceBefore, ENTRY_CAP * ENTRY_PRICE, ENTRY_CAP);
 
-        IRips.EntryChunk[] memory claimedChunks = rips.getUserEntries(ripId, user);
+        assertEq(rips.nextClaimChunkIndex(ripId, user), chunks.length);
+    }
 
-        for (uint256 i = 0; i < claimedChunks.length; i++) {
-            assertTrue(claimedChunks[i].claimed);
-        }
+    function test_ClaimPayout_MaxChunksBeyondTheRemainingChunks() external {
+        _buyAllEntries();
+        _finalizeRip();
+
+        uint256 balanceBefore = user.balance;
+
+        IRips.EntryChunk[] memory chunks = rips.getUserEntries(ripId, user);
+
+        vm.prank(user);
+        rips.claimPayout(ripId, FIRST_CLAIM_CHUNKS, user, referrer);
+
+        assertEq(rips.nextClaimChunkIndex(ripId, user), FIRST_CLAIM_CHUNKS);
+
+        // asking for more than is left must stop at the end of the array, not overshoot
+        vm.prank(user);
+        rips.claimPayout(ripId, chunks.length * 2, user, referrer);
+
+        assertEq(rips.nextClaimChunkIndex(ripId, user), chunks.length);
+
+        // the two calls together still pay the whole pool exactly once
+        assertApproxEqAbs(user.balance - balanceBefore, ENTRY_CAP * ENTRY_PRICE, ENTRY_CAP);
+
+        vm.prank(user);
+        vm.expectRevert(IRips.NothingToClaim.selector);
+        rips.claimPayout(ripId, chunks.length, user, referrer);
     }
 
     function test_Refund_MaxPreset() external {

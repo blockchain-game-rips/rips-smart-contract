@@ -5,21 +5,23 @@ Rips_ClaimPayout
 │   └── it should revert.
 ├── when caller is not the recipient and has neither admin nor operator role
 │   └── it should revert.
-├── when start index is out of bounds
+├── when the recipient has no entries
 │   └── it should revert.
-├── when all chunks in scope are already claimed
-│   └── it should not transfer any funds.
+├── when max chunks is zero
+│   └── it should revert.
+├── when every chunk is already claimed
+│   └── it should revert.
 └── when there are unclaimed chunks
-    ├── it should mark processed chunks as claimed.
+    ├── it should advance the cursor past every chunk.
     ├── it should calculate correct payouts using the affine permutation.
     ├── when every claimed entry has zero payout
     │   ├── it should accrue the protocol fee for those entries.
-    │   ├── it should mark the chunks as claimed.
+    │   ├── it should advance the cursor past every chunk.
     │   └── it should credit the referrer period volume.
     ├── when caller has admin role and recipient is a different address
     │   └── it should transfer the payout to the recipient.
-    └── when caller has operator role and recipient is a different address
-        └── it should transfer the payout to the recipient.
+    ├── when caller has operator role and recipient is a different address
+    │   └── it should transfer the payout to the recipient.
     ├── given the preset currency is native
     │   ├── when protocol fee is zero
     │   │   ├── it should transfer the full ETH payout to the recipient.

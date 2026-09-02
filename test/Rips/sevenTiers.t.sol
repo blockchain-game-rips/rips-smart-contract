@@ -68,12 +68,11 @@ contract Rips_SevenTiers is RipsTestBase {
         uint256 balanceBefore = user.balance;
 
         vm.prank(user);
-        rips.claimPayout(ripId, 0, 1, user, referrer);
+        rips.claimPayout(ripId, 1, user, referrer);
 
         assertGt(user.balance, balanceBefore);
 
-        IRips.EntryChunk[] memory chunks = rips.getUserEntries(ripId, user);
-        assertTrue(chunks[0].claimed);
+        assertEq(rips.nextClaimChunkIndex(ripId, user), 1);
     }
 
     function test_Refund_SevenTiers() external {

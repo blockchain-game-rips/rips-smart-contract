@@ -45,7 +45,7 @@ contract Rips_SeizeReferrerFee is RipsTestBase {
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         vm.prank(user);
-        rips.claimPayout(ripId, 0, 10, user, referrer);
+        rips.claimPayout(ripId, 10, user, referrer);
     }
 
     function _protocolFee() private pure returns (uint256) {

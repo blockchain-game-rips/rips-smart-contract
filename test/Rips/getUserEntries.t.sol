@@ -32,6 +32,5 @@ contract Rips_GetUserEntries is RipsTestBase {
         assertEq(chunks.length, 1);
         assertEq(chunks[0].start, 0);
         assertEq(chunks[0].count, entryCount);
-        assertFalse(chunks[0].claimed);
     }
 }

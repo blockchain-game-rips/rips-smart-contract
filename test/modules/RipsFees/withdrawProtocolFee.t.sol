@@ -44,7 +44,7 @@ contract Rips_WithdrawProtocolFee is RipsTestBase {
         vrfCoordinator.fulfillRandomWords(vrfRequestId, address(rips));
 
         vm.prank(user);
-        rips.claimPayout(ripId, 0, 10, user, address(0));
+        rips.claimPayout(ripId, 10, user, address(0));
     }
 
     function _protocolFee() private pure returns (uint256) {
