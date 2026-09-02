@@ -65,10 +65,7 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
         return _createRip(presetId);
     }
 
-    function _createRip(uint64 presetId)
-        private
-        returns (uint256 ripId, Rip storage rip, Config storage config)
-    {
+    function _createRip(uint64 presetId) private returns (uint256 ripId, Rip storage rip, Config storage config) {
         ripId = _nextRipId++;
         rip = ripIdToRip[ripId];
 
@@ -85,22 +82,13 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
         emit RipCreated(ripId, presetId, configId);
     }
 
-    function _getEntriesToBuy(Rip storage rip, Config storage config, uint64 entryCount)
-        private
-        view
-        returns (uint64)
-    {
+    function _getEntriesToBuy(Rip storage rip, Config storage config, uint64 entryCount) private view returns (uint64) {
         uint64 available = config.entryCap - rip.entriesSold;
 
         return entryCount > available ? available : entryCount;
     }
 
-    function _purchaseEntries(
-        uint256 ripId,
-        Rip storage rip,
-        address recipient,
-        uint64 entriesToBuy
-    ) private {
+    function _purchaseEntries(uint256 ripId, Rip storage rip, address recipient, uint64 entriesToBuy) private {
         uint64 startEntry = rip.entriesSold;
 
         rip.entriesSold += entriesToBuy;
@@ -110,16 +98,13 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
         emit RipEntered(ripId, recipient, entriesToBuy, startEntry);
     }
 
-    function _storeEntryChunks(uint256 ripId, address buyer, uint64 startEntry, uint64 entryCount)
-        private
-    {
+    function _storeEntryChunks(uint256 ripId, address buyer, uint64 startEntry, uint64 entryCount) private {
         EntryChunk[] storage chunks = userEntryChunks[ripId][buyer];
         uint64 remaining = entryCount;
         uint64 currentStart = startEntry;
 
         while (remaining > 0) {
-            uint64 chunkSize =
-                remaining > MAX_ENTRIES_PER_CHUNK ? MAX_ENTRIES_PER_CHUNK : remaining;
+            uint64 chunkSize = remaining > MAX_ENTRIES_PER_CHUNK ? MAX_ENTRIES_PER_CHUNK : remaining;
 
             chunks.push(EntryChunk({start: uint64(currentStart), count: uint64(chunkSize)}));
             currentStart += chunkSize;

@@ -5,12 +5,9 @@ import "../src/Rips.sol";
 import "../src/libraries/RipsMath.sol";
 
 contract RipsHarness is Rips {
-    constructor(
-        address vrfCoordinator,
-        uint256 vrfSubscriptionId,
-        bytes32 vrfKeyHash,
-        uint32 callbackGasLimit
-    ) Rips(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit) {}
+    constructor(address vrfCoordinator, uint256 vrfSubscriptionId, bytes32 vrfKeyHash, uint32 callbackGasLimit)
+        Rips(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit)
+    {}
 
     function exposed_isPowerOfTwo(uint256 n) external pure returns (bool) {
         return RipsMath.isPowerOfTwo(n);
@@ -28,20 +25,14 @@ contract RipsHarness is Rips {
         return configIdToConfig[configId];
     }
 
-    function exposed_referrerStats(address referrer, address currency)
-        external
-        view
-        returns (ReferrerState memory)
-    {
+    function exposed_referrerStats(address referrer, address currency) external view returns (ReferrerState memory) {
         return referrerToReferrerState[referrer][currency];
     }
 
-    function exposed_collectReferrerFee(
-        address referrer,
-        address currency,
-        uint256 protocolFee,
-        uint256 entryRevenue
-    ) external returns (uint256) {
+    function exposed_collectReferrerFee(address referrer, address currency, uint256 protocolFee, uint256 entryRevenue)
+        external
+        returns (uint256)
+    {
         return _collectReferrerFee(referrer, currency, protocolFee, entryRevenue);
     }
 

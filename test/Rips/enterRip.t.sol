@@ -149,9 +149,7 @@ contract Rips_EnterRip is RipsTestBase {
 
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
-            payoutCount: largeEntryCap,
-            minPayout: uint128(entryPrice),
-            maxPayout: uint128(entryPrice)
+            payoutCount: largeEntryCap, minPayout: uint128(entryPrice), maxPayout: uint128(entryPrice)
         });
 
         vm.prank(owner);
@@ -237,10 +235,7 @@ contract Rips_EnterRip is RipsTestBase {
         assertEq(rips.presetIdToCurrentRipId(presetId), ripId);
     }
 
-    function test_WhenRequestedEntriesExceedAvailableEntries()
-        external
-        givenThePresetCurrencyIsNative
-    {
+    function test_WhenRequestedEntriesExceedAvailableEntries() external givenThePresetCurrencyIsNative {
         uint64 initialBuy = DEFAULT_ENTRY_CAP - 1;
         vm.prank(user);
         rips.enterRip{value: initialBuy * DEFAULT_ENTRY_PRICE}(presetId, initialBuy, user);
@@ -362,9 +357,7 @@ contract Rips_EnterRip is RipsTestBase {
 
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
-            payoutCount: largeEntryCap,
-            minPayout: uint128(entryPrice),
-            maxPayout: uint128(entryPrice)
+            payoutCount: largeEntryCap, minPayout: uint128(entryPrice), maxPayout: uint128(entryPrice)
         });
 
         vm.prank(owner);
@@ -396,8 +389,7 @@ contract Rips_EnterRip is RipsTestBase {
         givenThePresetCurrencyIsAnERC20Token
         whenRequestedEntriesEqualTheRemainingCapacity
     {
-        uint256 expectedCost =
-            DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE;
+        uint256 expectedCost = DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE;
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();

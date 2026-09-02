@@ -36,8 +36,7 @@ library RipsMath {
 
                 uint256 rank = payoutNumber - (t == 0 ? 0 : tierBoundaries[t - 1]);
 
-                return tier.minPayout + ((tier.maxPayout - tier.minPayout) * (rank - 1))
-                    / (tier.payoutCount - 1);
+                return tier.minPayout + ((tier.maxPayout - tier.minPayout) * (rank - 1)) / (tier.payoutCount - 1);
             }
         }
 

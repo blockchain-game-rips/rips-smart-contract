@@ -24,9 +24,7 @@ contract Rips_ClaimPayout is RipsTestBase {
 
         vm.deal(user, 100 ether);
         vm.prank(user);
-        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            presetId, DEFAULT_ENTRY_CAP, user
-        );
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(presetId, DEFAULT_ENTRY_CAP, user);
 
         ripId = rips.presetIdToCurrentRipId(presetId);
     }
@@ -69,9 +67,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         );
 
         vm.prank(user);
-        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            feePresetId, DEFAULT_ENTRY_CAP, user
-        );
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(feePresetId, DEFAULT_ENTRY_CAP, user);
 
         feeRipId = rips.presetIdToCurrentRipId(feePresetId);
         uint256 vrfRequestId = rips.requestRandomness(feeRipId);
@@ -88,9 +84,8 @@ contract Rips_ClaimPayout is RipsTestBase {
 
     function _createZeroPayoutPreset() private returns (uint256 zeroPayoutRipId) {
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
-        tiers[0] = IRips.PayoutTier({
-            payoutCount: uint64(DEFAULT_ENTRY_CAP), minPayout: ZERO_PAYOUT, maxPayout: ZERO_PAYOUT
-        });
+        tiers[0] =
+            IRips.PayoutTier({payoutCount: uint64(DEFAULT_ENTRY_CAP), minPayout: ZERO_PAYOUT, maxPayout: ZERO_PAYOUT});
 
         vm.prank(owner);
         uint64 zeroPayoutPresetId = rips.createPreset(
@@ -105,9 +100,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         );
 
         vm.prank(user);
-        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            zeroPayoutPresetId, DEFAULT_ENTRY_CAP, user
-        );
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(zeroPayoutPresetId, DEFAULT_ENTRY_CAP, user);
 
         zeroPayoutRipId = rips.presetIdToCurrentRipId(zeroPayoutPresetId);
         uint256 vrfRequestId = rips.requestRandomness(zeroPayoutRipId);
@@ -162,10 +155,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         _;
     }
 
-    function test_WhenThereAreUnclaimedChunks_AdvancesTheCursorPastEveryChunk()
-        external
-        whenThereAreUnclaimedChunks
-    {
+    function test_WhenThereAreUnclaimedChunks_AdvancesTheCursorPastEveryChunk() external whenThereAreUnclaimedChunks {
         vm.prank(user);
         rips.claimPayout(ripId, MAX_CHUNKS, user, referrer);
 
@@ -173,10 +163,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         assertEq(rips.nextClaimChunkIndex(ripId, user), chunks.length);
     }
 
-    function test_WhenThereAreUnclaimedChunks_CalculatesCorrectPayouts()
-        external
-        whenThereAreUnclaimedChunks
-    {
+    function test_WhenThereAreUnclaimedChunks_CalculatesCorrectPayouts() external whenThereAreUnclaimedChunks {
         uint256 balanceBefore = user.balance;
 
         vm.prank(user);
@@ -203,17 +190,11 @@ contract Rips_ClaimPayout is RipsTestBase {
 
         IRips.EntryChunk[] memory chunks = rips.getUserEntries(zeroPayoutRipId, user);
         assertEq(
-            rips.nextClaimChunkIndex(zeroPayoutRipId, user),
-            chunks.length,
-            "cursor should advance past every chunk"
+            rips.nextClaimChunkIndex(zeroPayoutRipId, user), chunks.length, "cursor should advance past every chunk"
         );
 
         IRips.ReferrerState memory referrerState = rips.exposed_referrerStats(referrer, address(0));
-        assertEq(
-            referrerState.periodVolume,
-            _zeroPayoutEntryRevenue(),
-            "referrer period volume should be credited"
-        );
+        assertEq(referrerState.periodVolume, _zeroPayoutEntryRevenue(), "referrer period volume should be credited");
     }
 
     function test_RevertWhen_CallerIsNotTheRecipientAndHasNeitherAdminNorOperatorRole()
@@ -227,10 +208,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         rips.claimPayout(ripId, MAX_CHUNKS, user, referrer);
     }
 
-    function test_WhenCallerHasAdminRoleAndRecipientIsADifferentAddress()
-        external
-        whenThereAreUnclaimedChunks
-    {
+    function test_WhenCallerHasAdminRoleAndRecipientIsADifferentAddress() external whenThereAreUnclaimedChunks {
         uint256 recipientBalanceBefore = user.balance;
         uint256 ownerBalanceBefore = owner.balance;
 
@@ -241,10 +219,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         assertEq(owner.balance, ownerBalanceBefore);
     }
 
-    function test_WhenCallerHasOperatorRoleAndRecipientIsADifferentAddress()
-        external
-        whenThereAreUnclaimedChunks
-    {
+    function test_WhenCallerHasOperatorRoleAndRecipientIsADifferentAddress() external whenThereAreUnclaimedChunks {
         vm.startPrank(owner);
         rips.grantRole(rips.OPERATOR_ROLE(), operator);
         vm.stopPrank();
@@ -264,11 +239,7 @@ contract Rips_ClaimPayout is RipsTestBase {
         _;
     }
 
-    function test_WhenProtocolFeeIsZero()
-        external
-        whenThereAreUnclaimedChunks
-        givenThePresetCurrencyIsNative
-    {
+    function test_WhenProtocolFeeIsZero() external whenThereAreUnclaimedChunks givenThePresetCurrencyIsNative {
         uint256 balanceBefore = user.balance;
 
         vm.expectEmit();

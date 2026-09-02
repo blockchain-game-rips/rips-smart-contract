@@ -26,11 +26,7 @@ abstract contract RipsRefund is RipsUtils {
         emit RefundIssued(ripId, recipient, entryCount);
     }
 
-    function _isRipRefundable(uint256 ripId, Rip storage rip, Config storage config)
-        internal
-        view
-        returns (bool)
-    {
+    function _isRipRefundable(uint256 ripId, Rip storage rip, Config storage config) internal view returns (bool) {
         if (_isExpired(rip, config) && !_isSoldOut(rip, config)) return true;
 
         if (_isVrfRequestExpired(ripId) && rip.vrfRequestStatus == VrfRequestStatus.Requested) {

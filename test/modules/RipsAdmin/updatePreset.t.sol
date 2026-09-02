@@ -18,9 +18,7 @@ contract Rips_UpdatePreset is PresetValidationSetup {
 
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
-            payoutCount: newEntryCap,
-            minPayout: uint128(newEntryPrice),
-            maxPayout: uint128(newEntryPrice)
+            payoutCount: newEntryCap, minPayout: uint128(newEntryPrice), maxPayout: uint128(newEntryPrice)
         });
 
         return IRips.Config({
@@ -80,10 +78,7 @@ contract Rips_UpdatePreset is PresetValidationSetup {
         rips.updatePreset(presetId, config);
     }
 
-    function test_RevertWhen_ATierHasMinPayoutGreaterThanMaxPayout()
-        external
-        whenTheCallerIsTheOwner
-    {
+    function test_RevertWhen_ATierHasMinPayoutGreaterThanMaxPayout() external whenTheCallerIsTheOwner {
         // it should revert.
         vm.expectRevert(IRips.InvalidPayoutRange.selector);
         rips.updatePreset(presetId, configWithMinPayoutGreaterThanMaxPayout());
@@ -95,19 +90,13 @@ contract Rips_UpdatePreset is PresetValidationSetup {
         rips.updatePreset(presetId, configWithTiersNotSortedByPayoutCount());
     }
 
-    function test_RevertWhen_TotalPayoutCountDoesNotEqualEntryCap()
-        external
-        whenTheCallerIsTheOwner
-    {
+    function test_RevertWhen_TotalPayoutCountDoesNotEqualEntryCap() external whenTheCallerIsTheOwner {
         // it should revert.
         vm.expectRevert(IRips.InvalidPayoutCount.selector);
         rips.updatePreset(presetId, configWithPayoutCountMismatch());
     }
 
-    function test_RevertWhen_TotalPayoutPoolDoesNotEqualEntryCapTimesEntryPrice()
-        external
-        whenTheCallerIsTheOwner
-    {
+    function test_RevertWhen_TotalPayoutPoolDoesNotEqualEntryCapTimesEntryPrice() external whenTheCallerIsTheOwner {
         // it should revert.
         vm.expectRevert(IRips.PayoutPoolMismatch.selector);
         rips.updatePreset(presetId, configWithPayoutPoolMismatch());

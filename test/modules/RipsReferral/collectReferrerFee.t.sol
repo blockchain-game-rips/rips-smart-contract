@@ -4,9 +4,7 @@ pragma solidity ^0.8.13;
 import "../../RipsTestBase.sol";
 
 contract RipsReferral_CollectReferrerFee is RipsTestBase {
-    event ReferralStateUpdated(
-        address indexed referrer, address indexed currency, IRips.ReferrerState referrerState
-    );
+    event ReferralStateUpdated(address indexed referrer, address indexed currency, IRips.ReferrerState referrerState);
 
     uint256 internal constant PROTOCOL_FEE = 1 ether;
     uint256 internal constant ENTRY_REVENUE = 10 ether;
@@ -56,8 +54,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
 
     function test_WhenReferrerIsZeroAddress() external {
         // it should return zero.
-        uint256 fee =
-            rips.exposed_collectReferrerFee(address(0), CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 fee = rips.exposed_collectReferrerFee(address(0), CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
         assertEq(fee, 0);
     }
@@ -85,14 +82,11 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeeBps: TIER_HIGH_FEE,
-                periodStartTimestamp: 2 * periodStart,
-                periodVolume: ENTRY_REVENUE
+                activeFeeBps: TIER_HIGH_FEE, periodStartTimestamp: 2 * periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
-        uint256 fee =
-            rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
         assertEq(fee, expectedFee);
 
@@ -116,13 +110,10 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
-            IRips.ReferrerState({
-                activeFeeBps: 0, periodStartTimestamp: 2 * periodStart, periodVolume: ENTRY_REVENUE
-            })
+            IRips.ReferrerState({activeFeeBps: 0, periodStartTimestamp: 2 * periodStart, periodVolume: ENTRY_REVENUE})
         );
 
-        uint256 fee =
-            rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
         assertEq(fee, (PROTOCOL_FEE * CUSTOM_FEE) / rips.FEE_BASE());
 
@@ -165,13 +156,10 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
-            IRips.ReferrerState({
-                activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: ENTRY_REVENUE
-            })
+            IRips.ReferrerState({activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: ENTRY_REVENUE})
         );
 
-        uint256 fee =
-            rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
         assertEq(fee, 0);
 
@@ -192,13 +180,10 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
-            IRips.ReferrerState({
-                activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: ENTRY_REVENUE
-            })
+            IRips.ReferrerState({activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: ENTRY_REVENUE})
         );
 
-        uint256 fee =
-            rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
         assertEq(fee, expectedFee);
 
@@ -223,13 +208,10 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
-            IRips.ReferrerState({
-                activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: volumeAboveTier
-            })
+            IRips.ReferrerState({activeFeeBps: 0, periodStartTimestamp: periodStart, periodVolume: volumeAboveTier})
         );
 
-        uint256 fee =
-            rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, volumeAboveTier);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, volumeAboveTier);
 
         assertEq(fee, expectedFee);
 
@@ -260,14 +242,11 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeeBps: TIER_HIGH_FEE,
-                periodStartTimestamp: 2 * periodStart,
-                periodVolume: ENTRY_REVENUE
+                activeFeeBps: TIER_HIGH_FEE, periodStartTimestamp: 2 * periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
-        uint256 fee =
-            rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
         assertEq(fee, expectedFee);
 
@@ -298,14 +277,11 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeeBps: TIER_LOW_FEE,
-                periodStartTimestamp: 2 * periodStart,
-                periodVolume: ENTRY_REVENUE
+                activeFeeBps: TIER_LOW_FEE, periodStartTimestamp: 2 * periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
-        uint256 fee =
-            rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 fee = rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
         assertEq(fee, expectedFee);
     }
@@ -325,8 +301,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         // period 2: active, cross tier threshold again
         rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, volumeAboveTier);
 
-        IRips.ReferrerState memory statsAfterPeriod2 =
-            rips.exposed_referrerStats(referrer, CURRENCY);
+        IRips.ReferrerState memory statsAfterPeriod2 = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(statsAfterPeriod2.activeFeeBps, TIER_LOW_FEE);
         assertEq(statsAfterPeriod2.periodVolume, volumeAboveTier);
 
@@ -338,16 +313,13 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeeBps: TIER_LOW_FEE,
-                periodStartTimestamp: 3 * periodStart,
-                periodVolume: ENTRY_REVENUE
+                activeFeeBps: TIER_LOW_FEE, periodStartTimestamp: 3 * periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
         rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
 
-        IRips.ReferrerState memory statsAfterPeriod3 =
-            rips.exposed_referrerStats(referrer, CURRENCY);
+        IRips.ReferrerState memory statsAfterPeriod3 = rips.exposed_referrerStats(referrer, CURRENCY);
         assertEq(statsAfterPeriod3.activeFeeBps, TIER_LOW_FEE);
         assertEq(statsAfterPeriod3.periodVolume, ENTRY_REVENUE);
     }
@@ -376,9 +348,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         emit ReferralStateUpdated(
             referrer,
             CURRENCY,
-            IRips.ReferrerState({
-                activeFeeBps: 0, periodStartTimestamp: 4 * periodStart, periodVolume: ENTRY_REVENUE
-            })
+            IRips.ReferrerState({activeFeeBps: 0, periodStartTimestamp: 4 * periodStart, periodVolume: ENTRY_REVENUE})
         );
 
         rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
@@ -412,14 +382,11 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             referrer,
             CURRENCY,
             IRips.ReferrerState({
-                activeFeeBps: TIER_HIGH_FEE,
-                periodStartTimestamp: 2 * periodStart,
-                periodVolume: ENTRY_REVENUE
+                activeFeeBps: TIER_HIGH_FEE, periodStartTimestamp: 2 * periodStart, periodVolume: ENTRY_REVENUE
             })
         );
 
-        uint256 feeA =
-            rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 feeA = rips.exposed_collectReferrerFee(referrer, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
         assertEq(feeA, (PROTOCOL_FEE * TIER_HIGH_FEE) / rips.FEE_BASE());
 
         IRips.ReferrerState memory statsA = rips.exposed_referrerStats(referrer, CURRENCY);
@@ -439,8 +406,7 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
             })
         );
 
-        uint256 feeB =
-            rips.exposed_collectReferrerFee(referrerB, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 feeB = rips.exposed_collectReferrerFee(referrerB, CURRENCY, PROTOCOL_FEE, ENTRY_REVENUE);
         assertEq(feeB, (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE());
 
         IRips.ReferrerState memory statsB = rips.exposed_referrerStats(referrerB, CURRENCY);
@@ -474,10 +440,8 @@ contract RipsReferral_CollectReferrerFee is RipsTestBase {
         _advanceToNextPeriod();
 
         // period 2: currency A unlocks TIER_HIGH_FEE, currency B has no prior volume
-        uint256 feeA =
-            rips.exposed_collectReferrerFee(referrer, currencyA, PROTOCOL_FEE, ENTRY_REVENUE);
-        uint256 feeB =
-            rips.exposed_collectReferrerFee(referrer, currencyB, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 feeA = rips.exposed_collectReferrerFee(referrer, currencyA, PROTOCOL_FEE, ENTRY_REVENUE);
+        uint256 feeB = rips.exposed_collectReferrerFee(referrer, currencyB, PROTOCOL_FEE, ENTRY_REVENUE);
 
         assertEq(feeA, (PROTOCOL_FEE * TIER_HIGH_FEE) / rips.FEE_BASE());
         assertEq(feeB, (PROTOCOL_FEE * DEFAULT_FEE) / rips.FEE_BASE());

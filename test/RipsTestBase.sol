@@ -31,9 +31,7 @@ contract RipsTestBase is Test {
         (vrfCoordinator, vrfSubscriptionId) = VrfHelper.deployCoordinator();
 
         vm.prank(owner);
-        rips = new RipsHarness(
-            address(vrfCoordinator), vrfSubscriptionId, VRF_KEY_HASH, VRF_CALLBACK_GAS_LIMIT
-        );
+        rips = new RipsHarness(address(vrfCoordinator), vrfSubscriptionId, VRF_KEY_HASH, VRF_CALLBACK_GAS_LIMIT);
 
         vrfCoordinator.addConsumer(vrfSubscriptionId, address(rips));
 

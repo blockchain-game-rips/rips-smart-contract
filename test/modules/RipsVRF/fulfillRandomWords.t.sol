@@ -22,9 +22,7 @@ contract Rips_FulfillRandomWords is RipsTestBase {
 
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
-            payoutCount: uint64(ENTRY_CAP),
-            minPayout: uint128(ENTRY_PRICE),
-            maxPayout: uint128(ENTRY_PRICE)
+            payoutCount: uint64(ENTRY_CAP), minPayout: uint128(ENTRY_PRICE), maxPayout: uint128(ENTRY_PRICE)
         });
 
         vm.prank(owner);
@@ -57,9 +55,7 @@ contract Rips_FulfillRandomWords is RipsTestBase {
 
         vm.prank(user);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector, user, coordinatorRole
-            )
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, user, coordinatorRole)
         );
         rips.rawFulfillRandomWords(vrfRequestId, randomWords);
     }

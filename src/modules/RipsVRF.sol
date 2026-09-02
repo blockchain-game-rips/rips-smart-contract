@@ -3,9 +3,7 @@ pragma solidity ^0.8.13;
 
 import {RipsUtils} from "../common/RipsUtils.sol";
 import {RipsMath} from "../libraries/RipsMath.sol";
-import {
-    IVRFCoordinatorV2Plus
-} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
+import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {
     IVRFMigratableConsumerV2Plus
 } from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol";
@@ -25,12 +23,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
 
     mapping(uint256 requestId => uint256 ripId) internal _vrfRequestToRip;
 
-    constructor(
-        address vrfCoordinator_,
-        uint256 vrfSubscriptionId_,
-        bytes32 vrfKeyHash_,
-        uint32 callbackGasLimit_
-    ) {
+    constructor(address vrfCoordinator_, uint256 vrfSubscriptionId_, bytes32 vrfKeyHash_, uint32 callbackGasLimit_) {
         if (vrfCoordinator_ == address(0)) revert ZeroAddress();
         if (vrfSubscriptionId_ == 0) revert ZeroSubscriptionId();
 
@@ -43,11 +36,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         _grantRole(VRF_COORDINATOR_ROLE, vrfCoordinator_);
     }
 
-    function setCoordinator(address newVrfCoordinator)
-        external
-        override
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setCoordinator(address newVrfCoordinator) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newVrfCoordinator == address(0)) revert ZeroAddress();
 
         _revokeRole(VRF_COORDINATOR_ROLE, address(vrfCoordinator));
@@ -58,10 +47,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         emit CoordinatorSet(newVrfCoordinator);
     }
 
-    function updateVrfSubscriptionId(uint256 newSubscriptionId)
-        public
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function updateVrfSubscriptionId(uint256 newSubscriptionId) public onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newSubscriptionId == 0) revert ZeroSubscriptionId();
         vrfSubscriptionId = newSubscriptionId;
         emit VrfSubscriptionIdUpdated(newSubscriptionId);
@@ -72,10 +58,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         emit VrfKeyHashUpdated(newKeyHash);
     }
 
-    function updateVrfRequestConfirmations(uint16 newConfirmations)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function updateVrfRequestConfirmations(uint16 newConfirmations) external onlyRole(DEFAULT_ADMIN_ROLE) {
         vrfRequestConfirmations = newConfirmations;
         emit VrfRequestConfirmationsUpdated(newConfirmations);
     }
@@ -101,9 +84,7 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
                 requestConfirmations: vrfRequestConfirmations,
                 callbackGasLimit: callbackGasLimit,
                 numWords: VRF_NUM_WORDS,
-                extraArgs: VRFV2PlusClient._argsToBytes(
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
-                )
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
             })
         );
 

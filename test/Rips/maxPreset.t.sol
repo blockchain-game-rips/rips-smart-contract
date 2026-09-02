@@ -39,9 +39,7 @@ contract Rips_MaxPreset is RipsTestBase {
             uint128 k = uint128(2 * i + 1);
 
             tiers[i] = IRips.PayoutTier({
-                payoutCount: uint64(ENTRIES_PER_TIER),
-                minPayout: k * MN_UNIT,
-                maxPayout: k * MX_UNIT
+                payoutCount: uint64(ENTRIES_PER_TIER), minPayout: k * MN_UNIT, maxPayout: k * MX_UNIT
             });
         }
 

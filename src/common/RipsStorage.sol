@@ -7,8 +7,7 @@ abstract contract RipsStorage is IRips {
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
     mapping(address currency => uint256 amount) public protocolFeeAccrued;
-    mapping(address referrer => mapping(address currency => uint256 amount)) public
-        referrerFeeAccrued;
+    mapping(address referrer => mapping(address currency => uint256 amount)) public referrerFeeAccrued;
 
     uint64 internal _nextPresetId = 1;
     uint256 internal _nextRipId = 1;
@@ -23,8 +22,7 @@ abstract contract RipsStorage is IRips {
     mapping(uint64 presetId => uint256 ripId) public presetIdToCurrentRipId;
     mapping(uint64 presetId => bool deleted) public isPresetDeleted;
 
-    mapping(uint256 ripId => mapping(address buyer => EntryChunk[] chunks)) internal
-        userEntryChunks;
+    mapping(uint256 ripId => mapping(address buyer => EntryChunk[] chunks)) internal userEntryChunks;
     mapping(uint256 ripId => mapping(address buyer => uint64 entryCount)) public userEntryCount;
 
     mapping(uint256 ripId => uint256 requestTimestamp) internal _ripIdToRequestTimestamp;

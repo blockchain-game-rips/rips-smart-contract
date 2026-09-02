@@ -11,14 +11,10 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
     uint16 public defaultReferralFeeBps;
 
     mapping(address referrer => uint16 customFeeBps) public referrerCustomFee;
-    mapping(address referrer => mapping(address currency => ReferrerState)) public
-        referrerToReferrerState;
+    mapping(address referrer => mapping(address currency => ReferrerState)) public referrerToReferrerState;
     mapping(address currency => ReferralTier[]) internal _referralTiers;
 
-    function setDefaultReferralFee(uint16 newDefaultReferralFeeBps)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setDefaultReferralFee(uint16 newDefaultReferralFeeBps) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newDefaultReferralFeeBps > FEE_BASE) revert FeeTooHigh();
 
         defaultReferralFeeBps = newDefaultReferralFeeBps;
@@ -26,10 +22,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         emit DefaultReferralFeeUpdated(newDefaultReferralFeeBps);
     }
 
-    function setReferrerCustomFee(address referrer, uint16 customFeeBps)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setReferrerCustomFee(address referrer, uint16 customFeeBps) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (referrer == address(0)) revert ZeroAddress();
         if (customFeeBps > FEE_BASE) revert FeeTooHigh();
 
@@ -38,10 +31,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         emit ReferrerCustomFeeUpdated(referrer, customFeeBps);
     }
 
-    function setReferralTiers(address currency, ReferralTier[] calldata tiers)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setReferralTiers(address currency, ReferralTier[] calldata tiers) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (tiers.length > MAX_REFERRAL_TIER_COUNT) revert ReferralTierCountExceeded();
 
         for (uint256 i = 1; i < tiers.length; i++) {
@@ -63,16 +53,13 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         return _referralTiers[currency];
     }
 
-    function _collectReferrerFee(
-        address referrer,
-        address currency,
-        uint256 protocolFee,
-        uint256 entryRevenue
-    ) internal returns (uint256 referrerFee) {
+    function _collectReferrerFee(address referrer, address currency, uint256 protocolFee, uint256 entryRevenue)
+        internal
+        returns (uint256 referrerFee)
+    {
         if (referrer == address(0)) return 0;
 
-        ReferrerState storage referrerStats =
-            _resolveReferrerState(referrer, currency, entryRevenue);
+        ReferrerState storage referrerStats = _resolveReferrerState(referrer, currency, entryRevenue);
 
         uint16 customFeeBps = referrerCustomFee[referrer];
         if (customFeeBps > 0) {
@@ -80,8 +67,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         }
 
         uint16 activeFeeBps = referrerStats.activeFeeBps;
-        uint16 effectiveFeeBps =
-            activeFeeBps > defaultReferralFeeBps ? activeFeeBps : defaultReferralFeeBps;
+        uint16 effectiveFeeBps = activeFeeBps > defaultReferralFeeBps ? activeFeeBps : defaultReferralFeeBps;
 
         referrerFee = (protocolFee * effectiveFeeBps) / FEE_BASE;
     }
@@ -104,8 +90,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         }
 
         if (nowTimestamp >= periodStartTimestamp + REFERRAL_PERIOD) {
-            uint40 periodsElapsed =
-                (nowTimestamp - referrerStats.periodStartTimestamp) / REFERRAL_PERIOD;
+            uint40 periodsElapsed = (nowTimestamp - referrerStats.periodStartTimestamp) / REFERRAL_PERIOD;
             bool isConsecutivePeriod = periodsElapsed == 1;
 
             uint256 volumeInPrevPeriod = isConsecutivePeriod ? referrerStats.periodVolume : 0;
@@ -124,11 +109,7 @@ abstract contract RipsReferral is RipsStorage, RipsUtils {
         return referrerStats;
     }
 
-    function _resolveTierFeeBps(address currency, uint256 volume)
-        private
-        view
-        returns (uint16 feeBps)
-    {
+    function _resolveTierFeeBps(address currency, uint256 volume) private view returns (uint16 feeBps) {
         ReferralTier[] storage tiers = _referralTiers[currency];
 
         for (uint256 i = tiers.length; i > 0; i--) {

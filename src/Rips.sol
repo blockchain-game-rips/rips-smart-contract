@@ -10,21 +10,8 @@ import {RipsClaimPayout} from "./modules/RipsClaimPayout.sol";
 import {RipsRefund} from "./modules/RipsRefund.sol";
 import {IRips} from "./interfaces/IRips.sol";
 
-contract Rips is
-    RipsAdmin,
-    RipsFees,
-    RipsReferral,
-    RipsVrf,
-    RipsEnterRip,
-    RipsClaimPayout,
-    RipsRefund
-{
-    constructor(
-        address vrfCoordinator,
-        uint256 vrfSubscriptionId,
-        bytes32 vrfKeyHash,
-        uint32 callbackGasLimit
-    )
+contract Rips is RipsAdmin, RipsFees, RipsReferral, RipsVrf, RipsEnterRip, RipsClaimPayout, RipsRefund {
+    constructor(address vrfCoordinator, uint256 vrfSubscriptionId, bytes32 vrfKeyHash, uint32 callbackGasLimit)
         RipsFees(msg.sender)
         RipsVrf(vrfCoordinator, vrfSubscriptionId, vrfKeyHash, callbackGasLimit)
     {
@@ -35,11 +22,7 @@ contract Rips is
         return interfaceId == type(IRips).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    function getUserEntries(uint256 ripId, address user)
-        external
-        view
-        returns (EntryChunk[] memory)
-    {
+    function getUserEntries(uint256 ripId, address user) external view returns (EntryChunk[] memory) {
         return userEntryChunks[ripId][user];
     }
 }

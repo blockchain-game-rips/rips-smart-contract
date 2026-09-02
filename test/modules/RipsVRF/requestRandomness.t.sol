@@ -12,11 +12,7 @@ contract StubVrfCoordinator is IVRFCoordinatorV2Plus {
         _nextRequestId = requestId;
     }
 
-    function requestRandomWords(VRFV2PlusClient.RandomWordsRequest calldata)
-        external
-        override
-        returns (uint256)
-    {
+    function requestRandomWords(VRFV2PlusClient.RandomWordsRequest calldata) external override returns (uint256) {
         return _nextRequestId;
     }
 
@@ -43,12 +39,7 @@ contract StubVrfCoordinator is IVRFCoordinatorV2Plus {
         return (0, 0, 0, address(0), new address[](0));
     }
 
-    function getActiveSubscriptionIds(uint256, uint256)
-        external
-        pure
-        override
-        returns (uint256[] memory)
-    {
+    function getActiveSubscriptionIds(uint256, uint256) external pure override returns (uint256[] memory) {
         return new uint256[](0);
     }
 
@@ -87,9 +78,7 @@ contract Rips_RequestRandomness is RipsTestBase {
 
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
         tiers[0] = IRips.PayoutTier({
-            payoutCount: uint64(ENTRY_CAP),
-            minPayout: uint128(ENTRY_PRICE),
-            maxPayout: uint128(ENTRY_PRICE)
+            payoutCount: uint64(ENTRY_CAP), minPayout: uint128(ENTRY_PRICE), maxPayout: uint128(ENTRY_PRICE)
         });
 
         vm.startPrank(owner);
@@ -177,9 +166,7 @@ contract Rips_RequestRandomness is RipsTestBase {
 
         vm.deal(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
         vm.prank(user);
-        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            presetId2, DEFAULT_ENTRY_CAP, user
-        );
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(presetId2, DEFAULT_ENTRY_CAP, user);
 
         uint256 secondRipId = rips.presetIdToCurrentRipId(presetId2);
 
@@ -192,10 +179,7 @@ contract Rips_RequestRandomness is RipsTestBase {
         _;
     }
 
-    function test_WhenTheRipExistsIsActiveAndIsSoldOut()
-        external
-        whenTheRipExistsIsActiveAndIsSoldOut
-    {
+    function test_WhenTheRipExistsIsActiveAndIsSoldOut() external whenTheRipExistsIsActiveAndIsSoldOut {
         vm.expectEmit(true, true, true, false, address(vrfCoordinator));
         emit RandomWordsRequested(
             VRF_KEY_HASH,

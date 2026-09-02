@@ -28,9 +28,7 @@ contract RipsConduit_EnterRip is RipsTestBase {
         uint64 entriesToBuy = 2;
 
         vm.prank(bridge);
-        conduit.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(
-            presetId, entriesToBuy, recipient
-        );
+        conduit.enterRip{value: entriesToBuy * DEFAULT_ENTRY_PRICE}(presetId, entriesToBuy, recipient);
 
         assertEq(rips.userEntryCount(ripId, recipient), entriesToBuy);
         assertEq(address(conduit).balance, 0);
@@ -75,9 +73,7 @@ contract RipsConduit_EnterRip is RipsTestBase {
 
         vm.prank(bridge);
         vm.expectRevert(RipsConduit.TransferFailed.selector);
-        conduit.enterRip{value: requestedEntries * DEFAULT_ENTRY_PRICE}(
-            presetId, requestedEntries, rejector
-        );
+        conduit.enterRip{value: requestedEntries * DEFAULT_ENTRY_PRICE}(presetId, requestedEntries, rejector);
     }
 }
 

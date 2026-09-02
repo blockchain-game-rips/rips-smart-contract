@@ -33,10 +33,7 @@ contract Rips_CreatePreset is PresetValidationSetup {
         rips.createPreset(config);
     }
 
-    function test_RevertWhen_ATierHasMinPayoutGreaterThanMaxPayout()
-        external
-        whenTheCallerIsTheOwner
-    {
+    function test_RevertWhen_ATierHasMinPayoutGreaterThanMaxPayout() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.InvalidPayoutRange.selector);
         rips.createPreset(configWithMinPayoutGreaterThanMaxPayout());
     }
@@ -51,18 +48,12 @@ contract Rips_CreatePreset is PresetValidationSetup {
         rips.createPreset(configWithZeroPayoutCountTier());
     }
 
-    function test_RevertWhen_TotalPayoutCountDoesNotEqualEntryCap()
-        external
-        whenTheCallerIsTheOwner
-    {
+    function test_RevertWhen_TotalPayoutCountDoesNotEqualEntryCap() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.InvalidPayoutCount.selector);
         rips.createPreset(configWithPayoutCountMismatch());
     }
 
-    function test_RevertWhen_TotalPayoutPoolDoesNotEqualEntryCapTimesEntryPrice()
-        external
-        whenTheCallerIsTheOwner
-    {
+    function test_RevertWhen_TotalPayoutPoolDoesNotEqualEntryCapTimesEntryPrice() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.PayoutPoolMismatch.selector);
         rips.createPreset(configWithPayoutPoolMismatch());
     }

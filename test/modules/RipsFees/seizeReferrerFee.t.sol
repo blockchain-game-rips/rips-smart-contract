@@ -36,9 +36,7 @@ contract Rips_SeizeReferrerFee is RipsTestBase {
 
         vm.deal(user, DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE);
         vm.prank(user);
-        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(
-            presetId, DEFAULT_ENTRY_CAP, user
-        );
+        rips.enterRip{value: DEFAULT_ENTRY_CAP * DEFAULT_ENTRY_PRICE}(presetId, DEFAULT_ENTRY_CAP, user);
 
         uint256 ripId = rips.presetIdToCurrentRipId(presetId);
         uint256 vrfRequestId = rips.requestRandomness(ripId);

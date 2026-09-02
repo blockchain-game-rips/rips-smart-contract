@@ -143,10 +143,7 @@ contract Rips_Refund is RipsTestBase {
         _;
     }
 
-    function test_WhenTheRecipientHasEntriesInTheRip_GivenERC20()
-        external
-        givenThePresetCurrencyIsAnERC20Token
-    {
+    function test_WhenTheRecipientHasEntriesInTheRip_GivenERC20() external givenThePresetCurrencyIsAnERC20Token {
         uint256 balanceBefore = erc20.balanceOf(user);
 
         vm.expectEmit();
@@ -159,10 +156,7 @@ contract Rips_Refund is RipsTestBase {
         assertTrue(rips.hasRefunded(ripId, user));
     }
 
-    function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20()
-        external
-        givenThePresetCurrencyIsAnERC20Token
-    {
+    function test_WhenRecipientIsDifferentFromTheCaller_GivenERC20() external givenThePresetCurrencyIsAnERC20Token {
         address caller = makeAddr("caller");
 
         uint256 recipientBalanceBefore = erc20.balanceOf(user);

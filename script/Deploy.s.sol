@@ -61,22 +61,16 @@ contract Deploy is Script {
 
         IRips.ReferralTier[] memory tiers = new IRips.ReferralTier[](3);
 
-        tiers[0] =
-            IRips.ReferralTier({minVolume: uint128(tier1Entries * MID_ENTRY_PRICE), feeBps: tier1Fee});
+        tiers[0] = IRips.ReferralTier({minVolume: uint128(tier1Entries * MID_ENTRY_PRICE), feeBps: tier1Fee});
 
-        tiers[1] =
-            IRips.ReferralTier({minVolume: uint128(tier2Entries * MID_ENTRY_PRICE), feeBps: tier2Fee});
+        tiers[1] = IRips.ReferralTier({minVolume: uint128(tier2Entries * MID_ENTRY_PRICE), feeBps: tier2Fee});
 
-        tiers[2] =
-            IRips.ReferralTier({minVolume: uint128(tier3Entries * MID_ENTRY_PRICE), feeBps: tier3Fee});
+        tiers[2] = IRips.ReferralTier({minVolume: uint128(tier3Entries * MID_ENTRY_PRICE), feeBps: tier3Fee});
 
         rips.setReferralTiers(address(0), tiers);
     }
 
-    function _createDefaultPresets(Rips rips)
-        internal
-        returns (uint64 presetId1, uint64 presetId2, uint64 presetId3)
-    {
+    function _createDefaultPresets(Rips rips) internal returns (uint64 presetId1, uint64 presetId2, uint64 presetId3) {
         uint256 lowEntryPrice = 0.000025 ether;
         uint256 highEntryPrice = 0.0001 ether;
 
@@ -85,10 +79,7 @@ contract Deploy is Script {
         presetId3 = _createDefaultPreset(rips, highEntryPrice);
     }
 
-    function _createDefaultPreset(Rips rips, uint256 entryPrice)
-        internal
-        returns (uint64 presetId)
-    {
+    function _createDefaultPreset(Rips rips, uint256 entryPrice) internal returns (uint64 presetId) {
         uint64 defaultEntryCap = 8;
         uint32 defaultDuration = 5 minutes;
         uint16 defaultFeePercent = 500; // 5%
@@ -107,11 +98,7 @@ contract Deploy is Script {
 
     /// @dev Payout percentages must total 760% of the entry price so the pool
     /// matches entryCap * entryPrice minus the 5% protocol fee.
-    function _defaultTiers(uint256 entryPrice)
-        internal
-        pure
-        returns (IRips.PayoutTier[] memory tiers)
-    {
+    function _defaultTiers(uint256 entryPrice) internal pure returns (IRips.PayoutTier[] memory tiers) {
         uint256 tierCount = 7;
 
         tiers = new IRips.PayoutTier[](tierCount);

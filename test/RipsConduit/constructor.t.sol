@@ -9,26 +9,17 @@ contract RipsConduit_Constructor is RipsTestBase {
         _;
     }
 
-    function test_RevertGiven_TheAddressIsTheZeroAddress()
-        external
-        whenTheAddressDoesNotClaimTheRipsInterface
-    {
+    function test_RevertGiven_TheAddressIsTheZeroAddress() external whenTheAddressDoesNotClaimTheRipsInterface {
         vm.expectRevert(RipsConduit.NotRips.selector);
         new RipsConduit(address(0));
     }
 
-    function test_RevertGiven_TheAddressHasNoCode()
-        external
-        whenTheAddressDoesNotClaimTheRipsInterface
-    {
+    function test_RevertGiven_TheAddressHasNoCode() external whenTheAddressDoesNotClaimTheRipsInterface {
         vm.expectRevert(RipsConduit.NotRips.selector);
         new RipsConduit(makeAddr("eoa"));
     }
 
-    function test_RevertGiven_TheAddressIsAnUnrelatedContract()
-        external
-        whenTheAddressDoesNotClaimTheRipsInterface
-    {
+    function test_RevertGiven_TheAddressIsAnUnrelatedContract() external whenTheAddressDoesNotClaimTheRipsInterface {
         vm.expectRevert(RipsConduit.NotRips.selector);
         new RipsConduit(address(erc20));
     }

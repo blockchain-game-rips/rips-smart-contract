@@ -38,10 +38,7 @@ abstract contract RipsFees is RipsUtils {
         emit ProtocolFeeWithdrawn(feeRecipient, currency, amount);
     }
 
-    function setReferrerFrozen(address referrer, bool frozen)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setReferrerFrozen(address referrer, bool frozen) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (referrer == address(0)) revert ZeroAddress();
 
         isReferrerFrozen[referrer] = frozen;
@@ -49,11 +46,7 @@ abstract contract RipsFees is RipsUtils {
         emit ReferrerFreezeUpdated(referrer, frozen);
     }
 
-    function seizeReferrerFee(address referrer, address currency)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-        nonReentrant
-    {
+    function seizeReferrerFee(address referrer, address currency) external onlyRole(DEFAULT_ADMIN_ROLE) nonReentrant {
         if (referrer == address(0)) revert ZeroAddress();
 
         uint256 amount = referrerFeeAccrued[referrer][currency];

@@ -88,15 +88,9 @@ interface IRips {
 
     event RipCreated(uint256 indexed ripId, uint64 indexed presetId, uint64 configId);
 
-    event RipEntered(
-        uint256 indexed ripId, address indexed user, uint64 entryCount, uint256 startEntryIndex
-    );
+    event RipEntered(uint256 indexed ripId, address indexed user, uint64 entryCount, uint256 startEntryIndex);
     event PayoutClaimed(
-        uint256 indexed ripId,
-        address indexed user,
-        address referrer,
-        uint64 entryCount,
-        uint256 payoutAmount
+        uint256 indexed ripId, address indexed user, address referrer, uint64 entryCount, uint256 payoutAmount
     );
     event RefundIssued(uint256 indexed ripId, address indexed user, uint64 entryCount);
 
@@ -117,15 +111,12 @@ interface IRips {
     event DefaultReferralFeeUpdated(uint16 newDefaultReferralFeeBps);
     event ReferralFeeAccrued(uint256 indexed ripId, address indexed referrer, uint256 amount);
     event ProtocolFeeAccrued(uint256 indexed ripId, uint256 amount);
-    event ReferralStateUpdated(
-        address indexed referrer, address indexed currency, ReferrerState referrerState
-    );
+    event ReferralStateUpdated(address indexed referrer, address indexed currency, ReferrerState referrerState);
     event ReferrerCustomFeeUpdated(address indexed referrer, uint16 customFeeBps);
 
     function enterRip(uint64 presetId, uint64 entryCount, address recipient) external payable;
 
-    function claimPayout(uint256 ripId, uint256 maxChunks, address recipient, address referrer)
-        external;
+    function claimPayout(uint256 ripId, uint256 maxChunks, address recipient, address referrer) external;
 
     function refund(uint256 ripId, address recipient) external;
 
@@ -137,10 +128,7 @@ interface IRips {
 
     function requestRandomness(uint256 ripId) external returns (uint256 requestId);
 
-    function getUserEntries(uint256 ripId, address user)
-        external
-        view
-        returns (EntryChunk[] memory);
+    function getUserEntries(uint256 ripId, address user) external view returns (EntryChunk[] memory);
 
     function setReferralTiers(address currency, ReferralTier[] calldata tiers) external;
 

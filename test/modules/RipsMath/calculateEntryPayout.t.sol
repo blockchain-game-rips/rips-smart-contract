@@ -29,15 +29,9 @@ contract RipsMath_CalculateEntryPayout is RipsTestBase {
 
     function _tierLookupTiers() private pure returns (IRips.PayoutTier[] memory tiers) {
         tiers = new IRips.PayoutTier[](3);
-        tiers[0] = IRips.PayoutTier({
-            payoutCount: 2, minPayout: uint128(PAYOUT_1), maxPayout: uint128(PAYOUT_2)
-        });
-        tiers[1] = IRips.PayoutTier({
-            payoutCount: 2, minPayout: uint128(PAYOUT_3), maxPayout: uint128(PAYOUT_4)
-        });
-        tiers[2] = IRips.PayoutTier({
-            payoutCount: 4, minPayout: uint128(PAYOUT_5), maxPayout: uint128(PAYOUT_8)
-        });
+        tiers[0] = IRips.PayoutTier({payoutCount: 2, minPayout: uint128(PAYOUT_1), maxPayout: uint128(PAYOUT_2)});
+        tiers[1] = IRips.PayoutTier({payoutCount: 2, minPayout: uint128(PAYOUT_3), maxPayout: uint128(PAYOUT_4)});
+        tiers[2] = IRips.PayoutTier({payoutCount: 4, minPayout: uint128(PAYOUT_5), maxPayout: uint128(PAYOUT_8)});
     }
 
     function _tierLookupBoundaries() private pure returns (uint64[] memory b) {
@@ -49,13 +43,10 @@ contract RipsMath_CalculateEntryPayout is RipsTestBase {
 
     function _interpolationTiers() private pure returns (IRips.PayoutTier[] memory tiers) {
         tiers = new IRips.PayoutTier[](2);
-        tiers[0] = IRips.PayoutTier({
-            payoutCount: 1, minPayout: uint128(SINGLE_PAYOUT), maxPayout: uint128(SINGLE_PAYOUT)
-        });
+        tiers[0] =
+            IRips.PayoutTier({payoutCount: 1, minPayout: uint128(SINGLE_PAYOUT), maxPayout: uint128(SINGLE_PAYOUT)});
         tiers[1] = IRips.PayoutTier({
-            payoutCount: 3,
-            minPayout: uint128(RANGE_MIN_PAYOUT),
-            maxPayout: uint128(RANGE_MAX_PAYOUT)
+            payoutCount: 3, minPayout: uint128(RANGE_MIN_PAYOUT), maxPayout: uint128(RANGE_MAX_PAYOUT)
         });
     }
 
@@ -67,11 +58,11 @@ contract RipsMath_CalculateEntryPayout is RipsTestBase {
 
     // Use a=1, b=0 with entryNumber=(payoutNumber-1) so payoutNumber == desired.
     // Formula: (1 * (payoutNumber-1) + 0) % n + 1 == payoutNumber.
-    function _identity(
-        uint256 payoutNumber,
-        IRips.PayoutTier[] memory tiers,
-        uint64[] memory bounds
-    ) private view returns (uint256) {
+    function _identity(uint256 payoutNumber, IRips.PayoutTier[] memory tiers, uint64[] memory bounds)
+        private
+        view
+        returns (uint256)
+    {
         uint256 n = bounds[bounds.length - 1];
         return rips.exposed_calculateEntryPayout(payoutNumber - 1, 1, 0, uint64(n), tiers, bounds);
     }
@@ -91,18 +82,14 @@ contract RipsMath_CalculateEntryPayout is RipsTestBase {
         vm.assume(a % 2 != 0);
 
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
-        tiers[0] =
-            IRips.PayoutTier({payoutCount: uint64(n), minPayout: 1 ether, maxPayout: 1 ether});
+        tiers[0] = IRips.PayoutTier({payoutCount: uint64(n), minPayout: 1 ether, maxPayout: 1 ether});
 
         uint64[] memory boundaries = new uint64[](1);
         boundaries[0] = uint64(n);
 
         // All payouts are equal so the result must equal 1 ether regardless of payoutNumber.
         assertEq(
-            rips.exposed_calculateEntryPayout(
-                entryNumber, uint64(a), uint64(b), uint64(n), tiers, boundaries
-            ),
-            1 ether
+            rips.exposed_calculateEntryPayout(entryNumber, uint64(a), uint64(b), uint64(n), tiers, boundaries), 1 ether
         );
     }
 
@@ -121,17 +108,13 @@ contract RipsMath_CalculateEntryPayout is RipsTestBase {
 
         // Use a range tier so each rank produces a distinct payout amount.
         IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
-        tiers[0] = IRips.PayoutTier({
-            payoutCount: uint64(n), minPayout: 0, maxPayout: uint128(n - 1) * 1 ether
-        });
+        tiers[0] = IRips.PayoutTier({payoutCount: uint64(n), minPayout: 0, maxPayout: uint128(n - 1) * 1 ether});
 
         uint64[] memory boundaries = new uint64[](1);
         boundaries[0] = uint64(n);
 
-        uint256 payoutA =
-            rips.exposed_calculateEntryPayout(entryA, uint64(a), 0, uint64(n), tiers, boundaries);
-        uint256 payoutB =
-            rips.exposed_calculateEntryPayout(entryB, uint64(a), 0, uint64(n), tiers, boundaries);
+        uint256 payoutA = rips.exposed_calculateEntryPayout(entryA, uint64(a), 0, uint64(n), tiers, boundaries);
+        uint256 payoutB = rips.exposed_calculateEntryPayout(entryB, uint64(a), 0, uint64(n), tiers, boundaries);
 
         assertNotEq(payoutA, payoutB);
     }
@@ -159,16 +142,12 @@ contract RipsMath_CalculateEntryPayout is RipsTestBase {
             cumulative += uint64(payoutCount);
 
             tiers[i] = IRips.PayoutTier({
-                payoutCount: uint64(payoutCount),
-                minPayout: payoutPerEntry,
-                maxPayout: payoutPerEntry
+                payoutCount: uint64(payoutCount), minPayout: payoutPerEntry, maxPayout: payoutPerEntry
             });
             boundaries[i] = cumulative;
         }
 
-        rips.exposed_calculateEntryPayout(
-            bound(entryNumber, 0, n - 1), 1, 0, uint64(n), tiers, boundaries
-        );
+        rips.exposed_calculateEntryPayout(bound(entryNumber, 0, n - 1), 1, 0, uint64(n), tiers, boundaries);
     }
 
     // ── Tier lookup ──────────────────────────────────────────────────────────

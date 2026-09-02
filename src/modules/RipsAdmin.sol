@@ -19,11 +19,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         _unpause();
     }
 
-    function createPreset(Config calldata config)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-        returns (uint64 presetId)
-    {
+    function createPreset(Config calldata config) external onlyRole(DEFAULT_ADMIN_ROLE) returns (uint64 presetId) {
         presetId = _nextPresetId++;
 
         uint64 configId = _applyConfig(presetId, config);
@@ -31,10 +27,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         emit PresetCreated(presetId, configId);
     }
 
-    function updatePreset(uint64 presetId, Config calldata config)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function updatePreset(uint64 presetId, Config calldata config) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (isPresetDeleted[presetId]) revert PresetNotExist();
         if (presetIdToCurrentConfigId[presetId] == 0) revert PresetNotExist();
 
@@ -52,10 +45,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         emit PresetDeleted(presetId);
     }
 
-    function _applyConfig(uint64 presetId, Config calldata config)
-        internal
-        returns (uint64 configId)
-    {
+    function _applyConfig(uint64 presetId, Config calldata config) internal returns (uint64 configId) {
         _validateConfig(config);
 
         configId = _storeConfig(config);
@@ -84,8 +74,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
             }
 
             totalEntryCount += tier.payoutCount;
-            totalPayoutPool += (uint256(tier.payoutCount)
-                    * (uint256(tier.minPayout) + uint256(tier.maxPayout))) / 2;
+            totalPayoutPool += (uint256(tier.payoutCount) * (uint256(tier.minPayout) + uint256(tier.maxPayout))) / 2;
         }
 
         if (config.feeBps > FEE_BASE) revert FeeTooHigh();
