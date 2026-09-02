@@ -74,9 +74,11 @@ valid if the payouts it promises and the fee it charges together account for
 the entry revenue, so both are already paid for.
 
 A claim is bounded: it covers only as many chunks as the caller allows in one
-call, so a large holding is claimed over several calls rather than one. Claimed
-chunks are marked, so covering the same chunk twice pays nothing the second
-time.
+call, so a large holding is claimed over several calls rather than one. Where it
+resumes is not the caller's choice — the contract remembers how far an entrant
+got and always continues from there, so claimed chunks are a prefix that only
+grows and a gap in the middle cannot exist. Once nothing is left, claiming
+fails rather than paying twice.
 
 An entrant may claim their own, and a privileged caller may claim on their
 behalf, but the money always goes to the entrant.
