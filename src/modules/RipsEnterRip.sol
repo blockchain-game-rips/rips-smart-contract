@@ -121,9 +121,7 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
             uint64 chunkSize =
                 remaining > MAX_ENTRIES_PER_CHUNK ? MAX_ENTRIES_PER_CHUNK : remaining;
 
-            chunks.push(
-                EntryChunk({start: uint64(currentStart), count: uint64(chunkSize), claimed: false})
-            );
+            chunks.push(EntryChunk({start: uint64(currentStart), count: uint64(chunkSize)}));
             currentStart += chunkSize;
             remaining -= chunkSize;
         }

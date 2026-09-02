@@ -36,7 +36,6 @@ interface IRips {
     struct EntryChunk {
         uint64 start;
         uint64 count;
-        bool claimed;
     }
 
     struct ReferrerState {
@@ -68,11 +67,12 @@ interface IRips {
     error RipNotFulfilled();
     error InvalidVrfRequestStatus();
     error RipExpired();
-    error InvalidStartIndex();
     error TransferFailed();
     error RipNotExpired();
     error AlreadyRefunded();
     error NoEntriesToRefund();
+    error NothingToClaim();
+    error ZeroMaxChunks();
     error RipNotExist();
     error ReferralTiersEmpty();
     error ReferralTiersNotSorted();
@@ -124,13 +124,8 @@ interface IRips {
 
     function enterRip(uint64 presetId, uint64 entryCount, address recipient) external payable;
 
-    function claimPayout(
-        uint256 ripId,
-        uint256 startIndex,
-        uint256 maxChunks,
-        address recipient,
-        address referrer
-    ) external;
+    function claimPayout(uint256 ripId, uint256 maxChunks, address recipient, address referrer)
+        external;
 
     function refund(uint256 ripId, address recipient) external;
 
