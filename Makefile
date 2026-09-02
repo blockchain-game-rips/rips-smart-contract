@@ -12,4 +12,4 @@ scaffold:
 	bulloak scaffold -w $(P) && forge fmt
 
 local:
-	sh local/setup.sh
+	bash local/setup.sh

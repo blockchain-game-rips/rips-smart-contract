@@ -41,7 +41,7 @@ VRF_COORDINATOR="$COORDINATOR_ADDRESS" VRF_SUBSCRIPTION_ID="$SUBSCRIPTION_ID" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     2>&1 | tail -5
 
-RIPS_BROADCAST="$REPO_DIR/broadcast/DeployRips.s.sol/$CHAIN_ID/run-latest.json"
+RIPS_BROADCAST="$REPO_DIR/broadcast/DeployRipsHarness.s.sol/$CHAIN_ID/run-latest.json"
 RIPS_ADDRESS=$(jq -r '.transactions[] | select(.transactionType == "CREATE") | .contractAddress' "$RIPS_BROADCAST" | head -1)
 
 echo "Deploying conduit..."
