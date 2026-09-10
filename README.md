@@ -71,3 +71,11 @@ When `requestRandomness` reverts inside Chainlink — a drained subscription, a 
 Recovery is always available. `requestRandomness` is permissionless and writes no state before the external call, so once an admin corrects the cause with `updateVrfSubscriptionId`, `setCoordinator`, or `updateVrfRequestConfirmations`, anyone can call it again.
 
 We accept this rather than fix it. Nothing in the contract leads here; it takes an outright Chainlink failure. An automatic refund would mean gating `requestRandomness` behind a one-way switch, since otherwise randomness could still be fulfilled while refunds are draining — meaningful complexity in the payout path to cover a case that should never happen.
+
+### Payout rounding leaves dust in the contract
+
+`calculateEntryPayout` interpolates within a tier using integer division, so every entry is floored to the currency's smallest unit, while `_validateConfig` sizes the pool from each tier's arithmetic mean. A rip therefore pays out slightly less than the pool it declared, and the difference has no accounting bucket that can withdraw it. The worst case is a single tier spanning the whole rip, which strands `entryCap / 2 - 1` of the smallest unit; `test/modules/RipsMath/payoutDust.t.sol` fuzzes this bound and also asserts payouts never exceed the pool, which is the direction that would actually strand a claimant.
+
+There is nothing to recover, and nothing is at risk: the shortfall is always in the protocol's favour, so every claimant is paid in full and the residue simply accumulates in the contract.
+
+We accept this rather than fix it. The loss is absolute — `entryCap / 2` units per rip regardless of price — while revenue scales with `entryPrice`, so `MIN_ENTRY_PRICE` bounds it at roughly 0.1% of a rip's revenue and far less at realistic prices. Removing it entirely would mean either validating the exact floored sequence, which forces every config to be hand-tuned so each tier's span divides evenly, or adding a sweep function, which is the more dangerous option: the contract's balance also holds unclaimed payouts and refunds, so a naive sweep would let an admin withdraw money that belongs to users.
