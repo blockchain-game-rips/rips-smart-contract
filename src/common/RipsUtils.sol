@@ -15,6 +15,32 @@ abstract contract RipsUtils is RipsStorage, AccessControl, ReentrancyGuard {
 
     using SafeERC20 for IERC20;
 
+    /// @notice Whether a rip can still be entered, is waiting on randomness, or has
+    /// fallen through to refunds. `vrfRequestStatus` stays the source of truth once
+    /// randomness is in play: claiming and the VRF callback read it directly, because
+    /// they need the exact request phase rather than these coarser states.
+    /// @dev Entry and refund ask this instead of re-deriving the answer from
+    /// timestamps and entry counts, so their conditions cannot drift apart.
+    function _ripState(uint256 ripId) internal view returns (RipState) {
+        Rip storage rip = ripIdToRip[ripId];
+        Config storage config = configIdToConfig[rip.configId];
+
+        // Sold out outranks expiry: a full rip pays out however long it took to fill,
+        // and requestRandomness only accepts a sold-out rip, so every requested or
+        // fulfilled rip reaches its state through this branch.
+        if (_isSoldOut(rip, config)) {
+            if (rip.vrfRequestStatus == VrfRequestStatus.Fulfilled) return RipState.Payable;
+
+            if (rip.vrfRequestStatus == VrfRequestStatus.NotRequested) return RipState.AwaitingRandomness;
+
+            return _isVrfRequestExpired(ripId) ? RipState.Refundable : RipState.AwaitingRandomness;
+        }
+
+        if (_isExpired(rip, config)) return RipState.Refundable;
+
+        return RipState.Filling;
+    }
+
     function _isExpired(Rip storage rip, Config storage config) internal view returns (bool) {
         return block.timestamp > rip.startTime + config.duration;
     }

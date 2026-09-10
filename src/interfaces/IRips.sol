@@ -8,6 +8,14 @@ interface IRips {
         Fulfilled
     }
 
+    /// @notice The lifecycle position of a rip. Exactly one state holds at any time.
+    enum RipState {
+        Filling,
+        AwaitingRandomness,
+        Payable,
+        Refundable
+    }
+
     struct Rip {
         uint64 presetId;
         uint64 configId;

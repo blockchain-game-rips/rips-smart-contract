@@ -72,10 +72,11 @@ abstract contract RipsVrf is RipsUtils, IVRFMigratableConsumerV2Plus {
         Rip storage rip = ripIdToRip[ripId];
         if (rip.presetId == 0) revert RipNotExist();
 
+        // Phase before lifecycle: losing the race to request is a normal outcome and
+        // callers must be able to tell it apart from a rip that is not ready at all.
         if (rip.vrfRequestStatus != VrfRequestStatus.NotRequested) revert VrfAlreadyRequested();
 
-        Config storage config = configIdToConfig[rip.configId];
-        if (!_isSoldOut(rip, config)) revert RipNotSoldOut();
+        if (_ripState(ripId) != RipState.AwaitingRandomness) revert RipNotSoldOut();
 
         requestId = vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({

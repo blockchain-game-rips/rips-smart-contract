@@ -14,7 +14,7 @@ abstract contract RipsRefund is RipsUtils {
 
         Config storage config = configIdToConfig[rip.configId];
 
-        if (!_isRipRefundable(ripId, rip, config)) revert RipNotExpired();
+        if (_ripState(ripId) != RipState.Refundable) revert RipNotExpired();
         if (hasRefunded[ripId][recipient]) revert AlreadyRefunded();
 
         uint64 entryCount = userEntryCount[ripId][recipient];
@@ -24,15 +24,5 @@ abstract contract RipsRefund is RipsUtils {
         _transfer(config.currency, recipient, entryCount * config.entryPrice);
 
         emit RefundIssued(ripId, recipient, entryCount);
-    }
-
-    function _isRipRefundable(uint256 ripId, Rip storage rip, Config storage config) internal view returns (bool) {
-        if (_isExpired(rip, config) && !_isSoldOut(rip, config)) return true;
-
-        if (_isVrfRequestExpired(ripId) && rip.vrfRequestStatus == VrfRequestStatus.Requested) {
-            return true;
-        }
-
-        return false;
     }
 }

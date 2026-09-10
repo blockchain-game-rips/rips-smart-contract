@@ -45,8 +45,7 @@ abstract contract RipsEnterRip is RipsUtils, Pausable {
             rip = ripIdToRip[ripId];
             config = configIdToConfig[rip.configId];
 
-            // rip is filling
-            if (!_isExpired(rip, config) && !_isSoldOut(rip, config)) {
+            if (_ripState(ripId) == RipState.Filling) {
                 return (ripId, rip, config);
             }
         }
