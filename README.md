@@ -79,3 +79,18 @@ We accept this rather than fix it. Nothing in the contract leads here; it takes 
 There is nothing to recover, and nothing is at risk: the shortfall is always in the protocol's favour, so every claimant is paid in full and the residue simply accumulates in the contract.
 
 We accept this rather than fix it. The loss is absolute — `entryCap / 2` units per rip regardless of price — while revenue scales with `entryPrice`, so `MIN_ENTRY_PRICE` bounds it at roughly 0.1% of a rip's revenue and far less at realistic prices. Removing it entirely would mean either validating the exact floored sequence, which forces every config to be hand-tuned so each tier's span divides evenly, or adding a sweep function, which is the more dangerous option: the contract's balance also holds unclaimed payouts and refunds, so a naive sweep would let an admin withdraw money that belongs to users.
+
+
+### `enterRip` has no commitment to the terms it lands under
+
+`enterRip` names a preset and an entry count, and nothing else. Everything deciding what the caller actually buys is read at execution time, so a transaction sent under one set of terms can land under another. Three axes, none needing an attacker:
+
+- **Which rip.** `_resolveRipAndConfig` enters the preset's current rip only while it is `Filling`. If it sells out or expires first, the call silently creates a fresh rip and enters that instead.
+- **Which config.** A call that creates the rip reads `presetIdToCurrentConfigId` at that moment, so an `updatePreset` landing first changes the price, cap, duration, fee, and tiers being bought into.
+- **How many entries.** `_getEntriesToBuy` clamps to the cap's remainder rather than reverting, so a caller asking for a hundred entries can pay for one and the call still succeeds.
+
+Nothing is lost or stuck: the caller is charged only for entries actually bought, native excess is refunded in the same call, and those entries claim and refund on the normal paths. What they lose is the ability to decline.
+
+We accept this rather than fix it, because the clamping and the roll-forward are what make the protocol continuous. Reverting on a rip that filled early would fail transactions arriving exactly when a preset is busiest, and reverting on a partial fill would leave the last entries of every rip unsellable. The admin axis is already contained: `updatePreset` writes a new config rather than mutating the old, so a rip that has started keeps its terms and the exposure is only the gap before entering.
+
+A caller who wants to commit to terms can wrap the call instead. `presetIdToCurrentRipId`, `ripIdToRip`, `configIdToConfig`, and `userEntryCount` are public, so a wrapper can re-read the landing rip, its `configId`, and the entries credited after calling, and revert unless they match. That is a caller's policy, not the protocol's, and belongs outside `Rips`.
