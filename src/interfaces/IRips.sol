@@ -55,6 +55,7 @@ interface IRips {
     error NothingToWithdraw();
     error ReferrerFrozen();
     error EntryCapNotPowerOfTwo();
+    error EntryPriceTooLow();
     error InvalidTierCount();
     error InvalidPayoutRange();
     error TiersNotSortedByPayoutCount();

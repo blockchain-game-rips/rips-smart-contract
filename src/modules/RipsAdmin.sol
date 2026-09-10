@@ -11,6 +11,12 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
     // described on MAX_ENTRIES_PER_CHUNK
     uint256 public constant MAX_TIER_COUNT = 16;
 
+    // Payouts are floored per entry, so a rip keeps up to entryCap / 2 of the
+    // currency's smallest unit as dust. That loss is absolute while revenue scales
+    // with entryPrice, so dust / revenue converges to 1 / (2 * entryPrice) and a
+    // floor of 500 holds it under 0.1% of a rip's revenue in the worst case.
+    uint256 public constant MIN_ENTRY_PRICE = 500;
+
     function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();
     }
@@ -54,6 +60,7 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
     }
 
     function _validateConfig(Config calldata config) private pure {
+        if (config.entryPrice < MIN_ENTRY_PRICE) revert EntryPriceTooLow();
         if (!RipsMath.isPowerOfTwo(config.entryCap)) revert EntryCapNotPowerOfTwo();
         if (config.tiers.length == 0) revert InvalidTierCount();
         if (config.tiers.length > MAX_TIER_COUNT) revert InvalidTierCount();
