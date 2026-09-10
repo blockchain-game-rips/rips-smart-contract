@@ -21,6 +21,13 @@ contract Rips_CreatePreset is PresetValidationSetup {
         rips.createPreset(configWithNonPowerOfTwoEntryCap());
     }
 
+    function test_RevertWhen_EntryPriceIsBelowTheMinimum() external whenTheCallerIsTheOwner {
+        IRips.Config memory config = configWithEntryPriceBelowMinimum();
+
+        vm.expectRevert(IRips.EntryPriceTooLow.selector);
+        rips.createPreset(config);
+    }
+
     function test_RevertWhen_TiersIsEmpty() external whenTheCallerIsTheOwner {
         vm.expectRevert(IRips.InvalidTierCount.selector);
         rips.createPreset(configWithInvalidTierCount());

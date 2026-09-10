@@ -3,6 +3,8 @@ Rips_CreatePreset
 │   └── it should revert.
 ├── when entry cap is not a power of two
 │   └── it should revert.
+├── when entry price is below the minimum
+│   └── it should revert.
 ├── when tiers is empty
 │   └── it should revert.
 ├── when tiers exceeds max tier count

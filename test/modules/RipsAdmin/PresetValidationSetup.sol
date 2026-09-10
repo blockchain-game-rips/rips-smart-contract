@@ -38,6 +38,24 @@ contract PresetValidationSetup is RipsTestBase {
         });
     }
 
+    function configWithEntryPriceBelowMinimum() internal view returns (IRips.Config memory) {
+        uint256 entryPrice = rips.MIN_ENTRY_PRICE() - 1;
+
+        IRips.PayoutTier[] memory tiers = new IRips.PayoutTier[](1);
+        tiers[0] = IRips.PayoutTier({
+            payoutCount: uint64(DEFAULT_ENTRY_CAP), minPayout: uint128(entryPrice), maxPayout: uint128(entryPrice)
+        });
+
+        return IRips.Config({
+            currency: address(0),
+            tiers: tiers,
+            entryCap: DEFAULT_ENTRY_CAP,
+            duration: DEFAULT_DURATION,
+            entryPrice: entryPrice,
+            feeBps: 0
+        });
+    }
+
     function configWithInvalidTierCount() internal pure returns (IRips.Config memory) {
         return IRips.Config({
             currency: address(0),
