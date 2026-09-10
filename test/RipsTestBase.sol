@@ -11,6 +11,10 @@ contract RipsTestBase is Test {
     bytes32 internal constant VRF_KEY_HASH = bytes32(uint256(1));
     uint32 internal constant VRF_CALLBACK_GAS_LIMIT = 100_000;
 
+    // pinned independently of the contract so a wrong VRF_REQUEST_EXPIRY fails a test
+    // instead of moving the assertions along with it
+    uint256 internal constant VRF_EXPIRY = 7 weeks;
+
     uint16 internal constant DEFAULT_FEE_PERCENT = 0;
     uint64 internal constant DEFAULT_ENTRY_CAP = 4;
     uint256 internal constant DEFAULT_ENTRY_PRICE = 1 ether;

@@ -45,8 +45,6 @@ contract Rips_FulfillRandomWords is RipsTestBase {
         vrfRequestId = rips.requestRandomness(ripId);
     }
 
-    uint256 private constant VRF_EXPIRY = 7 weeks;
-
     function test_RevertWhen_CalledByAnAddressThatIsNotTheVRFCoordinator() external {
         uint256[] memory randomWords = new uint256[](1);
         randomWords[0] = 12345;

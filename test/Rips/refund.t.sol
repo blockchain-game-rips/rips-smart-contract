@@ -39,8 +39,6 @@ contract Rips_Refund is RipsTestBase {
         rips.refund(ripId, address(0));
     }
 
-    uint256 private constant VRF_EXPIRY = 7 weeks;
-
     function test_RevertWhen_TheRipIsNotSoldOutButHasNotPassedItsDuration() external {
         vm.prank(user);
         vm.expectRevert(IRips.RipNotExpired.selector);

@@ -10,6 +10,9 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 abstract contract RipsUtils is RipsStorage, AccessControl, ReentrancyGuard {
     uint256 public constant FEE_BASE = 10000;
 
+    // how long a pending VRF request is honoured before its rip falls back to refunds
+    uint256 public constant VRF_REQUEST_EXPIRY = 7 weeks;
+
     using SafeERC20 for IERC20;
 
     function _isExpired(Rip storage rip, Config storage config) internal view returns (bool) {
@@ -47,7 +50,7 @@ abstract contract RipsUtils is RipsStorage, AccessControl, ReentrancyGuard {
 
         if (requestTimestamp == 0) return false;
 
-        if (block.timestamp > requestTimestamp + 7 weeks) {
+        if (block.timestamp > requestTimestamp + VRF_REQUEST_EXPIRY) {
             return true;
         }
 
