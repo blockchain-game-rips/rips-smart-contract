@@ -25,6 +25,10 @@ abstract contract RipsUtils is RipsStorage, AccessControl, ReentrancyGuard {
         Rip storage rip = ripIdToRip[ripId];
         Config storage config = configIdToConfig[rip.configId];
 
+        // Cancellation outranks everything: cancelRip only accepts a Filling rip, so a
+        // cancelled rip never had randomness in play and its entries can only refund.
+        if (rip.isCancelled) return RipState.Refundable;
+
         // Sold out outranks expiry: a full rip pays out however long it took to fill,
         // and requestRandomness only accepts a sold-out rip, so every requested or
         // fulfilled rip reaches its state through this branch.

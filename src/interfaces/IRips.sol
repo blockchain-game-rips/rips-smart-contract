@@ -22,6 +22,7 @@ interface IRips {
         uint40 startTime;
         uint64 entriesSold;
         VrfRequestStatus vrfRequestStatus;
+        bool isCancelled;
         uint64 randomA;
         uint64 randomB;
     }
@@ -90,12 +91,14 @@ interface IRips {
     error VrfAlreadyRequested();
     error ZeroSubscriptionId();
     error InvalidRequestId();
+    error RipNotCancellable();
 
     event PresetCreated(uint64 indexed presetId, uint64 configId);
     event PresetUpdated(uint64 indexed presetId, uint64 configId);
     event PresetDeleted(uint64 indexed presetId);
 
     event RipCreated(uint256 indexed ripId, uint64 indexed presetId, uint64 configId);
+    event RipCancelled(uint256 indexed ripId);
 
     event RipEntered(uint256 indexed ripId, address indexed user, uint64 entryCount, uint256 startEntryIndex);
     event PayoutClaimed(
@@ -134,6 +137,8 @@ interface IRips {
     function updatePreset(uint64 presetId, Config calldata config) external;
 
     function deletePreset(uint64 presetId) external;
+
+    function cancelRip(uint256 ripId) external;
 
     function requestRandomness(uint256 ripId) external returns (uint256 requestId);
 

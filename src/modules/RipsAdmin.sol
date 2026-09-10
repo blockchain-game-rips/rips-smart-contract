@@ -51,6 +51,24 @@ abstract contract RipsAdmin is RipsStorage, RipsUtils, Pausable {
         emit PresetDeleted(presetId);
     }
 
+    /// @notice Forces a still-filling rip to refunds, so a rip created on a mistaken
+    /// config does not hold its entrants' funds until its duration elapses.
+    /// @dev Deliberately not `whenNotPaused`: cancelling is a recovery tool, and the
+    /// refunds it opens stay callable while the protocol is paused. Restricted to
+    /// `Filling` because past that the outcome is already being decided, and because
+    /// it keeps `VrfRequestStatus.Requested` unreachable for a non-sold-out rip, which
+    /// the lifecycle ladder relies on.
+    function cancelRip(uint256 ripId) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        Rip storage rip = ripIdToRip[ripId];
+
+        if (rip.presetId == 0) revert RipNotExist();
+        if (_ripState(ripId) != RipState.Filling) revert RipNotCancellable();
+
+        rip.isCancelled = true;
+
+        emit RipCancelled(ripId);
+    }
+
     function _applyConfig(uint64 presetId, Config calldata config) internal returns (uint64 configId) {
         _validateConfig(config);
 

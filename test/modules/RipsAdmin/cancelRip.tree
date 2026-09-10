@@ -1,0 +1,20 @@
+Rips_CancelRip
+├── when the caller is not the owner
+│   └── it should revert.
+└── when the caller is the owner
+    ├── when the rip does not exist
+    │   └── it should revert.
+    ├── when the rip is sold out
+    │   └── it should revert.
+    ├── when the rip is awaiting randomness
+    │   └── it should revert.
+    ├── when the rip is already cancelled
+    │   └── it should revert.
+    └── when the rip is filling
+        ├── it should mark the rip as cancelled.
+        ├── it should emit a {RipCancelled} event.
+        ├── it should let an entrant refund.
+        ├── it should reject further entries into the cancelled rip.
+        ├── it should create a fresh rip on the current config for the next entry.
+        └── when the protocol is paused
+            └── it should still cancel.
