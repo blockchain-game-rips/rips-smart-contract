@@ -46,6 +46,8 @@ abstract contract RipsUtils is RipsStorage, AccessControl, ReentrancyGuard {
     }
 
     function _isExpired(Rip storage rip, Config storage config) internal view returns (bool) {
+        // Timestamp only picks between Filling and Refundable; either way the buyer keeps their money.
+        // forge-lint: disable-next-line(block-timestamp)
         return block.timestamp > rip.startTime + config.duration;
     }
 
@@ -80,6 +82,8 @@ abstract contract RipsUtils is RipsStorage, AccessControl, ReentrancyGuard {
 
         if (requestTimestamp == 0) return false;
 
+        // Timestamp gates the refund path, not the winner; VRF alone decides that.
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp > requestTimestamp + VRF_REQUEST_EXPIRY) {
             return true;
         }
